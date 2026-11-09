@@ -1,0 +1,4363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080810">
+<title>THE RABBIT HOLE 🔮 | Reality can wait.</title>
+
+<style>
+:root {
+  --bg: #080810;
+  --panel: #11111D;
+  --violet: #9570FF;
+  --blue: #58B9FF;
+  --soft: #D8C7FF;
+  --text: #F4F0FF;
+  --muted: #A8A2BA;
+  --line: rgba(216,199,255,.18);
+  --ease: cubic-bezier(.2,.8,.2,1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body { overflow-x: hidden; }
+
+button, input { font: inherit; }
+
+button { -webkit-tap-highlight-color: transparent; }
+
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--soft);
+  outline-offset: 4px;
+}
+
+#app {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 45%, #19142e, #0b0a16 55%, #080810);
+}
+
+#stars, #particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--duration,4s) ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: .12; transform: scale(.7); }
+  to { opacity: .9; transform: scale(1.5); }
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes breathe {
+  0%,100% { transform: scale(.96); opacity: .7; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes drift {
+  from { transform: translateX(-30vw); }
+  to { transform: translateX(130vw); }
+}
+
+@keyframes rise {
+  from { transform: translateY(110vh); }
+  to { transform: translateY(-20vh); }
+}
+
+@keyframes rain {
+  to { transform: translateY(120vh); }
+}
+
+@keyframes sway {
+  0%,100% { transform: rotate(-3deg); }
+  50% { transform: rotate(4deg); }
+}
+
+/* LANDING */
+
+.landing {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.landing-inner {
+  width: min(720px,100%);
+  position: relative;
+  z-index: 2;
+}
+
+.brand {
+  color: #c7b6ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .36em;
+}
+
+.portal-wrap {
+  width: min(290px,65vw);
+  aspect-ratio: 1;
+  margin: 32px auto;
+  display: grid;
+  place-items: center;
+  position: relative;
+  animation: float 8s ease-in-out infinite;
+}
+
+.portal-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,#9570ff66,#58b9ff22 45%,transparent 70%);
+  filter: blur(18px);
+  animation: breathe 5s ease-in-out infinite;
+}
+
+.portal {
+  width: 72%;
+  height: 92%;
+  border-radius: 50%;
+  transform: rotate(18deg);
+  border: 1px solid #e3d5ff99;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 45% 40%,#d8c7ff,#7655d9 18%,#31245f 42%,#080810 76%);
+  box-shadow:
+    0 0 25px #9570ff99,
+    0 0 85px #7652d766,
+    inset 0 0 35px #9570ff88;
+}
+
+.portal::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  border: 2px solid #d8c7ff88;
+  border-radius: 50%;
+  animation: spin 18s linear infinite;
+}
+
+.portal::after {
+  content: "";
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse,#fff8,transparent 65%);
+  filter: blur(15px);
+}
+
+h1 {
+  font-size: clamp(43px,9vw,78px);
+  letter-spacing: -.065em;
+  line-height: .95;
+  margin: 0;
+  font-weight: 700;
+}
+
+.tagline {
+  font: italic clamp(20px,3vw,27px) Georgia,serif;
+  color: #c9b8ff;
+  margin: 18px 0 12px;
+}
+
+.intro {
+  max-width: 420px;
+  margin: 0 auto 28px;
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+.primary {
+  border: 1px solid #e0d3ff88;
+  color: white;
+  background: linear-gradient(110deg,#7954df,#6549c7 55%,#456da9);
+  padding: 16px 28px;
+  border-radius: 999px;
+  letter-spacing: .08em;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 8px 36px #7652d755;
+  transition: .25s var(--ease);
+}
+
+.primary:hover {
+  transform: translateY(-3px) scale(1.025);
+  box-shadow: 0 12px 48px #8b6aff88;
+}
+
+.hint {
+  color: #716b87;
+  font-size: 10px;
+  letter-spacing: .18em;
+  margin-top: 18px;
+  text-transform: uppercase;
+}
+
+/* GLOBAL CONTROLS */
+
+.topbar {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 17px clamp(14px,4vw,38px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.topbar > * { pointer-events: auto; }
+
+.wordmark {
+  color: #e4d9ff;
+  background: none;
+  border: 0;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .2em;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.icon-btn, .soft-btn {
+  border: 1px solid var(--line);
+  background: #100f1dce;
+  color: #e9e2ff;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: .2s;
+}
+
+.icon-btn:hover, .soft-btn:hover {
+  background: #27203c;
+  border-color: #9570ff88;
+}
+
+#volume {
+  width: 75px;
+  accent-color: var(--violet);
+}
+
+/* EXPERIENCE FRAMEWORK */
+
+.room {
+  min-height: 100svh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 22px 85px;
+  overflow: hidden;
+  animation: roomEnter .9s var(--ease);
+}
+
+@keyframes roomEnter {
+  from { opacity: 0; transform: scale(1.025); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.room-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.room-content {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  width: min(760px,100%);
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: .28em;
+  color: #d1c1ff;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.room h2 {
+  font-size: clamp(38px,7vw,68px);
+  letter-spacing: -.055em;
+  line-height: 1;
+  margin: 0 0 14px;
+}
+
+.room-desc {
+  color: #c0bad0;
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 500px;
+  margin: 0 auto 25px;
+}
+
+.room-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.room-bottom {
+  position: absolute;
+  z-index: 10;
+  bottom: 22px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 100;
+  bottom: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #171426ed;
+  border: 1px solid var(--line);
+  color: #eee8ff;
+  border-radius: 20px;
+  padding: 12px 18px;
+  font-size: 12px;
+  text-align: center;
+  max-width: 85vw;
+  animation: toastIn .3s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%,10px); }
+  to { opacity: 1; transform: translate(-50%,0); }
+}
+
+/* MIDNIGHT BEDROOM */
+
+.room-midnight {
+  background: radial-gradient(ellipse at 50% 65%,#30254a,#101020 48%,#080810);
+}
+
+.window {
+  position: absolute;
+  width: min(430px,80vw);
+  height: 270px;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%,-50%);
+  border: 8px solid #302842;
+  border-radius: 48% 48% 12px 12px;
+  background: linear-gradient(#111b3c,#45345f 65%,#d18c9a);
+  box-shadow: 0 0 55px #7d69b866;
+}
+
+.window::before, .window::after {
+  content: "";
+  position: absolute;
+  background: #302842;
+}
+
+.window::before { width: 7px; height: 100%; left: 50%; }
+.window::after { height: 7px; width: 100%; top: 58%; }
+
+.bed {
+  position: absolute;
+  bottom: 7%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(650px,95vw);
+  height: 100px;
+  border-radius: 50% 50% 12px 12px;
+  background: linear-gradient(#6c587e,#2c2540);
+  box-shadow: 0 -12px 45px #ad8bd622;
+}
+
+/* OCEAN */
+
+.room-ocean {
+  background: radial-gradient(ellipse at 50% 50%,#124a67,#08283d 48%,#06121f);
+}
+
+.bubble {
+  position: absolute;
+  border: 1px solid #9deaff88;
+  border-radius: 50%;
+  animation: rise var(--duration,12s) linear infinite;
+  opacity: .65;
+}
+
+.fish {
+  position: absolute;
+  font-size: 30px;
+  animation: drift 25s linear infinite;
+}
+
+/* RAINY CITY */
+
+.room-city {
+  background: linear-gradient(#090d20 0%,#211b3c 65%,#11101b);
+}
+
+.building {
+  position: absolute;
+  bottom: 0;
+  width: 9%;
+  height: var(--height);
+  background: linear-gradient(90deg,#111526,#29233e);
+  border-top: 1px solid #71618f;
+}
+
+.building::after {
+  content: "";
+  position: absolute;
+  inset: 12px 8px;
+  background: repeating-linear-gradient(
+    0deg,transparent 0 17px,#f2bd7c88 18px 21px
+  );
+}
+
+.raindrop {
+  position: absolute;
+  top: -20%;
+  height: 30px;
+  width: 1px;
+  background: #b6d9ff77;
+  animation: rain var(--duration,1.2s) linear infinite;
+}
+
+/* FLOATING ISLAND */
+
+.room-island {
+  background: linear-gradient(180deg,#b77da9 0%,#e9a9a0 35%,#8793aa 68%,#59677e 100%);
+}
+
+.island-world {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.island-sun {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  right: 13%;
+  top: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle,#fff4d7,#ffd3b0 55%,#e99ab5 75%,transparent 76%);
+  filter: drop-shadow(0 0 45px #ffe0bd99);
+}
+
+.island-land {
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  transform: translate(-50%,-50%);
+  width: min(780px,115vw);
+  height: 300px;
+  filter: drop-shadow(0 32px 24px #24243e55);
+}
+
+.island-top {
+  position: absolute;
+  inset: 0 0 28%;
+  border-radius: 48% 52% 42% 44%;
+  background: radial-gradient(ellipse at 50% 36%,#b5d98b,#70ad78 43%,#355c5a);
+  box-shadow: inset 0 12px 22px #e1ffc044;
+}
+
+.island-rock {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 61%;
+  height: 39%;
+  background: linear-gradient(100deg,#5a4a50,#88716b 35%,#34384e);
+  clip-path: polygon(0 0,100% 0,84% 44%,67% 100%,30% 100%,14% 47%);
+}
+
+.island-waterfall {
+  position: absolute;
+  z-index: 2;
+  top: 55%;
+  left: 72%;
+  width: 35px;
+  height: 50%;
+  background: linear-gradient(90deg,#b8efff22,#e4fbffcc 38%,#8dd8f0aa 65%,transparent);
+  filter: blur(5px);
+  animation: breathe 2s infinite;
+}
+
+.island-tree {
+  position: absolute;
+  top: 15%;
+  width: 28px;
+  height: 80px;
+  background: linear-gradient(90deg,#75543d,#49392f);
+  transform-origin: bottom;
+  animation: sway 5s ease-in-out infinite;
+}
+
+.island-tree::before {
+  content: "";
+  position: absolute;
+  width: 95px;
+  height: 90px;
+  left: -34px;
+  top: -55px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%,#b5db91,#477d60 70%);
+}
+
+.island-cabin {
+  position: absolute;
+  z-index: 4;
+  left: 51%;
+  top: 13%;
+  width: 90px;
+  height: 75px;
+  cursor: pointer;
+}
+
+.cabin-body {
+  position: absolute;
+  bottom: 0;
+  width: 90px;
+  height: 48px;
+  background: #8a5b43;
+  border: 2px solid #563d39;
+}
+
+.cabin-roof {
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: 106px;
+  height: 35px;
+  background: #483347;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+}
+
+.cabin-window {
+  position: absolute;
+  z-index: 2;
+  width: 16px;
+  height: 18px;
+  bottom: 16px;
+  left: 36px;
+  background: #ffe5a0;
+  box-shadow: 0 0 18px #ffe5a0;
+}
+
+.island-flower {
+  position: absolute;
+  z-index: 6;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.island-flower:active { transform: scale(1.5); }
+
+.island-pond {
+  position: absolute;
+  z-index: 5;
+  left: 24%;
+  top: 42%;
+  width: 100px;
+  height: 35px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse,#d9fbf7,#64c3c0 50%,#347c85);
+  box-shadow: 0 0 22px #8be6e077;
+  cursor: pointer;
+}
+
+.island-butterfly {
+  position: absolute;
+  font-size: 20px;
+  animation: drift 18s linear infinite;
+}
+
+.cloud {
+  position: absolute;
+  width: 200px;
+  height: 55px;
+  border-radius: 50%;
+  background: #fff9;
+  filter: blur(14px);
+  animation: drift 35s linear infinite;
+}
+
+.island-ui {
+  position: relative;
+  z-index: 8;
+  width: min(700px,100%);
+  text-align: center;
+  margin-top: -25px;
+  text-shadow: 0 2px 18px #34274666;
+}
+
+.island-ui .room-desc { color: #fff0f4; }
+
+.island-tools {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.wind-control {
+  width: min(220px,70vw);
+  margin: 16px auto;
+  color: #fff;
+  font-size: 11px;
+}
+
+.wind-control input { width: 100%; accent-color: #fff; }
+
+/* OTHER WORLDS */
+
+.room-universe {
+  background: radial-gradient(ellipse at center,#27204a,#080810 70%);
+}
+
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 0 0 45px var(--glow);
+  cursor: pointer;
+  animation: float 9s ease-in-out infinite;
+}
+
+.room-sanctuary {
+  background: radial-gradient(ellipse at center,#25203d,#080810 75%);
+}
+
+.sound-orb {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  background: radial-gradient(circle at 35% 30%,#e6d9ff,#9570ff 30%,#30204d 75%);
+  box-shadow: 0 0 65px #9570ff88;
+  animation: breathe 5s infinite;
+}
+
+.room-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+/* MOBILE */
+
+@media(max-width:600px) {
+  .controls { gap: 5px; }
+  .icon-btn { padding: 8px 10px; }
+  #volume { width: 55px; }
+  .room { padding: 90px 16px 85px; }
+  .island-land { top: 62%; }
+  .island-ui { margin-top: -15px; }
+  .island-tools { gap: 6px; }
+  .soft-btn { padding: 9px 10px; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+  <div id="stars"></div>
+  <div id="particles"></div>
+
+  <div class="topbar">
+    <button class="wordmark" onclick="goHome()">THE RABBIT HOLE 🔮</button>
+    <div class="controls">
+      <button class="icon-btn" id="soundBtn" title="Toggle ambient sound">♫</button>
+      <input id="volume" type="range" min="0" max="100" value="35" aria-label="Master volume">
+      <button class="icon-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+      <button class="icon-btn" id="infoBtn" title="About this experience">ⓘ</button>
+    </div>
+  </div>
+
+  <main id="view"></main>
+  <div id="toastArea" aria-live="polite"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* =====================================================
+   CORE SETTINGS
+===================================================== */
+
+const $ = id => document.getElementById(id);
+const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let currentModule = null;
+let lastModuleId = null;
+let audioContext = null;
+let masterGain = null;
+let activeNodes = [];
+let audioEnabled = false;
+
+const settings = {
+  sound: localStorage.getItem("rabbit-sound") === "true",
+  volume: Number(localStorage.getItem("rabbit-volume") || 35)
+};
+
+$("volume").value = settings.volume;
+
+/* =====================================================
+   COSMIC BACKGROUND
+===================================================== */
+
+function seedStars() {
+  const container = $("stars");
+  container.innerHTML = "";
+
+  const count = prefersReduced ? 35 : 100;
+
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement("i");
+    star.className = "star";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.animationDelay = Math.random() * 5 + "s";
+    star.style.setProperty("--duration", 2 + Math.random() * 5 + "s");
+    container.appendChild(star);
+  }
+}
+
+seedStars();
+
+/* =====================================================
+   SHARED UTILITIES
+===================================================== */
+
+function toast(message) {
+  const area = $("toastArea");
+  area.innerHTML = "";
+
+  const item = document.createElement("div");
+  item.className = "toast";
+  item.textContent = message;
+  area.appendChild(item);
+
+  setTimeout(() => item.remove(), 3000);
+}
+
+function makeButton(label, callback, className = "soft-btn") {
+  const button = document.createElement("button");
+  button.className = className;
+  button.textContent = label;
+  button.addEventListener("click", callback);
+  return button;
+}
+
+function addClouds(parent, count = 7) {
+  for (let i = 0; i < count; i++) {
+    const cloud = document.createElement("div");
+    cloud.className = "cloud";
+    cloud.style.top = 45 + Math.random() * 45 + "%";
+    cloud.style.left = Math.random() * 100 + "%";
+    cloud.style.animationDelay = -Math.random() * 35 + "s";
+    cloud.style.opacity = .2 + Math.random() * .4;
+    parent.appendChild(cloud);
+  }
+}
+
+function addRain(parent, count = 80) {
+  for (let i = 0; i < count; i++) {
+    const drop = document.createElement("i");
+    drop.className = "raindrop";
+    drop.style.left = Math.random() * 100 + "%";
+    drop.style.animationDelay = -Math.random() * 3 + "s";
+    drop.style.setProperty("--duration", .7 + Math.random() * 1.2 + "s");
+    parent.appendChild(drop);
+  }
+}
+
+/* =====================================================
+   AUDIO ENGINE
+   Sound is started only after visitor interaction.
+===================================================== */
+
+function stopAudio() {
+  activeNodes.forEach(node => {
+    try { node.stop?.(); } catch(e) {}
+    try { node.disconnect?.(); } catch(e) {}
+  });
+
+  activeNodes = [];
+
+  if (masterGain) {
+    try { masterGain.disconnect(); } catch(e) {}
+    masterGain = null;
+  }
+}
+
+function startAudio() {
+  const AudioAPI = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioAPI) {
+    toast("Audio is not supported in this browser.");
+    return;
+  }
+
+  if (!audioContext) audioContext = new AudioAPI();
+
+  audioContext.resume();
+
+  stopAudio();
+
+  masterGain = audioContext.createGain();
+  masterGain.gain.value = settings.volume / 100 * .12;
+  masterGain.connect(audioContext.destination);
+
+  const filter = audioContext.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = currentModule?.id === "floating-island" ? 700 : 450;
+  filter.connect(masterGain);
+
+  const bufferSize = 2 * audioContext.sampleRate;
+  const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = audioContext.createBufferSource();
+  noise.buffer = buffer;
+  noise.loop = true;
+  noise.connect(filter);
+  noise.start();
+
+  activeNodes.push(noise, filter);
+
+  if (currentModule?.id === "floating-island") {
+    const oscillator = audioContext.createOscillator();
+    const toneGain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = 174;
+    toneGain.gain.value = .025;
+
+    oscillator.connect(toneGain);
+    toneGain.connect(masterGain);
+    oscillator.start();
+
+    activeNodes.push(oscillator, toneGain);
+  }
+
+  audioEnabled = true;
+  $("soundBtn").textContent = "♫";
+  localStorage.setItem("rabbit-sound", "true");
+}
+
+function setVolume(value) {
+  settings.volume = Number(value);
+  localStorage.setItem("rabbit-volume", settings.volume);
+
+  if (masterGain && audioContext) {
+    masterGain.gain.setTargetAtTime(
+      settings.volume / 100 * .12,
+      audioContext.currentTime,
+      .1
+    );
+  }
+}
+
+$("volume").addEventListener("input", e => setVolume(e.target.value));
+
+$("soundBtn").addEventListener("click", () => {
+  if (audioEnabled) {
+    stopAudio();
+    audioEnabled = false;
+    $("soundBtn").textContent = "♪";
+    localStorage.setItem("rabbit-sound", "false");
+  } else {
+    startAudio();
+  }
+});
+
+/* =====================================================
+   EXPERIENCE REGISTRY
+   Add new independent modules here.
+===================================================== */
+
+const modules = [];
+
+function registerExperience(module) {
+  if (!module.id || !module.name || typeof module.build !== "function") {
+    throw new Error("Invalid experience module.");
+  }
+
+  if (modules.some(item => item.id === module.id)) {
+    throw new Error("Duplicate experience ID: " + module.id);
+  }
+
+  modules.push(module);
+}
+
+/* =====================================================
+   EXPERIENCE CONTROLLER
+===================================================== */
+
+function goHome() {
+  stopAudio();
+  audioEnabled = false;
+  $("soundBtn").textContent = "♪";
+
+  currentModule = null;
+
+  $("view").innerHTML = `
+    <section class="landing">
+      <div class="landing-inner">
+        <div class="brand">A PLACE BEYOND THE EVERYDAY</div>
+        <div class="portal-wrap">
+          <div class="portal-halo"></div>
+          <div class="portal"></div>
+        </div>
+        <h1>THE RABBIT HOLE</h1>
+        <p class="tagline">Reality can wait.</p>
+        <p class="intro">
+          You don't need a destination.
+          Just follow your curiosity.
+        </p>
+        <button class="primary" id="dropButton">DROP ME DOWN 🔮</button>
+        <div class="hint">A little escape is waiting</div>
+      </div>
+    </section>
+  `;
+
+  $("dropButton").addEventListener("click", enterRandomExperience);
+}
+
+function enterRandomExperience() {
+  if (!modules.length) {
+    toast("There are no experiences registered yet.");
+    return;
+  }
+
+  let choices = modules.filter(m => m.id !== lastModuleId);
+
+  if (!choices.length) choices = modules;
+
+  const selected = choices[Math.floor(Math.random() * choices.length)];
+  lastModuleId = selected.id;
+
+  enterExperience(selected.id);
+}
+
+function enterExperience(id) {
+  const module = modules.find(item => item.id === id);
+
+  if (!module) {
+    toast("This experience could not be found.");
+    return;
+  }
+
+  stopAudio();
+  audioEnabled = false;
+  $("soundBtn").textContent = "♪";
+
+  currentModule = module;
+
+  const room = document.createElement("section");
+  room.className = "room " + (module.className || "");
+  room.dataset.module = module.id;
+
+  const scene = document.createElement("div");
+  scene.className = "room-scene";
+
+  const content = document.createElement("div");
+  content.className = "room-content";
+
+  content.innerHTML = `
+    <div class="eyebrow">${module.category || "ANOTHER LITTLE WORLD"}</div>
+    <h2>${module.name}</h2>
+    <p class="room-desc">${module.description || ""}</p>
+    <div class="room-actions"></div>
+  `;
+
+  room.append(scene, content);
+
+  const bottom = document.createElement("div");
+  bottom.className = "room-bottom";
+  bottom.append(
+    makeButton("⌂ Home", goHome),
+    makeButton("Take Me Somewhere Else ✦", enterRandomExperience)
+  );
+
+  room.appendChild(bottom);
+
+  $("view").innerHTML = "";
+  $("view").appendChild(room);
+
+  try {
+    module.build(scene, content, room);
+  } catch (error) {
+    console.error(error);
+    toast("This experience encountered a problem.");
+  }
+
+  if (settings.sound) {
+    // Audio still requires a visitor gesture in the new page session.
+    $("soundBtn").textContent = "♪";
+  }
+}
+
+/* =====================================================
+   MODULE 1: MIDNIGHT BEDROOM
+===================================================== */
+
+function midnightBedroom(scene, content) {
+  scene.innerHTML = `
+    <div class="window"></div>
+    <div class="bed"></div>
+  `;
+
+  const button = makeButton("Change the sky ✦", () => {
+    const windowElement = scene.querySelector(".window");
+    const skies = [
+      "linear-gradient(#101b37,#35365c 65%,#9b718c)",
+      "radial-gradient(circle at 25% 30%,#fff 1px,transparent 2px),linear-gradient(#080c24,#342b5d)",
+      "linear-gradient(#6c729e,#b7a0ba 70%,#e0b2ae)"
+    ];
+
+    const selected = skies[Math.floor(Math.random() * skies.length)];
+    windowElement.style.background = selected;
+    toast("A different sky, a different little moment.");
+  });
+
+  content.querySelector(".room-actions").appendChild(button);
+}
+
+/* =====================================================
+   MODULE 2: UNDERWATER WORLD
+===================================================== */
+
+function underwaterWorld(scene, content) {
+  for (let i = 0; i < 35; i++) {
+    const bubble = document.createElement("i");
+    bubble.className = "bubble";
+    bubble.style.left = Math.random() * 100 + "%";
+    bubble.style.width = bubble.style.height = 8 + Math.random() * 25 + "px";
+    bubble.style.animationDelay = -Math.random() * 15 + "s";
+    bubble.style.setProperty("--duration", 8 + Math.random() * 12 + "s");
+    scene.appendChild(bubble);
+  }
+
+  ["🐠","🐟","🪼","🐡"].forEach((fish, i) => {
+    const item = document.createElement("div");
+    item.className = "fish";
+    item.textContent = fish;
+    item.style.top = 25 + i * 13 + "%";
+    item.style.left = -10 + "px";
+    item.style.animationDelay = -i * 5 + "s";
+    scene.appendChild(item);
+  });
+
+  const button = makeButton("Release a bubble 🫧", () => {
+    const bubble = document.createElement("i");
+    bubble.className = "bubble";
+    bubble.style.left = 40 + Math.random() * 20 + "%";
+    bubble.style.bottom = "0";
+    bubble.style.width = bubble.style.height = "35px";
+    bubble.style.animationDuration = "7s";
+    scene.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 7500);
+  });
+
+  content.querySelector(".room-actions").appendChild(button);
+}
+
+/* =====================================================
+   MODULE 3: RAINY CITY
+===================================================== */
+
+function rainyCity(scene, content) {
+  for (let i = 0; i < 11; i++) {
+    const building = document.createElement("div");
+    building.className = "building";
+    building.style.left = i * 9.5 + "%";
+    building.style.setProperty("--height", 30 + Math.random() * 55 + "%");
+    scene.appendChild(building);
+  }
+
+  addRain(scene, 100);
+
+  const button = makeButton("Find a quiet café ☕", () => {
+    toast("A warm little café glows around the corner.");
+  });
+
+  content.querySelector(".room-actions").appendChild(button);
+}
+
+/* =====================================================
+   MODULE 4: THE FLOATING ISLAND
+===================================================== */
+
+function floatingIsland(scene, content, room) {
+  scene.innerHTML = `
+    <div class="island-world">
+      <div class="island-sun"></div>
+
+      <div class="island-land">
+        <div class="island-top"></div>
+        <div class="island-rock"></div>
+        <div class="island-waterfall"></div>
+
+        <div class="island-tree" style="left:18%"></div>
+        <div class="island-tree" style="left:39%;transform:scale(.8)"></div>
+        <div class="island-tree" style="left:82%;transform:scale(.9)"></div>
+
+        <div class="island-cabin" role="button" tabindex="0" aria-label="Visit the cabin">
+          <div class="cabin-roof"></div>
+          <div class="cabin-body"></div>
+          <div class="cabin-window"></div>
+        </div>
+
+        <button class="island-pond" aria-label="Touch the pond"></button>
+      </div>
+    </div>
+  `;
+
+  const world = scene.querySelector(".island-world");
+
+  addClouds(world, 9);
+
+  for (let i = 0; i < 6; i++) {
+    const butterfly = document.createElement("span");
+    butterfly.className = "island-butterfly";
+    butterfly.textContent = "🦋";
+    butterfly.style.left = 10 + i * 15 + "%";
+    butterfly.style.top = 30 + (i % 2) * 18 + "%";
+    butterfly.style.animationDelay = -i * 3 + "s";
+    world.appendChild(butterfly);
+  }
+
+  const flowers = ["🌼","🌸","🌷","🌺","🌻","🌼","🌸","🌷"];
+
+  flowers.forEach((flower, i) => {
+    const button = document.createElement("button");
+    button.className = "island-flower";
+    button.textContent = flower;
+    button.style.left = 12 + i * 10 + "%";
+    button.style.top = 47 + (i % 3) * -8 + "%";
+    button.style.animationDelay = -i + "s";
+
+    button.addEventListener("click", () => {
+      toast("A little flower says hello.");
+      button.animate(
+        [{transform:"scale(1)"},{transform:"scale(1.5)"},{transform:"scale(1)"}],
+        {duration:600}
+      );
+    });
+
+    world.appendChild(button);
+  });
+
+  const ui = document.createElement("div");
+  ui.className = "island-ui";
+
+  ui.innerHTML = `
+    <div class="eyebrow">A LITTLE PARADISE ABOVE THE CLOUDS</div>
+    <h2>The Floating Island</h2>
+    <p class="room-desc">
+      Wander slowly. The clouds can wait, and so can everything else.
+    </p>
+
+    <div class="island-tools">
+      <button class="soft-btn" data-time="day">☀ Day</button>
+      <button class="soft-btn" data-time="sunset">☼ Sunset</button>
+      <button class="soft-btn" data-time="night">☾ Night</button>
+      <button class="soft-btn" id="sitBtn">Sit by the waterfall</button>
+    </div>
+
+    <div class="wind-control">
+      <label for="wind">Gentle island breeze</label>
+      <input id="wind" type="range" min="0" max="100" value="35">
+    </div>
+  `;
+
+  content.innerHTML = "";
+  content.appendChild(ui);
+
+  ui.querySelectorAll("[data-time]").forEach(button => {
+    button.addEventListener("click", () => {
+      const time = button.dataset.time;
+
+      const backgrounds = {
+        day: "linear-gradient(#78b9d6,#b6d9d0 45%,#687d91)",
+        sunset: "linear-gradient(#a96f9f,#efaa91 45%,#65748e)",
+        night: "linear-gradient(#111b3c,#29294d 55%,#38435f)"
+      };
+
+      room.style.background = backgrounds[time];
+      toast("The island sky changes with the passing day.");
+    });
+  });
+
+  ui.querySelector("#wind").addEventListener("input", event => {
+    const speed = Number(event.target.value);
+    world.querySelectorAll(".island-tree").forEach((tree, i) => {
+      tree.style.animationDuration = (9 - speed * .06 + i) + "s";
+    });
+    world.querySelectorAll(".island-butterfly").forEach(butterfly => {
+      butterfly.style.animationDuration = (22 - speed * .15) + "s";
+    });
+  });
+
+  world.querySelector(".island-pond").addEventListener("click", event => {
+    event.currentTarget.animate(
+      [{transform:"scale(1)"},{transform:"scale(1.2)"},{transform:"scale(1)"}],
+      {duration:700}
+    );
+    toast("The pond answers with a soft ripple.");
+  });
+
+  const cabin = world.querySelector(".island-cabin");
+
+  const visitCabin = () => {
+    toast("A warm light glows inside. Someone left a book by the window.");
+  };
+
+  cabin.addEventListener("click", visitCabin);
+  cabin.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      visitCabin();
+    }
+  });
+
+  let sitting = false;
+
+  ui.querySelector("#sitBtn").addEventListener("click", event => {
+    sitting = !sitting;
+    event.currentTarget.textContent = sitting
+      ? "Stand up and wander"
+      : "Sit by the waterfall";
+
+    toast(sitting
+      ? "The water keeps flowing. You don't have to do anything."
+      : "Whenever you're ready, the island is waiting.");
+  });
+}
+
+/* =====================================================
+   MODULE 5: INFINITE UNIVERSE
+===================================================== */
+
+function infiniteUniverse(scene, content) {
+  const planets = [
+    ["#c18bda",14,14,20],
+    ["#68b5d9",9,72,28],
+    ["#e8a879",7,82,72],
+    ["#8874d7",5,25,75],
+    ["#8fc2a5",4,62,14]
+  ];
+
+  planets.forEach(([color,size,x,y], i) => {
+    const planet = document.createElement("div");
+    planet.className = "planet";
+    planet.style.width = size + "vw";
+    planet.style.height = size + "vw";
+    planet.style.maxWidth = size * 5 + "px";
+    planet.style.maxHeight = size * 5 + "px";
+    planet.style.left = x + "%";
+    planet.style.top = y + "%";
+    planet.style.background =
+      `radial-gradient(circle at 30% 28%,#fff8,${color} 30%,#151326 100%)`;
+    planet.style.setProperty("--glow", color + "88");
+
+    planet.addEventListener("click", () => {
+      toast([
+        "A quiet ocean planet.",
+        "A world of blue clouds.",
+        "A warm desert moon.",
+        "A hidden violet planet.",
+        "A garden world."
+      ][i]);
+    });
+
+    scene.appendChild(planet);
+  });
+
+  const button = makeButton("Discover a planet ✦", () => {
+    const all = scene.querySelectorAll(".planet");
+    all[Math.floor(Math.random() * all.length)].click();
+  });
+
+  content.querySelector(".room-actions").appendChild(button);
+}
+
+/* =====================================================
+   MODULE 6: SOUND SANCTUARY
+===================================================== */
+
+function soundSanctuary(scene, content) {
+  const orb = document.createElement("div");
+  orb.className = "sound-orb";
+  content.insertBefore(orb, content.querySelector("h2"));
+
+  const button = makeButton("Breathe in... breathe out...", () => {
+    orb.animate(
+      [{transform:"scale(1)"},{transform:"scale(1.25)"},{transform:"scale(1)"}],
+      {duration:5000}
+    );
+    toast("Take a slow breath. Nothing else is required.");
+  });
+
+  content.querySelector(".room-actions").appendChild(button);
+}
+
+/* =====================================================
+   REGISTER EXPERIENCES
+   Add new modules without changing the controller.
+===================================================== */
+
+registerExperience({
+  id: "midnight-bedroom",
+  name: "The Midnight Bedroom",
+  category: "A QUIET PLACE TO REST",
+  description: "A little room, a beautiful sky, and nowhere else to be.",
+  className: "room-midnight",
+  build: midnightBedroom
+});
+
+registerExperience({
+  id: "underwater-world",
+  name: "The Underwater World",
+  category: "BENEATH THE BLUE",
+  description: "Drift beneath the surface and let the world become quiet.",
+  className: "room-ocean",
+  build: underwaterWorld
+});
+
+registerExperience({
+  id: "rainy-city",
+  name: "The Rainy City",
+  category: "AFTER THE RAIN",
+  description: "Somewhere in the city, a quiet evening is waiting.",
+  className: "room-city",
+  build: rainyCity
+});
+
+registerExperience({
+  id: "floating-island",
+  name: "The Floating Island",
+  category: "A LITTLE PARADISE ABOVE THE CLOUDS",
+  description: "A green island floating gently above an endless sea of clouds.",
+  className: "room-island",
+  build: floatingIsland
+});
+
+registerExperience({
+  id: "infinite-universe",
+  name: "The Infinite Universe",
+  category: "SOMEWHERE OUT THERE",
+  description: "A thousand distant worlds. No destination required.",
+  className: "room-universe",
+  build: infiniteUniverse
+});
+
+registerExperience({
+  id: "sound-sanctuary",
+  name: "The Sound Sanctuary",
+  category: "A MOMENT OF STILLNESS",
+  description: "A small space to pause, breathe, and settle into the moment.",
+  className: "room-sanctuary",
+  build: soundSanctuary
+});
+
+/* =====================================================
+   GLOBAL BUTTONS
+===================================================== */
+
+$("fullscreenBtn").addEventListener("click", async () => {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch (error) {
+    toast("Fullscreen is not available here.");
+  }
+});
+
+$("infoBtn").addEventListener("click", () => {
+  if (currentModule) {
+    toast(currentModule.description || currentModule.name);
+  } else {
+    toast("A digital place to escape the noise of the world.");
+  }
+});
+
+/* =====================================================
+   START
+===================================================== */
+
+window.goHome = goHome;
+window.enterExperience = enterExperience;
+window.registerExperience = registerExperience;
+
+goHome();
+
+})();
+</script>
+</body>
+  </html>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c58eaa">
+<title>The Floating Island 🌿</title>
+
+<style>
+:root {
+  --sky-top:#a77da9;
+  --sky-mid:#e9a9a0;
+  --sky-bottom:#8497aa;
+  --grass:#80b879;
+  --text:#fffaf2;
+  --glass:rgba(30,35,44,.28);
+}
+
+* { box-sizing:border-box; }
+
+html,body {
+  margin:0;
+  width:100%;
+  min-height:100%;
+  overflow:hidden;
+  font-family:Georgia,serif;
+  color:var(--text);
+}
+
+body {
+  background:linear-gradient(
+    180deg,
+    var(--sky-top),
+    var(--sky-mid) 43%,
+    var(--sky-bottom)
+  );
+  transition:background 2s ease;
+}
+
+button,input { font:inherit; }
+
+button { -webkit-tap-highlight-color:transparent; }
+
+button:focus-visible,input:focus-visible {
+  outline:2px solid white;
+  outline-offset:4px;
+}
+
+#world {
+  position:relative;
+  height:100svh;
+  width:100%;
+  overflow:hidden;
+  isolation:isolate;
+  transition:filter 2s ease;
+}
+
+/* SKY */
+
+.sky-glow {
+  position:absolute;
+  width:65vw;
+  height:65vw;
+  max-width:650px;
+  max-height:650px;
+  top:-25%;
+  left:50%;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,#ffe5cf77,transparent 70%);
+  filter:blur(30px);
+  pointer-events:none;
+}
+
+.sun {
+  position:absolute;
+  top:12%;
+  right:15%;
+  width:clamp(75px,13vw,145px);
+  aspect-ratio:1;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff9dc,#ffcfb3 55%,#e7a1b2);
+  box-shadow:0 0 70px #ffe2ca99,0 0 150px #ffb9c455;
+  transition:all 2s ease;
+}
+
+.stars {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity 2s ease;
+  pointer-events:none;
+}
+
+.star {
+  position:absolute;
+  width:2px;
+  height:2px;
+  border-radius:50%;
+  background:white;
+  box-shadow:0 0 8px white;
+  animation:twinkle 3s infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity:.2; }
+  to { opacity:1; }
+}
+
+/* CLOUDS */
+
+.cloud {
+  position:absolute;
+  width:220px;
+  height:65px;
+  border-radius:50%;
+  background:rgba(255,255,255,.45);
+  filter:blur(15px);
+  animation:cloudMove var(--speed,45s) linear infinite;
+  animation-delay:var(--delay,0s);
+  pointer-events:none;
+}
+
+@keyframes cloudMove {
+  from { transform:translateX(-300px); }
+  to { transform:translateX(calc(100vw + 350px)); }
+}
+
+.clouds-back {
+  position:absolute;
+  inset:40% 0 0;
+  opacity:.65;
+}
+
+.clouds-front {
+  position:absolute;
+  inset:65% 0 0;
+  opacity:.85;
+}
+
+/* FLOATING ISLAND */
+
+.island {
+  position:absolute;
+  width:min(850px,115vw);
+  height:380px;
+  left:50%;
+  top:62%;
+  transform:translate(-50%,-50%);
+  animation:islandFloat 8s ease-in-out infinite;
+}
+
+@keyframes islandFloat {
+  0%,100% { margin-top:0; }
+  50% { margin-top:-10px; }
+}
+
+.grass {
+  position:absolute;
+  top:0;
+  left:2%;
+  width:96%;
+  height:235px;
+  border-radius:48% 52% 40% 42%;
+  background:
+    radial-gradient(ellipse at 48% 35%,#c3dc91 0%,#91c47f 33%,#5c986d 78%);
+  box-shadow:
+    inset 0 12px 28px #efffd866,
+    0 12px 25px #293c3555;
+  overflow:hidden;
+}
+
+.grass::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(
+    110deg,
+    transparent 0 24px,
+    #ffffff0b 25px 27px
+  );
+}
+
+.rock {
+  position:absolute;
+  top:160px;
+  left:8%;
+  width:84%;
+  height:185px;
+  background:linear-gradient(120deg,#554e55,#89736c 35%,#3c4651 80%);
+  clip-path:polygon(0 0,100% 0,88% 45%,72% 100%,27% 100%,10% 48%);
+  filter:drop-shadow(0 20px 15px #1e293c55);
+}
+
+.rock::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(
+    125deg,
+    transparent 0 36px,
+    #ffffff10 37px 39px
+  );
+}
+
+/* WATERFALLS */
+
+.waterfall {
+  position:absolute;
+  z-index:3;
+  top:165px;
+  width:48px;
+  height:260px;
+  background:linear-gradient(
+    90deg,
+    #b5edff22,
+    #e8fbffdd 38%,
+    #8bd9f0aa 65%,
+    transparent
+  );
+  filter:blur(4px);
+  animation:waterFlow 1.3s linear infinite;
+}
+
+.waterfall.one { left:22%; }
+.waterfall.two {
+  left:72%;
+  width:35px;
+  height:220px;
+  animation-duration:1s;
+}
+
+@keyframes waterFlow {
+  from { background-position:0 0; }
+  to { background-position:0 100px; }
+}
+
+/* TREES */
+
+.tree {
+  position:absolute;
+  z-index:4;
+  width:23px;
+  height:105px;
+  background:linear-gradient(90deg,#75513c,#49362f);
+  transform-origin:bottom center;
+  animation:sway var(--wind-speed,5s) ease-in-out infinite;
+}
+
+.tree::before {
+  content:"";
+  position:absolute;
+  width:100px;
+  height:100px;
+  left:-38px;
+  top:-68px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#c2dc91,#60966a 72%);
+  box-shadow:inset -8px -12px 20px #315e4944;
+}
+
+.tree.a { left:17%; top:22%; }
+.tree.b { left:39%; top:28%; transform:scale(.8); }
+.tree.c { left:82%; top:21%; transform:scale(.95); }
+
+@keyframes sway {
+  0%,100% { rotate:-3deg; }
+  50% { rotate:4deg; }
+}
+
+/* CABIN */
+
+.cabin {
+  position:absolute;
+  z-index:6;
+  left:52%;
+  top:25%;
+  width:100px;
+  height:95px;
+  cursor:pointer;
+  transition:transform .3s;
+}
+
+.cabin:hover { transform:scale(1.05); }
+
+.cabin-roof {
+  position:absolute;
+  width:115px;
+  height:47px;
+  left:-8px;
+  top:0;
+  background:linear-gradient(130deg,#765044,#49313c);
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+}
+
+.cabin-body {
+  position:absolute;
+  bottom:0;
+  width:100px;
+  height:62px;
+  background:linear-gradient(90deg,#9c6849,#704632);
+  border:2px solid #573d35;
+}
+
+.cabin-door {
+  position:absolute;
+  bottom:0;
+  left:41px;
+  width:22px;
+  height:43px;
+  background:#49312d;
+  border-radius:4px 4px 0 0;
+}
+
+.cabin-window {
+  position:absolute;
+  left:15px;
+  bottom:25px;
+  width:19px;
+  height:20px;
+  background:#ffe8a8;
+  box-shadow:0 0 20px #ffe5a0,0 0 35px #ffcf73;
+  animation:windowGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes windowGlow {
+  from { opacity:.7; }
+  to { opacity:1; }
+}
+
+/* POND */
+
+.pond {
+  position:absolute;
+  z-index:5;
+  left:24%;
+  top:53%;
+  width:110px;
+  height:42px;
+  border-radius:50%;
+  background:radial-gradient(ellipse,#d7ffff,#76d1cb 55%,#438c92);
+  box-shadow:0 0 25px #a1f1ed77;
+  border:2px solid #d6fff877;
+  cursor:pointer;
+}
+
+.ripple {
+  position:absolute;
+  inset:0;
+  border:2px solid #ffffffaa;
+  border-radius:50%;
+  animation:ripple 1.5s ease-out forwards;
+  pointer-events:none;
+}
+
+@keyframes ripple {
+  to {
+    transform:scale(2.4);
+    opacity:0;
+  }
+}
+
+/* FLOWERS */
+
+.flower {
+  position:absolute;
+  z-index:7;
+  border:0;
+  background:transparent;
+  font-size:25px;
+  cursor:pointer;
+  transform-origin:bottom center;
+  animation:flowerSway 3s ease-in-out infinite;
+  transition:filter .3s;
+}
+
+.flower:hover { filter:drop-shadow(0 0 10px white); }
+
+@keyframes flowerSway {
+  0%,100% { rotate:-5deg; }
+  50% { rotate:6deg; }
+}
+
+.flower:active {
+  animation:flowerTouch .5s ease;
+}
+
+@keyframes flowerTouch {
+  50% { transform:scale(1.5) rotate(15deg); }
+}
+
+/* BUTTERFLIES AND BIRDS */
+
+.butterfly,.bird {
+  position:absolute;
+  z-index:8;
+  pointer-events:none;
+  animation:fly var(--fly-speed,20s) linear infinite;
+}
+
+.butterfly { font-size:23px; }
+
+.bird {
+  font-size:22px;
+  filter:drop-shadow(0 2px 4px #4445);
+}
+
+@keyframes fly {
+  from { transform:translateX(-100px) translateY(0); }
+  25% { transform:translateX(25vw) translateY(-30px); }
+  50% { transform:translateX(50vw) translateY(10px); }
+  75% { transform:translateX(75vw) translateY(-20px); }
+  to { transform:translateX(110vw) translateY(0); }
+}
+
+/* FLOATING PARTICLES */
+
+.particle {
+  position:absolute;
+  z-index:2;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#fff8d8;
+  box-shadow:0 0 9px #fff;
+  animation:particleRise var(--duration,12s) linear infinite;
+  pointer-events:none;
+}
+
+@keyframes particleRise {
+  from { transform:translateY(100px); opacity:0; }
+  20% { opacity:.8; }
+  80% { opacity:.7; }
+  to { transform:translateY(-250px); opacity:0; }
+}
+
+/* UI */
+
+.interface {
+  position:absolute;
+  z-index:20;
+  top:22px;
+  left:0;
+  right:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+}
+
+.logo {
+  font-family:Arial,sans-serif;
+  font-size:11px;
+  letter-spacing:.2em;
+  color:white;
+  text-shadow:0 2px 8px #4448;
+}
+
+.control-group {
+  display:flex;
+  gap:8px;
+}
+
+.ui-button {
+  background:var(--glass);
+  color:white;
+  border:1px solid #ffffff55;
+  padding:10px 14px;
+  border-radius:30px;
+  cursor:pointer;
+  font-family:Arial,sans-serif;
+  font-size:11px;
+  backdrop-filter:blur(12px);
+  transition:background .2s,transform .2s;
+}
+
+.ui-button:hover {
+  background:#ffffff44;
+  transform:translateY(-2px);
+}
+
+.intro {
+  position:absolute;
+  z-index:15;
+  top:7%;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(520px,90%);
+  text-align:center;
+  pointer-events:none;
+  text-shadow:0 2px 16px #49384d66;
+}
+
+.intro small {
+  letter-spacing:.3em;
+  font:10px Arial,sans-serif;
+}
+
+.intro h1 {
+  font-size:clamp(32px,6vw,60px);
+  font-weight:400;
+  margin:12px 0;
+  text-shadow:0 3px 25px #49384d55;
+}
+
+.intro p {
+  font-size:14px;
+  color:#fff5ee;
+  line-height:1.6;
+}
+
+.bottom-controls {
+  position:absolute;
+  z-index:25;
+  bottom:22px;
+  left:0;
+  right:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+
+.time-controls {
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.wind {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  background:#26344344;
+  border:1px solid #ffffff44;
+  border-radius:30px;
+  padding:8px 15px;
+  font:11px Arial,sans-serif;
+  backdrop-filter:blur(10px);
+}
+
+.wind input {
+  width:100px;
+  accent-color:white;
+}
+
+.toast {
+  position:absolute;
+  z-index:100;
+  left:50%;
+  bottom:115px;
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:85%;
+  padding:13px 20px;
+  border-radius:30px;
+  background:#25313acb;
+  border:1px solid #ffffff44;
+  color:white;
+  text-align:center;
+  font:13px Arial,sans-serif;
+  backdrop-filter:blur(12px);
+  animation:toastIn .4s ease;
+}
+
+@keyframes toastIn {
+  from { opacity:0; transform:translate(-50%,10px); }
+  to { opacity:1; transform:translate(-50%,0); }
+}
+
+/* SITTING MODE */
+
+#world.resting .intro,
+#world.resting .bottom-controls {
+  opacity:.15;
+  transition:opacity 2s;
+}
+
+#world.resting .island {
+  transform:translate(-50%,-48%) scale(1.03);
+}
+
+#world.resting .waterfall {
+  filter:blur(7px);
+}
+
+/* NIGHT MODE */
+
+body.night {
+  --sky-top:#101a3c;
+  --sky-mid:#272b52;
+  --sky-bottom:#34445c;
+}
+
+body.night .sun {
+  background:radial-gradient(circle,#f3eaff,#b8c5e9 60%,transparent 70%);
+  box-shadow:0 0 65px #b6caff66;
+  width:100px;
+}
+
+body.night .stars { opacity:1; }
+
+body.night .grass {
+  filter:brightness(.55) saturate(.8);
+}
+
+body.night .rock { filter:brightness(.7); }
+
+body.night .island-tree { filter:brightness(.75); }
+
+body.day {
+  --sky-top:#79b6d4;
+  --sky-mid:#b9d9d1;
+  --sky-bottom:#8babb0;
+}
+
+body.day .sun {
+  background:radial-gradient(circle,#fffbdc,#ffe9a6 65%,#ffd8a0);
+  box-shadow:0 0 90px #fff0b6aa;
+  width:125px;
+}
+
+/* SITTING MODAL */
+
+.rest-message {
+  position:absolute;
+  z-index:30;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(390px,85%);
+  padding:30px;
+  text-align:center;
+  border-radius:25px;
+  background:#263443bb;
+  border:1px solid #ffffff55;
+  backdrop-filter:blur(15px);
+  box-shadow:0 15px 60px #18202b55;
+}
+
+.rest-message h2 {
+  font-weight:400;
+  font-size:27px;
+}
+
+.rest-message p {
+  font-size:14px;
+  line-height:1.8;
+  color:#e9e5e6;
+}
+
+/* MOBILE */
+
+@media(max-width:600px) {
+  .island {
+    top:64%;
+    transform:translate(-50%,-50%) scale(.88);
+    width:120vw;
+  }
+
+  .intro { top:12%; }
+  .intro h1 { font-size:36px; }
+  .intro p { font-size:12px; }
+
+  .interface { padding:0 10px; }
+  .ui-button { padding:9px 10px; font-size:10px; }
+
+  .logo { font-size:9px; }
+
+  .bottom-controls { bottom:15px; }
+
+  .time-controls { gap:5px; }
+
+  .wind { padding:7px 12px; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+</style>
+</head>
+
+<body class="sunset">
+
+<div id="world">
+
+  <div class="sky-glow"></div>
+  <div class="sun"></div>
+  <div class="stars" id="stars"></div>
+
+  <div class="clouds-back" id="cloudsBack"></div>
+  <div class="clouds-front" id="cloudsFront"></div>
+
+  <div class="interface">
+    <div class="logo">THE RABBIT HOLE 🔮</div>
+
+    <div class="control-group">
+      <button class="ui-button" id="soundButton" aria-label="Toggle sound">♫ Sound Off</button>
+      <button class="ui-button" id="homeButton">⌂ Home</button>
+    </div>
+  </div>
+
+  <div class="intro">
+    <small>A LITTLE PARADISE ABOVE THE CLOUDS</small>
+    <h1>The Floating Island</h1>
+    <p>
+      A place where time slows down,<br>
+      and the world feels a little softer.
+    </p>
+  </div>
+
+  <div class="island" id="island">
+    <div class="grass"></div>
+    <div class="rock"></div>
+
+    <div class="waterfall one"></div>
+    <div class="waterfall two"></div>
+
+    <div class="tree a"></div>
+    <div class="tree b"></div>
+    <div class="tree c"></div>
+
+    <div class="cabin" id="cabin" role="button" tabindex="0" aria-label="Explore the cabin">
+      <div class="cabin-roof"></div>
+      <div class="cabin-body">
+        <div class="cabin-window"></div>
+        <div class="cabin-door"></div>
+      </div>
+    </div>
+
+    <button class="pond" id="pond" aria-label="Touch the pond"></button>
+  </div>
+
+  <div id="flowers"></div>
+  <div id="butterflies"></div>
+  <div id="birds"></div>
+  <div id="particles"></div>
+
+  <div class="bottom-controls">
+    <div class="time-controls">
+      <button class="ui-button" data-time="day">☀ Day</button>
+      <button class="ui-button" data-time="sunset">🌅 Sunset</button>
+      <button class="ui-button" data-time="night">☾ Night</button>
+      <button class="ui-button" id="restButton">Sit by the waterfall</button>
+    </div>
+
+    <div class="wind">
+      <span>🍃 Wind</span>
+      <input type="range" id="windSlider" min="0" max="100" value="35">
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const world = document.getElementById("world");
+const body = document.body;
+
+const $ = id => document.getElementById(id);
+
+let wind = 35;
+let soundEnabled = false;
+let audioContext = null;
+let masterGain = null;
+let audioNodes = [];
+let sitting = false;
+let discovered = new Set();
+let toastTimer = null;
+
+const reducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
+
+/* ----------------------------------
+   TOAST MESSAGE
+---------------------------------- */
+
+function say(message) {
+  document.querySelector(".toast")?.remove();
+
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  world.appendChild(toast);
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.remove(), 3000);
+}
+
+/* ----------------------------------
+   CLOUD GENERATOR
+---------------------------------- */
+
+function createClouds(containerId, amount) {
+  const container = $(containerId);
+
+  for (let i = 0; i < amount; i++) {
+    const cloud = document.createElement("div");
+    cloud.className = "cloud";
+
+    cloud.style.top = Math.random() * 100 + "%";
+    cloud.style.left = Math.random() * 100 + "%";
+    cloud.style.setProperty(
+      "--speed",
+      30 + Math.random() * 35 + "s"
+    );
+    cloud.style.setProperty(
+      "--delay",
+      -Math.random() * 40 + "s"
+    );
+    cloud.style.opacity = .2 + Math.random() * .4;
+
+    container.appendChild(cloud);
+  }
+}
+
+createClouds("cloudsBack", 10);
+createClouds("cloudsFront", 7);
+
+/* ----------------------------------
+   STARS
+---------------------------------- */
+
+for (let i = 0; i < 90; i++) {
+  const star = document.createElement("span");
+  star.className = "star";
+  star.style.left = Math.random() * 100 + "%";
+  star.style.top = Math.random() * 100 + "%";
+  star.style.animationDelay = Math.random() * 4 + "s";
+  $("stars").appendChild(star);
+}
+
+/* ----------------------------------
+   FLOWERS
+---------------------------------- */
+
+const flowerTypes = ["🌼","🌸","🌷","🌺","🌻","💐","🌼","🌸","🌷","🌺","🌻"];
+
+flowerTypes.forEach((flower, index) => {
+  const button = document.createElement("button");
+  button.className = "flower";
+  button.textContent = flower;
+
+  button.style.left = (8 + index * 7.7) + "%";
+  button.style.top = (index % 3 === 0 ? 49 : index % 3 === 1 ? 54 : 46) + "%";
+  button.style.animationDelay = -Math.random() * 3 + "s";
+
+  button.addEventListener("click", () => {
+    button.animate(
+      [
+        { transform:"rotate(0) scale(1)" },
+        { transform:"rotate(18deg) scale(1.5)" },
+        { transform:"rotate(-12deg) scale(1.1)" },
+        { transform:"rotate(0) scale(1)" }
+      ],
+      { duration:750 }
+    );
+
+    say("A little flower dances in the breeze. 🌸");
+    playTone(520, .12);
+  });
+
+  $("flowers").appendChild(button);
+});
+
+/* ----------------------------------
+   BUTTERFLIES
+---------------------------------- */
+
+for (let i = 0; i < 5; i++) {
+  const butterfly = document.createElement("div");
+  butterfly.className = "butterfly";
+  butterfly.textContent = "🦋";
+  butterfly.style.top = 30 + Math.random() * 40 + "%";
+  butterfly.style.setProperty(
+    "--fly-speed",
+    22 + Math.random() * 25 + "s"
+  );
+  butterfly.style.animationDelay = -Math.random() * 25 + "s";
+
+  $("butterflies").appendChild(butterfly);
+}
+
+/* ----------------------------------
+   BIRDS
+---------------------------------- */
+
+for (let i = 0; i < 3; i++) {
+  const bird = document.createElement("div");
+  bird.className = "bird";
+  bird.textContent = "🕊️";
+  bird.style.top = 15 + i * 10 + "%";
+  bird.style.setProperty(
+    "--fly-speed",
+    28 + Math.random() * 20 + "s"
+  );
+  bird.style.animationDelay = -i * 10 + "s";
+
+  $("birds").appendChild(bird);
+}
+
+/* ----------------------------------
+   FLOATING PARTICLES
+---------------------------------- */
+
+for (let i = 0; i < 35; i++) {
+  const particle = document.createElement("span");
+  particle.className = "particle";
+  particle.style.left = Math.random() * 100 + "%";
+  particle.style.top = Math.random() * 100 + "%";
+  particle.style.setProperty(
+    "--duration",
+    8 + Math.random() * 15 + "s"
+  );
+  particle.style.animationDelay = -Math.random() * 15 + "s";
+
+  $("particles").appendChild(particle);
+}
+
+/* ----------------------------------
+   DAY / SUNSET / NIGHT
+---------------------------------- */
+
+const timeThemes = {
+  day: {
+    top:"#79b6d4",
+    middle:"#b9d9d1",
+    bottom:"#8babb0"
+  },
+  sunset: {
+    top:"#a77da9",
+    middle:"#e9a9a0",
+    bottom:"#8497aa"
+  },
+  night: {
+    top:"#101a3c",
+    middle:"#272b52",
+    bottom:"#34445c"
+  }
+};
+
+function setTime(time) {
+  body.classList.remove("day","sunset","night");
+  body.classList.add(time);
+
+  const theme = timeThemes[time];
+
+  body.style.setProperty("--sky-top",theme.top);
+  body.style.setProperty("--sky-mid",theme.middle);
+  body.style.setProperty("--sky-bottom",theme.bottom);
+
+  say(
+    time === "day" ? "A beautiful new morning on the island. ☀️" :
+    time === "night" ? "The stars have come out. Rest beneath the night sky. ✨" :
+    "The sunset paints the clouds in warm colors. 🌅"
+  );
+}
+
+document.querySelectorAll("[data-time]").forEach(button => {
+  button.addEventListener("click", () => {
+    setTime(button.dataset.time);
+  });
+});
+
+/* ----------------------------------
+   WIND CONTROL
+---------------------------------- */
+
+$("windSlider").addEventListener("input", event => {
+  wind = Number(event.target.value);
+
+  const treeSpeed = 12 - wind * .09;
+
+  document.querySelectorAll(".tree").forEach(tree => {
+    tree.style.setProperty(
+      "--wind-speed",
+      Math.max(1.5,treeSpeed) + "s"
+    );
+  });
+
+  document.querySelectorAll(".butterfly").forEach(item => {
+    item.style.setProperty(
+      "--fly-speed",
+      Math.max(8,28 - wind * .15) + "s"
+    );
+  });
+
+  document.querySelectorAll(".cloud").forEach(cloud => {
+    cloud.style.setProperty(
+      "--speed",
+      Math.max(12,55 - wind * .35) + "s"
+    );
+  });
+});
+
+/* ----------------------------------
+   POND INTERACTION
+---------------------------------- */
+
+$("pond").addEventListener("click", () => {
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+
+  $("pond").appendChild(ripple);
+
+  setTimeout(() => ripple.remove(),1600);
+
+  say("The little pond answers with gentle ripples. 💧");
+  playTone(420,.15);
+});
+
+/* ----------------------------------
+   CABIN INTERACTION
+---------------------------------- */
+
+function visitCabin() {
+  say("Inside the cabin, a warm light and an open book are waiting. 🏡");
+  playTone(330,.2);
+}
+
+$("cabin").addEventListener("click",visitCabin);
+
+$("cabin").addEventListener("keydown",event => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    visitCabin();
+  }
+});
+
+/* ----------------------------------
+   HIDDEN DISCOVERIES
+---------------------------------- */
+
+const discoveries = [
+  {
+    x:"13%", y:"39%",
+    emoji:"✨",
+    message:"You found a tiny star resting in the grass. It remembers every sunset."
+  },
+  {
+    x:"77%", y:"42%",
+    emoji:"🌙",
+    message:"A little moonstone glows softly beneath the tree."
+  },
+  {
+    x:"43%", y:"35%",
+    emoji:"🪶",
+    message:"A feather from a passing bird. A small gift from the sky."
+  },
+  {
+    x:"88%", y:"56%",
+    emoji:"🦋",
+    message:"A hidden butterfly garden. You found a secret peaceful corner."
+  }
+];
+
+discoveries.forEach((item,index) => {
+  const button = document.createElement("button");
+  button.textContent = item.emoji;
+  button.className = "flower";
+  button.style.left = item.x;
+  button.style.top = item.y;
+  button.style.fontSize = "17px";
+  button.style.opacity = ".65";
+
+  button.addEventListener("click", () => {
+    if (discovered.has(index)) return;
+
+    discovered.add(index);
+    say(item.message);
+
+    button.animate(
+      [
+        { transform:"scale(1)",opacity:1 },
+        { transform:"scale(2)",opacity:0 }
+      ],
+      { duration:900,fill:"forwards" }
+    );
+
+    setTimeout(() => button.remove(),900);
+    playTone(660,.25);
+  });
+
+  $("island").appendChild(button);
+});
+
+/* ----------------------------------
+   SIT BY THE WATERFALL
+---------------------------------- */
+
+$("restButton").addEventListener("click", () => {
+  sitting = !sitting;
+
+  world.classList.toggle("resting",sitting);
+
+  $("restButton").textContent = sitting
+    ? "Return to exploring"
+    : "Sit by the waterfall";
+
+  if (sitting) {
+    const message = document.createElement("div");
+    message.className = "rest-message";
+    message.id = "restMessage";
+
+    message.innerHTML = `
+      <h2>A moment of peace</h2>
+      <p>
+        Listen to the water.<br>
+        Feel the gentle breeze.<br><br>
+        You don't need to go anywhere.<br>
+        You are already here.
+      </p>
+      <button class="ui-button" id="leaveRest">Return to the island</button>
+    `;
+
+    world.appendChild(message);
+
+    $("leaveRest").addEventListener("click", () => {
+      sitting = false;
+      world.classList.remove("resting");
+      message.remove();
+      $("restButton").textContent = "Sit by the waterfall";
+    });
+  } else {
+    $("restMessage")?.remove();
+  }
+});
+
+/* ----------------------------------
+   AUDIO ENGINE
+   Procedural ambient sound using Web Audio.
+   Starts only after the visitor presses Sound.
+---------------------------------- */
+
+function playTone(frequency,duration) {
+  if (!soundEnabled || !audioContext || !masterGain) return;
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.value = frequency;
+
+  gain.gain.setValueAtTime(.0001,audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    .035,
+    audioContext.currentTime + .03
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    .0001,
+    audioContext.currentTime + duration
+  );
+
+  oscillator.connect(gain);
+  gain.connect(masterGain);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + duration + .05);
+}
+
+function stopSound() {
+  audioNodes.forEach(node => {
+    try { node.stop?.(); } catch(e) {}
+    try { node.disconnect?.(); } catch(e) {}
+  });
+
+  audioNodes = [];
+
+  if (masterGain) {
+    masterGain.disconnect();
+    masterGain = null;
+  }
+}
+
+async function startSound() {
+  const AudioAPI = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioAPI) {
+    say("Your browser does not support ambient audio.");
+    return;
+  }
+
+  if (!audioContext) audioContext = new AudioAPI();
+
+  await audioContext.resume();
+
+  stopSound();
+
+  masterGain = audioContext.createGain();
+  masterGain.gain.value = .09;
+  masterGain.connect(audioContext.destination);
+
+  // Gentle wind and waterfall noise.
+  const buffer = audioContext.createBuffer(
+    1,
+    audioContext.sampleRate * 3,
+    audioContext.sampleRate
+  );
+
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < data.length; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noise = audioContext.createBufferSource();
+  noise.buffer = buffer;
+  noise.loop = true;
+
+  const filter = audioContext.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 650;
+
+  const noiseVolume = audioContext.createGain();
+  noiseVolume.gain.value = .23;
+
+  noise.connect(filter);
+  filter.connect(noiseVolume);
+  noiseVolume.connect(masterGain);
+  noise.start();
+
+  audioNodes.push(noise);
+
+  // Soft, warm ambient tone.
+  const tone = audioContext.createOscillator();
+  const toneVolume = audioContext.createGain();
+
+  tone.type = "sine";
+  tone.frequency.value = 174;
+  toneVolume.gain.value = .035;
+
+  tone.connect(toneVolume);
+  toneVolume.connect(masterGain);
+  tone.start();
+
+  audioNodes.push(tone);
+
+  // Gentle bird-like notes at intervals.
+  const chirpTimer = setInterval(() => {
+    if (!soundEnabled || !audioContext) return;
+
+    const notes = [520,620,740,880];
+    playTone(notes[Math.floor(Math.random()*notes.length)],.2);
+  },5000 + Math.random()*3000);
+
+  audioNodes.push({
+    stop:() => clearInterval(chirpTimer),
+    disconnect:() => clearInterval(chirpTimer)
+  });
+
+  soundEnabled = true;
+  $("soundButton").textContent = "♫ Sound On";
+}
+
+$("soundButton").addEventListener("click", async () => {
+  if (soundEnabled) {
+    soundEnabled = false;
+    stopSound();
+    $("soundButton").textContent = "♫ Sound Off";
+  } else {
+    await startSound();
+  }
+});
+
+/* ----------------------------------
+   HOME BUTTON
+---------------------------------- */
+
+$("homeButton").addEventListener("click", () => {
+  const confirmed = confirm(
+    "Return to the Rabbit Hole?"
+  );
+
+  if (confirmed) {
+    window.location.href = "index.html";
+  }
+});
+
+/* ----------------------------------
+   MOBILE AND ACCESSIBILITY
+---------------------------------- */
+
+if (reducedMotion) {
+  document.querySelectorAll(".particle,.butterfly,.bird").forEach(item => {
+    item.style.display = "none";
+  });
+}
+
+/* ----------------------------------
+   STARTING ATMOSPHERE
+---------------------------------- */
+
+setTime("sunset");
+
+})();
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080611">
+<title>THE INFINITE UNIVERSE 🌌</title>
+
+<style>
+:root {
+  --bg:#080611;
+  --purple:#9570ff;
+  --blue:#58b9ff;
+  --pink:#ed9bdb;
+  --white:#f4f0ff;
+  --muted:#b1a8c9;
+}
+
+* { box-sizing:border-box; }
+
+html,body {
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--white);
+  font-family:Inter,system-ui,sans-serif;
+}
+
+button { font:inherit; }
+
+button:focus-visible {
+  outline:2px solid white;
+  outline-offset:4px;
+}
+
+#universe {
+  position:relative;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 50%,#17102c 0%,#0b0918 45%,#05040b 100%);
+  touch-action:none;
+  cursor:grab;
+}
+
+#universe.dragging { cursor:grabbing; }
+
+canvas {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+#nebula {
+  z-index:0;
+  pointer-events:none;
+}
+
+#space {
+  z-index:1;
+}
+
+#effects {
+  z-index:2;
+  pointer-events:none;
+}
+
+.vignette {
+  position:absolute;
+  z-index:3;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(ellipse,transparent 35%,#05040b88 100%);
+}
+
+.topbar {
+  position:absolute;
+  z-index:10;
+  top:0;
+  left:0;
+  right:0;
+  padding:20px clamp(14px,4vw,38px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  pointer-events:none;
+}
+
+.topbar > * { pointer-events:auto; }
+
+.logo {
+  color:#e4d9ff;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.24em;
+  text-shadow:0 0 20px #9570ff77;
+}
+
+.controls {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.ui-button {
+  border:1px solid #ffffff26;
+  color:#eee8ff;
+  background:#171225b8;
+  backdrop-filter:blur(14px);
+  border-radius:30px;
+  padding:10px 14px;
+  font-size:11px;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.ui-button:hover,
+.ui-button.active {
+  background:#55417e99;
+  border-color:#b99cff88;
+}
+
+.intro {
+  position:absolute;
+  z-index:5;
+  top:15%;
+  left:50%;
+  width:min(520px,90%);
+  transform:translateX(-50%);
+  text-align:center;
+  pointer-events:none;
+  transition:opacity .5s;
+  text-shadow:0 2px 25px #080611;
+}
+
+.intro.hidden { opacity:0; }
+
+.eyebrow {
+  color:#bca6ed;
+  font-size:9px;
+  letter-spacing:.34em;
+  font-weight:700;
+}
+
+.intro h1 {
+  font-size:clamp(36px,7vw,66px);
+  letter-spacing:-.065em;
+  margin:13px 0 10px;
+  font-weight:650;
+}
+
+.intro p {
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.8;
+  margin:0;
+}
+
+.bottom {
+  position:absolute;
+  z-index:10;
+  bottom:24px;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:0 12px;
+}
+
+.bottom .ui-button {
+  padding:12px 16px;
+}
+
+.zoom-panel {
+  position:absolute;
+  z-index:10;
+  right:20px;
+  bottom:90px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.zoom-panel button {
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  font-size:18px;
+  padding:0;
+}
+
+.hint {
+  position:absolute;
+  z-index:5;
+  bottom:91px;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  font-size:10px;
+  color:#aaa0c4;
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+.toast {
+  position:absolute;
+  z-index:30;
+  left:50%;
+  bottom:100px;
+  transform:translateX(-50%);
+  background:#1b1630ed;
+  border:1px solid #bba4ff44;
+  border-radius:22px;
+  padding:13px 20px;
+  width:max-content;
+  max-width:85%;
+  color:white;
+  text-align:center;
+  font-size:12px;
+  box-shadow:0 8px 35px #0006;
+  animation:toastIn .4s ease;
+}
+
+@keyframes toastIn {
+  from { opacity:0; transform:translate(-50%,12px); }
+  to { opacity:1; transform:translate(-50%,0); }
+}
+
+/* PLANET DISCOVERY */
+
+.planet-panel {
+  position:absolute;
+  z-index:20;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.95);
+  width:min(410px,88%);
+  padding:28px;
+  border-radius:25px;
+  border:1px solid #c5a8ff44;
+  background:linear-gradient(145deg,#211a37ed,#0e0c1bf2);
+  box-shadow:0 20px 90px #0009,0 0 50px #9570ff22;
+  backdrop-filter:blur(22px);
+  text-align:center;
+  opacity:0;
+  pointer-events:none;
+  transition:.45s;
+}
+
+.planet-panel.visible {
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1);
+  pointer-events:auto;
+}
+
+.planet-preview {
+  width:125px;
+  height:125px;
+  margin:0 auto 22px;
+  border-radius:50%;
+  background:var(--planet-surface);
+  box-shadow:inset -24px -10px 35px #0009,
+             0 0 45px var(--planet-glow);
+  position:relative;
+  overflow:hidden;
+}
+
+.planet-preview::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:repeating-linear-gradient(
+    165deg,
+    transparent 0 15px,
+    #ffffff15 16px 18px,
+    transparent 19px 30px
+  );
+  mix-blend-mode:screen;
+}
+
+.planet-panel h2 {
+  font-size:26px;
+  margin:0 0 9px;
+  font-weight:550;
+}
+
+.planet-panel p {
+  font-size:13px;
+  color:#bcb3d0;
+  line-height:1.8;
+}
+
+.panel-actions {
+  display:flex;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+/* PLANET ENVIRONMENT */
+
+#planetWorld {
+  position:absolute;
+  z-index:18;
+  inset:0;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1.1s ease;
+  overflow:hidden;
+}
+
+#planetWorld.visible {
+  opacity:1;
+  pointer-events:auto;
+}
+
+.planet-sky {
+  position:absolute;
+  inset:0;
+  background:var(--environment);
+  transition:background 1s;
+}
+
+.planet-horizon {
+  position:absolute;
+  bottom:-18%;
+  left:-20%;
+  width:140%;
+  height:60%;
+  border-radius:50% 50% 0 0;
+  background:var(--ground);
+  box-shadow:0 -25px 80px var(--planet-glow);
+}
+
+.environment-orb {
+  position:absolute;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  top:20%;
+  right:17%;
+  background:var(--planet-glow);
+  filter:blur(3px);
+  box-shadow:0 0 90px var(--planet-glow);
+}
+
+.environment-copy {
+  position:absolute;
+  top:18%;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  width:90%;
+  text-shadow:0 3px 20px #0008;
+}
+
+.environment-copy h2 {
+  font-size:clamp(34px,7vw,62px);
+  margin:0 0 12px;
+  font-weight:500;
+}
+
+.environment-copy p {
+  color:#ffffffbb;
+  font-size:13px;
+  line-height:1.7;
+}
+
+.environment-exit {
+  position:absolute;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* CONSTELLATIONS */
+
+#constellationLabel {
+  position:absolute;
+  z-index:8;
+  top:28%;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  width:90%;
+  color:#e5d9ff;
+  font-size:12px;
+  letter-spacing:.08em;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .4s;
+}
+
+#constellationLabel.visible { opacity:1; }
+
+#performanceButton {
+  font-size:10px;
+}
+
+/* MOBILE */
+
+@media(max-width:600px) {
+  .topbar {
+    padding:13px 10px;
+  }
+
+  .logo {
+    font-size:9px;
+    letter-spacing:.12em;
+  }
+
+  .controls { gap:5px; }
+
+  .ui-button {
+    padding:9px 10px;
+    font-size:10px;
+  }
+
+  .intro { top:18%; }
+
+  .hint {
+    bottom:104px;
+    font-size:9px;
+  }
+
+  .bottom {
+    bottom:18px;
+    gap:6px;
+  }
+
+  .bottom .ui-button {
+    padding:10px 11px;
+    font-size:10px;
+  }
+
+  .zoom-panel {
+    right:10px;
+    bottom:115px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    scroll-behavior:auto !important;
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="universe">
+
+  <canvas id="nebula"></canvas>
+  <canvas id="space"></canvas>
+  <canvas id="effects"></canvas>
+
+  <div class="vignette"></div>
+
+  <header class="topbar">
+    <div class="logo">THE RABBIT HOLE 🔮</div>
+
+    <div class="controls">
+      <button class="ui-button" id="soundButton">♫ Sound Off</button>
+      <button class="ui-button" id="performanceButton">Performance: High</button>
+      <button class="ui-button" id="homeButton">⌂ Home</button>
+    </div>
+  </header>
+
+  <section class="intro" id="intro">
+    <div class="eyebrow">BEYOND THE EDGE OF EVERYTHING</div>
+    <h1>The Infinite Universe</h1>
+    <p>
+      There are worlds beyond your imagination.<br>
+      Drift through the stars and find your own.
+    </p>
+  </section>
+
+  <div id="constellationLabel">
+    ✦ CONSTELLATION DISCOVERY MODE<br>
+    <span style="opacity:.65;font-size:10px">Connect the glowing stars.</span>
+  </div>
+
+  <div class="hint" id="hint">
+    DRAG TO EXPLORE · TAP A PLANET OR STAR
+  </div>
+
+  <div class="zoom-panel">
+    <button class="ui-button" id="zoomIn">+</button>
+    <button class="ui-button" id="zoomOut">−</button>
+  </div>
+
+  <div class="bottom">
+    <button class="ui-button" id="discoverButton">✧ Random Discovery</button>
+    <button class="ui-button" id="constellationButton">✦ Constellations</button>
+    <button class="ui-button" id="resetButton">◎ Reset View</button>
+  </div>
+
+  <div class="planet-panel" id="planetPanel">
+    <div class="planet-preview" id="planetPreview"></div>
+    <h2 id="planetName">Unknown World</h2>
+    <p id="planetDescription"></p>
+    <div class="panel-actions">
+      <button class="ui-button" id="visitPlanet">Explore this world ✦</button>
+      <button class="ui-button" id="closePanel">Close</button>
+    </div>
+  </div>
+
+  <div id="planetWorld">
+    <div class="planet-sky"></div>
+    <div class="environment-orb"></div>
+    <div class="planet-horizon"></div>
+
+    <div class="environment-copy">
+      <div class="eyebrow">A WORLD OF ITS OWN</div>
+      <h2 id="environmentName"></h2>
+      <p id="environmentDescription"></p>
+    </div>
+
+    <button class="ui-button environment-exit" id="leavePlanet">
+      ← Return to the universe
+    </button>
+  </div>
+
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ================================================
+   CORE
+================================================ */
+
+const $ = id => document.getElementById(id);
+
+const universe = $("universe");
+const spaceCanvas = $("space");
+const nebulaCanvas = $("nebula");
+const effectsCanvas = $("effects");
+
+const space = spaceCanvas.getContext("2d");
+const nebula = nebulaCanvas.getContext("2d");
+const effects = effectsCanvas.getContext("2d");
+
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let width = 0;
+let height = 0;
+let dpr = 1;
+
+let camera = { x:0, y:0, zoom:1 };
+let targetCamera = { x:0, y:0, zoom:1 };
+
+let stars = [];
+let planets = [];
+let particles = [];
+let nebulaClouds = [];
+let constellationLines = [];
+
+let selectedPlanet = null;
+let constellationMode = false;
+let selectedStars = [];
+let performanceMode = false;
+
+let dragging = false;
+let moved = false;
+let pointerStart = null;
+let previousPointer = null;
+
+let animationFrame = 0;
+let soundEnabled = false;
+let audioContext = null;
+let audioGain = null;
+let audioOscillators = [];
+
+let lastFrame = 0;
+let randomSeed = 0;
+
+/* ================================================
+   PLANET DATABASE
+================================================ */
+
+const planetData = [
+  {
+    id:"elysium",
+    name:"Elysium",
+    type:"The Garden World",
+    description:"A peaceful green world with violet oceans, floating forests and a thousand quiet sunsets.",
+    color:"#78b88c",
+    color2:"#284e75",
+    glow:"#82e9c2",
+    environment:"linear-gradient(#9b80c5,#e9b5c7 65%,#4a7d83)",
+    ground:"linear-gradient(#6fae80,#315b50)",
+    message:"The wind moves through enormous silver trees. Somewhere far away, a river sings."
+  },
+  {
+    id:"lunara",
+    name:"Lunara",
+    type:"The Moonlit World",
+    description:"A silver planet covered in pale mountains, glowing lakes and quiet blue forests.",
+    color:"#9aaedb",
+    color2:"#46557d",
+    glow:"#a9c7ff",
+    environment:"linear-gradient(#131b45,#4e5a8a 65%,#9d9fc2)",
+    ground:"linear-gradient(#8b9dbf,#46527a)",
+    message:"Moonlight stretches across the frozen lakes. The whole world glows softly."
+  },
+  {
+    id:"solara",
+    name:"Solara",
+    type:"The Golden World",
+    description:"A warm desert planet with golden dunes, pink skies and enormous glowing suns.",
+    color:"#e7a36d",
+    color2:"#9d496e",
+    glow:"#ffbd85",
+    environment:"linear-gradient(#b65c89,#f1a66f 65%,#eac58c)",
+    ground:"linear-gradient(#dba86e,#9b654f)",
+    message:"Golden sand drifts beneath an enormous sunset. There is no hurry here."
+  },
+  {
+    id:"nox",
+    name:"Nox",
+    type:"The Crystal World",
+    description:"A mysterious dark planet filled with glowing purple crystals and endless violet valleys.",
+    color:"#9c70e8",
+    color2:"#342454",
+    glow:"#bb8cff",
+    environment:"linear-gradient(#100b29,#37235c 60%,#5b387b)",
+    ground:"linear-gradient(#593d79,#20152e)",
+    message:"Purple crystals illuminate the valley. Their light seems to remember the stars."
+  },
+  {
+    id:"aurelia",
+    name:"Aurelia",
+    type:"The Ocean World",
+    description:"An endless ocean world with floating islands, luminous blue water and turquoise skies.",
+    color:"#57c6d0",
+    color2:"#235a80",
+    glow:"#7ceaff",
+    environment:"linear-gradient(#6bc2d4,#a4d8df 55%,#f0c7dc)",
+    ground:"linear-gradient(#4fabb9,#1b627c)",
+    message:"The ocean stretches to the horizon. Tiny lights move beneath the water."
+  },
+  {
+    id:"velora",
+    name:"Velora",
+    type:"The Dream World",
+    description:"A pastel world of floating mountains, pink clouds and forests that shimmer at night.",
+    color:"#db8ecf",
+    color2:"#65569e",
+    glow:"#ffb9e7",
+    environment:"linear-gradient(#8879c4,#d99dc9 60%,#f1c4ca)",
+    ground:"linear-gradient(#a57ab8,#62518b)",
+    message:"Pink clouds drift between floating mountains. The sky is full of soft light."
+  }
+];
+
+/* ================================================
+   CANVAS SIZE
+================================================ */
+
+function resize() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+
+  dpr = Math.min(
+    window.devicePixelRatio || 1,
+    performanceMode ? 1 : 1.5
+  );
+
+  [spaceCanvas,nebulaCanvas,effectsCanvas].forEach(canvas => {
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+  });
+
+  [space,nebula,effects].forEach(ctx => {
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  });
+
+  generateNebula();
+}
+
+window.addEventListener("resize",resize);
+
+/* ================================================
+   SEEDED RANDOM
+================================================ */
+
+function random() {
+  randomSeed = (randomSeed * 1664525 + 1013904223) % 4294967296;
+  return randomSeed / 4294967296;
+}
+
+function createRandom(seed) {
+  randomSeed = seed >>> 0;
+  return random;
+}
+
+/* ================================================
+   STAR FIELD
+================================================ */
+
+function generateStars() {
+  stars = [];
+
+  const count = performanceMode
+    ? 400
+    : Math.min(1500,Math.floor(width * height / 450));
+
+  for (let i=0;i<count;i++) {
+    stars.push({
+      x:(Math.random()-.5)*width*3,
+      y:(Math.random()-.5)*height*3,
+      size:Math.random()*1.6+.2,
+      alpha:Math.random()*.7+.2,
+      phase:Math.random()*Math.PI*2,
+      speed:.5+Math.random()*1.5,
+      color:Math.random()>.92
+        ? "#b8a4ff"
+        : Math.random()>.85
+        ? "#9cddff"
+        : "#ffffff"
+    });
+  }
+}
+
+/* ================================================
+   NEBULA GENERATOR
+================================================ */
+
+function generateNebula() {
+  nebula.clearRect(0,0,width,height);
+
+  const count = performanceMode ? 8 : 18;
+
+  for (let i=0;i<count;i++) {
+    const x = Math.random()*width;
+    const y = Math.random()*height;
+    const radius = Math.max(width,height)*(.12+Math.random()*.24);
+
+    const colors = [
+      "rgba(112,64,185,.11)",
+      "rgba(61,85,177,.10)",
+      "rgba(182,83,161,.09)",
+      "rgba(75,126,192,.08)"
+    ];
+
+    const gradient = nebula.createRadialGradient(
+      x,y,0,x,y,radius
+    );
+
+    gradient.addColorStop(0,colors[i%colors.length]);
+    gradient.addColorStop(.45,colors[(i+1)%colors.length]);
+    gradient.addColorStop(1,"transparent");
+
+    nebula.fillStyle = gradient;
+    nebula.fillRect(x-radius,y-radius,radius*2,radius*2);
+  }
+}
+
+/* ================================================
+   PLANET GENERATION
+================================================ */
+
+function generatePlanets() {
+  planets = [];
+
+  const placements = [
+    [-width*.52,-height*.3],
+    [width*.48,-height*.38],
+    [-width*.2,height*.34],
+    [width*.65,height*.3],
+    [-width*.75,height*.15],
+    [width*.05,-height*.65]
+  ];
+
+  planetData.forEach((data,index) => {
+    const [x,y] = placements[index];
+
+    planets.push({
+      ...data,
+      x,
+      y,
+      radius:24 + (index%3)*9,
+      rotation:Math.random()*Math.PI*2,
+      rotationSpeed:.00012+Math.random()*.00012,
+      rings:index===2 || index===4,
+      seed:index*1123+7
+    });
+  });
+}
+
+/* ================================================
+   COORDINATES
+================================================ */
+
+function worldToScreen(x,y) {
+  return {
+    x:width/2+(x-camera.x)*camera.zoom,
+    y:height/2+(y-camera.y)*camera.zoom
+  };
+}
+
+function screenToWorld(x,y) {
+  return {
+    x:camera.x+(x-width/2)/camera.zoom,
+    y:camera.y+(y-height/2)/camera.zoom
+  };
+}
+
+/* ================================================
+   NEBULA MOTION
+================================================ */
+
+let nebulaOffset = 0;
+
+function drawNebula(time) {
+  nebula.clearRect(0,0,width,height);
+
+  const xOffset = Math.sin(time*.00006)*width*.035;
+  const yOffset = Math.cos(time*.00005)*height*.03;
+
+  nebula.save();
+  nebula.translate(xOffset,yOffset);
+
+  const count = performanceMode ? 5 : 11;
+
+  for (let i=0;i<count;i++) {
+    const x = width*(.1+((i*37)%90)/100);
+    const y = height*(.12+((i*23)%75)/100);
+    const radius = Math.max(width,height)*(.13+(i%3)*.07);
+
+    const colors = [
+      "rgba(132,79,198,.105)",
+      "rgba(60,103,190,.09)",
+      "rgba(194,83,165,.075)",
+      "rgba(80,143,190,.075)"
+    ];
+
+    const gradient = nebula.createRadialGradient(
+      x,y,0,x,y,radius
+    );
+
+    gradient.addColorStop(0,colors[i%4]);
+    gradient.addColorStop(.4,colors[(i+1)%4]);
+    gradient.addColorStop(1,"transparent");
+
+    nebula.fillStyle = gradient;
+    nebula.fillRect(x-radius,y-radius,radius*2,radius*2);
+  }
+
+  nebula.restore();
+}
+
+/* ================================================
+   DRAW STAR FIELD
+================================================ */
+
+function drawStars(time) {
+  space.clearRect(0,0,width,height);
+
+  for (const star of stars) {
+    const pos = worldToScreen(star.x,star.y);
+
+    if (
+      pos.x < -10 || pos.x > width+10 ||
+      pos.y < -10 || pos.y > height+10
+    ) continue;
+
+    const twinkle = reducedMotion
+      ? 1
+      : .65+.35*Math.sin(time*.001*star.speed+star.phase);
+
+    space.globalAlpha = star.alpha*twinkle;
+    space.fillStyle = star.color;
+
+    space.beginPath();
+    space.arc(
+      pos.x,
+      pos.y,
+      Math.max(.3,star.size*camera.zoom),
+      0,
+      Math.PI*2
+    );
+    space.fill();
+  }
+
+  space.globalAlpha = 1;
+}
+
+/* ================================================
+   DRAW PLANET
+================================================ */
+
+function drawPlanet(planet,time) {
+  const pos = worldToScreen(planet.x,planet.y);
+  const radius = planet.radius*camera.zoom;
+
+  if (
+    pos.x < -radius*3 || pos.x > width+radius*3 ||
+    pos.y < -radius*3 || pos.y > height+radius*3
+  ) return;
+
+  const glow = space.createRadialGradient(
+    pos.x,pos.y,radius*.4,
+    pos.x,pos.y,radius*2.8
+  );
+
+  glow.addColorStop(0,planet.glow+"55");
+  glow.addColorStop(1,"transparent");
+
+  space.fillStyle = glow;
+  space.beginPath();
+  space.arc(pos.x,pos.y,radius*2.8,0,Math.PI*2);
+  space.fill();
+
+  space.save();
+
+  if (planet.rings) {
+    space.translate(pos.x,pos.y);
+    space.rotate(-.25);
+
+    space.strokeStyle=planet.glow+"99";
+    space.lineWidth=Math.max(2,radius*.15);
+
+    space.beginPath();
+    space.ellipse(0,0,radius*1.8,radius*.55,0,0,Math.PI*2);
+    space.stroke();
+
+    space.restore();
+    space.save();
+  }
+
+  space.beginPath();
+  space.arc(pos.x,pos.y,radius,0,Math.PI*2);
+  space.clip();
+
+  const base = space.createRadialGradient(
+    pos.x-radius*.4,
+    pos.y-radius*.45,
+    radius*.05,
+    pos.x+radius*.3,
+    pos.y+radius*.25,
+    radius*1.5
+  );
+
+  base.addColorStop(0,planet.color);
+  base.addColorStop(.55,planet.color2);
+  base.addColorStop(1,"#090817");
+
+  space.fillStyle=base;
+  space.fillRect(
+    pos.x-radius,
+    pos.y-radius,
+    radius*2,
+    radius*2
+  );
+
+  // Procedural planetary surface patterns.
+  space.globalAlpha=.3;
+  space.strokeStyle=planet.color+"cc";
+  space.lineWidth=Math.max(1,radius*.07);
+
+  for(let i=0;i<5;i++) {
+    space.beginPath();
+    space.ellipse(
+      pos.x+Math.sin(i+planet.rotation)*radius*.3,
+      pos.y+Math.cos(i+planet.rotation)*radius*.25,
+      radius*(.3+i*.13),
+      radius*(.1+i*.08),
+      planet.rotation+i*.7,
+      0,
+      Math.PI*2
+    );
+    space.stroke();
+  }
+
+  space.globalAlpha=1;
+
+  // Atmospheric shadow.
+  const shadow=space.createLinearGradient(
+    pos.x-radius,pos.y-radius,
+    pos.x+radius,pos.y+radius
+  );
+
+  shadow.addColorStop(0,"#ffffff22");
+  shadow.addColorStop(.4,"transparent");
+  shadow.addColorStop(1,"#000000bb");
+
+  space.fillStyle=shadow;
+  space.fillRect(
+    pos.x-radius,
+    pos.y-radius,
+    radius*2,
+    radius*2
+  );
+
+  space.restore();
+
+  // Planet atmosphere ring.
+  space.strokeStyle=planet.glow+"66";
+  space.lineWidth=1.2;
+  space.beginPath();
+  space.arc(pos.x,pos.y,radius+1,0,Math.PI*2);
+  space.stroke();
+
+  // Label.
+  if(camera.zoom>.68) {
+    space.fillStyle="#eee6ffcc";
+    space.font="11px system-ui";
+    space.textAlign="center";
+    space.fillText(planet.name,pos.x,pos.y+radius+17);
+  }
+
+  planet.rotation += reducedMotion ? 0 : planet.rotationSpeed;
+}
+
+/* ================================================
+   PARTICLE EFFECTS
+================================================ */
+
+function createBurst(x,y,color="#c9a9ff",amount=22) {
+  for(let i=0;i<amount;i++) {
+    const angle=Math.random()*Math.PI*2;
+    const speed=1+Math.random()*3;
+
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:1,
+      size:1+Math.random()*3,
+      color
+    });
+  }
+}
+
+function drawParticles() {
+  effects.clearRect(0,0,width,height);
+
+  for(let i=particles.length-1;i>=0;i--) {
+    const p=particles[i];
+
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.life-=.018;
+
+    effects.globalAlpha=Math.max(0,p.life);
+    effects.fillStyle=p.color;
+    effects.shadowBlur=10;
+    effects.shadowColor=p.color;
+
+    effects.beginPath();
+    effects.arc(p.x,p.y,p.size,0,Math.PI*2);
+    effects.fill();
+
+    if(p.life<=0) particles.splice(i,1);
+  }
+
+  effects.globalAlpha=1;
+  effects.shadowBlur=0;
+}
+
+/* ================================================
+   CONSTELLATION MODE
+================================================ */
+
+function drawConstellations() {
+  if(!constellationMode) return;
+
+  space.save();
+  space.strokeStyle="#cbb5ff99";
+  space.lineWidth=1.3;
+  space.shadowBlur=12;
+  space.shadowColor="#a98cff";
+
+  for(let i=0;i<selectedStars.length-1;i++) {
+    const a=worldToScreen(
+      selectedStars[i].x,
+      selectedStars[i].y
+    );
+
+    const b=worldToScreen(
+      selectedStars[i+1].x,
+      selectedStars[i+1].y
+    );
+
+    space.beginPath();
+    space.moveTo(a.x,a.y);
+    space.lineTo(b.x,b.y);
+    space.stroke();
+  }
+
+  for(const star of selectedStars) {
+    const p=worldToScreen(star.x,star.y);
+
+    space.fillStyle="#fff";
+    space.beginPath();
+    space.arc(p.x,p.y,4,0,Math.PI*2);
+    space.fill();
+  }
+
+  space.restore();
+}
+
+/* ================================================
+   MAIN RENDER LOOP
+================================================ */
+
+function render(time) {
+  if(!lastFrame) lastFrame=time;
+
+  const delta=Math.min(time-lastFrame,50);
+  lastFrame=time;
+
+  const smoothing=1-Math.pow(.001,delta/1000);
+
+  camera.x += (targetCamera.x-camera.x)*smoothing;
+  camera.y += (targetCamera.y-camera.y)*smoothing;
+  camera.zoom += (targetCamera.zoom-camera.zoom)*smoothing;
+
+  drawNebula(time);
+  drawStars(time);
+
+  planets.forEach(planet=>drawPlanet(planet,time));
+
+  drawConstellations();
+  drawParticles();
+
+  animationFrame=requestAnimationFrame(render);
+}
+
+/* ================================================
+   PLANET SELECTION
+================================================ */
+
+function showPlanet(planet) {
+  selectedPlanet=planet;
+
+  $("planetName").textContent=planet.name;
+  $("planetDescription").textContent=
+    planet.type+". "+planet.description;
+
+  $("planetPreview").style.setProperty(
+    "--planet-surface",
+    `radial-gradient(circle at 30% 25%,${planet.color},${planet.color2} 65%,#090817)`
+  );
+
+  $("planetPreview").style.setProperty(
+    "--planet-glow",
+    planet.glow
+  );
+
+  $("planetPanel").classList.add("visible");
+  createBurst(width/2,height/2,planet.glow,28);
+}
+
+/* ================================================
+   PLANET ENVIRONMENTS
+================================================ */
+
+function visitPlanet() {
+  if(!selectedPlanet) return;
+
+  const p=selectedPlanet;
+
+  $("planetWorld").style.setProperty(
+    "--environment",
+    p.environment
+  );
+
+  $("planetWorld").style.setProperty(
+    "--ground",
+    p.ground
+  );
+
+  $("planetWorld").style.setProperty(
+    "--planet-glow",
+    p.glow
+  );
+
+  $("environmentName").textContent=p.name;
+  $("environmentDescription").textContent=p.message;
+
+  $("planetPanel").classList.remove("visible");
+  $("intro").classList.add("hidden");
+  $("hint").style.opacity=0;
+
+  $("planetWorld").classList.add("visible");
+
+  createBurst(width/2,height/2,p.glow,70);
+}
+
+$("visitPlanet").addEventListener("click",visitPlanet);
+
+$("leavePlanet").addEventListener("click",()=>{
+  $("planetWorld").classList.remove("visible");
+  $("intro").classList.remove("hidden");
+  $("hint").style.opacity=1;
+  say("You have returned to the endless universe.");
+});
+
+$("closePanel").addEventListener("click",()=>{
+  $("planetPanel").classList.remove("visible");
+});
+
+/* ================================================
+   STAR AND PLANET HIT TEST
+================================================ */
+
+function nearestStar(x,y) {
+  const worldPoint=screenToWorld(x,y);
+
+  let nearest=null;
+  let best=Infinity;
+
+  for(const star of stars) {
+    const dx=star.x-worldPoint.x;
+    const dy=star.y-worldPoint.y;
+    const distance=dx*dx+dy*dy;
+
+    if(distance<best) {
+      best=distance;
+      nearest=star;
+    }
+  }
+
+  if(best<Math.pow(15/camera.zoom,2)) return nearest;
+  return null;
+}
+
+function hitPlanet(x,y) {
+  let closest=null;
+  let best=Infinity;
+
+  for(const planet of planets) {
+    const pos=worldToScreen(planet.x,planet.y);
+    const radius=planet.radius*camera.zoom+10;
+
+    const dx=x-pos.x;
+    const dy=y-pos.y;
+    const distance=Math.sqrt(dx*dx+dy*dy);
+
+    if(distance<radius && distance<best) {
+      closest=planet;
+      best=distance;
+    }
+  }
+
+  return closest;
+}
+
+/* ================================================
+   POINTER INTERACTION
+================================================ */
+
+function pointerDown(event) {
+  if($("planetWorld").classList.contains("visible")) return;
+  if($("planetPanel").classList.contains("visible")) return;
+
+  dragging=true;
+  moved=false;
+
+  pointerStart={
+    x:event.clientX,
+    y:event.clientY,
+    cameraX:targetCamera.x,
+    cameraY:targetCamera.y
+  };
+
+  previousPointer={
+    x:event.clientX,
+    y:event.clientY
+  };
+
+  universe.classList.add("dragging");
+  universe.setPointerCapture?.(event.pointerId);
+}
+
+function pointerMove(event) {
+  if(!dragging || !pointerStart) return;
+
+  const dx=event.clientX-pointerStart.x;
+  const dy=event.clientY-pointerStart.y;
+
+  if(Math.abs(dx)+Math.abs(dy)>5) moved=true;
+
+  targetCamera.x=pointerStart.cameraX-dx/targetCamera.zoom;
+  targetCamera.y=pointerStart.cameraY-dy/targetCamera.zoom;
+}
+
+function pointerUp(event) {
+  if(!dragging) return;
+
+  dragging=false;
+  universe.classList.remove("dragging");
+
+  if(!moved) {
+    const x=event.clientX;
+    const y=event.clientY;
+
+    const planet=hitPlanet(x,y);
+
+    if(planet) {
+      showPlanet(planet);
+      return;
+    }
+
+    const star=nearestStar(x,y);
+
+    if(star) {
+      const pos=worldToScreen(star.x,star.y);
+      createBurst(pos.x,pos.y,"#e6d8ff",18);
+
+      if(constellationMode) {
+        if(selectedStars.length>=5) selectedStars=[];
+        selectedStars.push(star);
+
+        if(selectedStars.length===5) {
+          $("constellationLabel").innerHTML=
+            "✦ CONSTELLATION DISCOVERED ✦<br><span style='opacity:.65'>A little pattern in the infinite sky.</span>";
+          say("You discovered a new constellation. ✨");
+        } else {
+          say("Star connected: "+selectedStars.length+"/5");
+        }
+      } else {
+        say("A tiny star sends a little light into the universe.");
+      }
+    }
+  }
+
+  pointerStart=null;
+  previousPointer=null;
+}
+
+universe.addEventListener("pointerdown",pointerDown);
+universe.addEventListener("pointermove",pointerMove);
+universe.addEventListener("pointerup",pointerUp);
+universe.addEventListener("pointercancel",pointerUp);
+
+/* ================================================
+   ZOOM
+================================================ */
+
+function setZoom(value) {
+  targetCamera.zoom=Math.max(.45,Math.min(3.5,value));
+}
+
+$("zoomIn").addEventListener("click",()=>{
+  setZoom(targetCamera.zoom*1.25);
+});
+
+$("zoomOut").addEventListener("click",()=>{
+  setZoom(targetCamera.zoom/1.25);
+});
+
+universe.addEventListener("wheel",event=>{
+  event.preventDefault();
+  setZoom(targetCamera.zoom*(event.deltaY<0?1.12:.89));
+},{passive:false});
+
+/* ================================================
+   RANDOM DISCOVERY
+================================================ */
+
+const discoveries=[
+  {x:-900,y:-600,zoom:1.5,message:"A hidden violet galaxy. A thousand stars are gathering here."},
+  {x:1000,y:500,zoom:1.4,message:"A quiet blue corner of the universe. Welcome, traveller."},
+  {x:-300,y:1000,zoom:1.7,message:"You found a distant star nursery, where new worlds begin."},
+  {x:800,y:-900,zoom:1.3,message:"An ancient cosmic ocean. The stars seem to float here."},
+  {x:-1200,y:200,zoom:1.5,message:"A mysterious region filled with forgotten constellations."},
+  {x:200,y:-1200,zoom:1.8,message:"A beautiful pocket of space hidden beyond the ordinary."}
+];
+
+$("discoverButton").addEventListener("click",()=>{
+  const discovery=discoveries[
+    Math.floor(Math.random()*discoveries.length)
+  ];
+
+  $("planetPanel").classList.remove("visible");
+  $("intro").classList.add("hidden");
+
+  targetCamera.x=discovery.x;
+  targetCamera.y=discovery.y;
+  targetCamera.zoom=discovery.zoom;
+
+  createBurst(width/2,height/2,"#b79aff",65);
+
+  setTimeout(()=>{
+    say(discovery.message);
+    $("intro").classList.remove("hidden");
+  },1100);
+});
+
+/* ================================================
+   CONSTELLATION MODE
+================================================ */
+
+$("constellationButton").addEventListener("click",()=>{
+  constellationMode=!constellationMode;
+
+  selectedStars=[];
+  $("constellationButton").classList.toggle(
+    "active",
+    constellationMode
+  );
+
+  $("constellationLabel").classList.toggle(
+    "visible",
+    constellationMode
+  );
+
+  if(constellationMode) {
+    $("constellationLabel").innerHTML=
+      "✦ CONSTELLATION DISCOVERY MODE<br><span style='opacity:.65;font-size:10px'>Tap five stars to connect them.</span>";
+
+    say("Constellation mode activated. Find five stars.");
+  } else {
+    say("Constellation mode ended.");
+  }
+});
+
+/* ================================================
+   RESET CAMERA
+================================================ */
+
+$("resetButton").addEventListener("click",()=>{
+  targetCamera={x:0,y:0,zoom:1};
+  $("planetPanel").classList.remove("visible");
+  $("intro").classList.remove("hidden");
+  say("Back to the beginning of everything.");
+});
+
+/* ================================================
+   PERFORMANCE MODE
+================================================ */
+
+$("performanceButton").addEventListener("click",()=>{
+  performanceMode=!performanceMode;
+
+  $("performanceButton").textContent=
+    performanceMode
+      ? "Performance: Low"
+      : "Performance: High";
+
+  dpr=Math.min(
+    window.devicePixelRatio||1,
+    performanceMode?1:1.5
+  );
+
+  resize();
+  generateStars();
+
+  say(
+    performanceMode
+      ? "Low performance mode enabled. Fewer stars, smoother rendering."
+      : "High visual quality restored."
+  );
+});
+
+/* ================================================
+   AUDIO
+   Soft synthesized ambient drone.
+   No autoplay.
+================================================ */
+
+async function toggleSound() {
+  const AudioAPI=window.AudioContext||window.webkitAudioContext;
+
+  if(!AudioAPI) {
+    say("Ambient audio is not supported in this browser.");
+    return;
+  }
+
+  if(soundEnabled) {
+    audioGain?.gain.setTargetAtTime(
+      0,
+      audioContext.currentTime,
+      .2
+    );
+
+    setTimeout(()=>{
+      audioOscillators.forEach(osc=>{
+        try { osc.stop(); } catch(e) {}
+      });
+
+      audioOscillators=[];
+      audioGain?.disconnect();
+      audioGain=null;
+    },800);
+
+    soundEnabled=false;
+    $("soundButton").textContent="♫ Sound Off";
+    $("soundButton").classList.remove("active");
+    return;
+  }
+
+  if(!audioContext) audioContext=new AudioAPI();
+
+  await audioContext.resume();
+
+  audioGain=audioContext.createGain();
+  audioGain.gain.value=0;
+  audioGain.connect(audioContext.destination);
+
+  const notes=[110,164.81,220];
+
+  notes.forEach((frequency,index)=>{
+    const oscillator=audioContext.createOscillator();
+    const volume=audioContext.createGain();
+
+    oscillator.type="sine";
+    oscillator.frequency.value=frequency;
+
+    volume.gain.value=index===0?.15:.045;
+
+    oscillator.connect(volume);
+    volume.connect(audioGain);
+    oscillator.start();
+
+    audioOscillators.push(oscillator);
+  });
+
+  audioGain.gain.setTargetAtTime(
+    .08,
+    audioContext.currentTime,
+    1
+  );
+
+  soundEnabled=true;
+  $("soundButton").textContent="♫ Sound On";
+  $("soundButton").classList.add("active");
+}
+
+$("soundButton").addEventListener("click",toggleSound);
+
+/* ================================================
+   HOME
+================================================ */
+
+$("homeButton").addEventListener("click",()=>{
+  const home=confirm("Return to THE RABBIT HOLE?");
+
+  if(home) {
+    window.location.href="index.html";
+  }
+});
+
+/* ================================================
+   INITIALIZE
+================================================ */
+
+function init() {
+  resize();
+  generateStars();
+  generatePlanets();
+
+  if(reducedMotion) {
+    $("performanceButton").textContent="Reduced Motion";
+  }
+
+  animationFrame=requestAnimationFrame(render);
+}
+
+init();
+
+})();
+</script>
+</body>
+</html>

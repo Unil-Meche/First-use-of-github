@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS ARCADE • Snake Blaster</title>
+    <style>
+        :root {
+            --neon-red: #ff2a5f;
+            --neon-orange: #ff7700;
+            --neon-yellow: #ffe600;
+            --neon-cyan: #00f3ff;
+            --neon-purple: #b000ff;
+            --dark-bg: #050508;
+            --panel-bg: rgba(20, 20, 30, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Impact', Charcoal, sans-serif;
+            letter-spacing: 1px;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 20%, #1a082f 0%, var(--dark-bg) 75%);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            text-transform: uppercase;
+            font-style: italic;
+            background: linear-gradient(180deg, #fff 20%, var(--neon-cyan) 60%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
+            margin-bottom: 0.2rem;
+        }
+
+        .subtitle {
+            color: var(--neon-yellow);
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(255, 230, 0, 0.4);
+        }
+
+        /* Sound Deck */
+        .sound-deck {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-purple);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(176, 0, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .rock-btn {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-red));
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Impact', sans-serif;
+            text-transform: uppercase;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(176, 0, 255, 0.5);
+            transition: transform 0.1s;
+        }
+
+        .rock-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Game Arena Canvas Container */
+        .game-wrapper {
+            background: rgba(10, 10, 20, 0.95);
+            border: 3px solid var(--neon-cyan);
+            border-radius: 16px;
+            box-shadow: 0 0 35px rgba(0, 243, 255, 0.3);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        #gameCanvas {
+            background: #080812;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 100%;
+            touch-action: none;
+        }
+
+        /* Arcade Touch Controls */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 12px;
+            gap: 10px;
+        }
+
+        .ctrl-btn {
+            background: linear-gradient(135deg, #005f73, var(--neon-cyan));
+            border: none;
+            color: #000;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            flex: 1;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            transition: transform 0.08s;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.92);
+        }
+
+        .fire-btn {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-red));
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 42, 95, 0.5);
+            flex: 1.5;
+        }
+
+        footer {
+            margin-top: 2rem;
+            color: #64748B;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>NEXUS ARCADE</h1>
+        <p class="subtitle">⚡ Snake Blaster • Retro Arcade Survival ⚡</p>
+
+        <!-- Music Controller Deck -->
+        <div class="sound-deck">
+            <span style="color:var(--neon-cyan)">🎸 Rock Beat:</span>
+            <button id="rockBtn" class="rock-btn" onclick="toggleRockBeat()">Play Soundtrack 🎸</button>
+        </div>
+
+        <!-- Real-time Canvas Game -->
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="480" height="520"></canvas>
+
+            <!-- Touch Controls for Mobile -->
+            <div class="control-panel">
+                <button class="ctrl-btn" onpointerdown="startMoveLeft()" onpointerup="stopMove()" onpointerleave="stopMove()">◄ LEFT</button>
+                <button class="ctrl-btn fire-btn" onpointerdown="fireBall()">🔥 FIRE</button>
+                <button class="ctrl-btn" onpointerdown="startMoveRight()" onpointerup="stopMove()" onpointerleave="stopMove()">RIGHT ►</button>
+            </div>
+        </div>
+
+        <footer>
+            NEXUS ARCADE • Use On-Screen Buttons or Keyboard (Left/Right & Space)
+        </footer>
+    </div>
+
+    <script>
+        // --- Web Audio Synthesizer Engine ---
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let isMusicPlaying = false;
+        let beatTimer = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+        }
+
+        const rockScale = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00];
+
+        function playBeat() {
+            if (!isMusicPlaying) return;
+            initAudio();
+            const freq = rockScale[Math.floor(Math.random() * rockScale.length)];
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+
+            beatTimer = setTimeout(playBeat, 220);
+        }
+
+        function toggleRockBeat() {
+            initAudio();
+            const btn = document.getElementById('rockBtn');
+            if (isMusicPlaying) {
+                isMusicPlaying = false;
+                clearTimeout(beatTimer);
+                btn.innerText = "Play Soundtrack 🎸";
+            } else {
+                isMusicPlaying = true;
+                btn.innerText = "Stop Soundtrack ⏹";
+                playBeat();
+            }
+        }
+
+        function playSfx(type) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            if (type === 'fire') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            } else if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            }
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        // --- Arcade Snake Shooter Game Engine ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let score = 0;
+        let wave = 1;
+        let gameOver = false;
+
+        // Player (Human Shape)
+        const player = {
+            x: canvas.width / 2 - 15,
+            y: canvas.height - 45,
+            width: 30,
+            height: 35,
+            speed: 5,
+            moveDir: 0
+        };
+
+        // Projectiles
+        let fireballs = [];
+
+        // Explosive FX Particles
+        let particles = [];
+
+        // Segmented Snake
+        let snakeSegments = [];
+        const segmentSize = 24;
+        let snakeDirection = 1; // 1 = right, -1 = left
+        let snakeSpeed = 1.5;
+
+        function initSnake() {
+            snakeSegments = [];
+            const length = 12 + wave * 2;
+            let startX = 20;
+            let startY = 30;
+
+            for (let i = 0; i < length; i++) {
+                snakeSegments.push({
+                    x: startX - (i * segmentSize),
+                    y: startY
+                });
+            }
+        }
+        initSnake();
+
+        function fireBall() {
+            if (gameOver) return;
+            fireballs.push({
+                x: player.x + player.width / 2 - 4,
+                y: player.y,
+                width: 8,
+                height: 14,
+                speed: 8
+            });
+            playSfx('fire');
+        }
+
+        function startMoveLeft() { player.moveDir = -1; }
+        function startMoveRight() { player.moveDir = 1; }
+        function stopMove() { player.moveDir = 0; }
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') startMoveLeft();
+            if (e.key === 'ArrowRight' || e.key === 'd') startMoveRight();
+            if (e.key === ' ' || e.key === 'ArrowUp') fireBall();
+        });
+        window.addEventListener('keyup', (e) => {
+            if (['ArrowLeft', 'a', 'ArrowRight', 'd'].includes(e.key)) stopMove();
+        });
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 20,
+                    color: Math.random() > 0.5 ? '#ff7700' : '#ffe600'
+                });
+            }
+        }
+
+        // --- Main Game Update Loop ---
+        function update() {
+            if (gameOver) return;
+
+            // Player Movement
+            player.x += player.moveDir * player.speed;
+            if (player.x < 5) player.x = 5;
+            if (player.x > canvas.width - player.width - 5) player.x = canvas.width - player.width - 5;
+
+            // Update Fireballs
+            fireballs.forEach((fb, fIndex) => {
+                fb.y -= fb.speed;
+                if (fb.y < -20) fireballs.splice(fIndex, 1);
+            });
+
+            // Update Particles
+            particles.forEach((p, pIndex) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 1;
+                if (p.life <= 0) particles.splice(pIndex, 1);
+            });
+
+            // Update Snake Slithering (Zig-zag Downward)
+            let reachEdge = false;
+            snakeSegments.forEach(seg => {
+                seg.x += snakeSpeed * snakeDirection;
+                if (seg.x > canvas.width - segmentSize || seg.x < 5) {
+                    reachEdge = true;
+                }
+            });
+
+            if (reachEdge) {
+                snakeDirection *= -1;
+                snakeSegments.forEach(seg => {
+                    seg.y += 22; // Drop down towards hero
+                    if (seg.y >= player.y - 15) {
+                        gameOver = true;
+                    }
+                });
+            }
+
+            // Collision Detection: Fireball vs Snake Bracket Segments
+            fireballs.forEach((fb, fIndex) => {
+                snakeSegments.forEach((seg, sIndex) => {
+                    if (
+                        fb.x < seg.x + segmentSize &&
+                        fb.x + fb.width > seg.x &&
+                        fb.y < seg.y + segmentSize &&
+                        fb.y + fb.height > seg.y
+                    ) {
+                        // Destroy targeted segment
+                        createExplosion(seg.x + segmentSize / 2, seg.y + segmentSize / 2);
+                        playSfx('hit');
+                        snakeSegments.splice(sIndex, 1);
+                        fireballs.splice(fIndex, 1);
+                        score += 50;
+
+                        // Check Wave Clear
+                        if (snakeSegments.length === 0) {
+                            wave += 1;
+                            snakeSpeed += 0.4;
+                            initSnake();
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- Render Graphics ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Background Grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+
+            // Draw Human Hero Character
+            ctx.fillStyle = '#00f3ff';
+            // Head
+            ctx.beginPath();
+            ctx.arc(player.x + player.width / 2, player.y + 6, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // Body
+            ctx.fillRect(player.x + player.width / 2 - 4, player.y + 12, 8, 14);
+            // Cannon Arms
+            ctx.fillStyle = '#ff7700';
+            ctx.fillRect(player.x + 2, player.y + 14, 6, 10);
+            ctx.fillRect(player.x + player.width - 8, player.y + 14, 6, 10);
+
+            // Draw Fireballs
+            fireballs.forEach(fb => {
+                ctx.fillStyle = '#ff2a5f';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff2a5f';
+                ctx.fillRect(fb.x, fb.y, fb.width, fb.height);
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Explosive Particles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 4, 4);
+            });
+
+            // Draw Segmented Snake ([ ] [ ] [ ])
+            snakeSegments.forEach((seg, index) => {
+                ctx.strokeStyle = index === 0 ? '#ffe600' : '#00f3ff';
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = ctx.strokeStyle;
+                
+                // Outer Bracket Border
+                ctx.strokeRect(seg.x, seg.y, segmentSize - 2, segmentSize - 2);
+
+                // Inner Bracket Symbol
+                ctx.fillStyle = index === 0 ? '#ff2a5f' : '#ff7700';
+                ctx.font = '14px Impact';
+                ctx.fillText(index === 0 ? '👁️' : '[ ]', seg.x + 3, seg.y + 16);
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw HUD (Score & Wave)
+            ctx.fillStyle = '#ffe600';
+            ctx.font = '18px Impact';
+            ctx.fillText('SCORE: ' + score, 15, 30);
+            ctx.fillText('WAVE: ' + wave, canvas.width - 90, 30);
+
+            // Game Over Overlay
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff2a5f';
+                ctx.font = '36px Impact';
+                ctx.fillText('GAME OVER', canvas.width / 2 - 80, canvas.height / 2 - 10);
+                ctx.fillStyle = '#fff';
+                ctx.font = '18px Impact';
+                ctx.fillText('Tap FIRE to Restart', canvas.width / 2 - 70, canvas.height / 2 + 30);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+        // Restart on Game Over
+        window.addEventListener('click', () => {
+            if (gameOver) {
+                score = 0;
+                wave = 1;
+                snakeSpeed = 1.5;
+                gameOver = false;
+                initSnake();
+            }
+        });
+    </script>
+</body>
+</html>

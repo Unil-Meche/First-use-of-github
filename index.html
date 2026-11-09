@@ -3,882 +3,860 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE COSMIC ARCHIVE • Infinite Journey</title>
+    <title>The Rabbit Hole</title>
     <style>
-        :root {
-            --neon-cyan: #00f3ff;
-            --neon-purple: #b000ff;
-            --neon-pink: #ff007f;
-            --neon-yellow: #ffe600;
-            --dark-bg: #030308;
-            --panel-bg: rgba(15, 15, 25, 0.85);
-            --card-border: rgba(0, 243, 255, 0.3);
-        }
-
+        /* ==========================================
+           CORE STYLES & RESET (BEM / Scoped)
+           ================================---------- */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            letter-spacing: 0.5px;
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: #ffffff;
+            background-color: #0A0A0C;
+            color: #F3F4F6;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
             overflow-x: hidden;
-            background-image: radial-gradient(circle at 50% 10%, #150a2a 0%, var(--dark-bg) 80%);
-            scroll-behavior: smooth;
+            padding: 2rem 1rem;
         }
 
-        /* Fixed Background Particle Canvas */
-        #bgCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
+        /* Ambient Glow Background Accents */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 80%);
+            z-index: -1;
             pointer-events: none;
         }
 
-        /* Container scaffolding */
-        .page-container {
-            position: relative;
-            z-index: 1;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1rem 6rem 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 4rem;
-        }
-
-        /* Header & Audio Deck */
-        header {
+        /* Hero Header Section */
+        .rabbit-hero {
             text-align: center;
-            padding: 2rem 1rem;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-            background: rgba(3, 3, 8, 0.85);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);
+            margin-bottom: 2.5rem;
+            padding: 1rem;
         }
 
-        h1 {
-            font-size: 2.8rem;
-            font-weight: 900;
+        .rabbit-hero__title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            font-style: italic;
-            background: linear-gradient(180deg, #fff 10%, var(--neon-cyan) 60%, var(--neon-purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #F3F4F6;
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(6, 182, 212, 0.3);
+            animation: rabbit-pulseGlow 3s ease-in-out infinite alternate;
             margin-bottom: 0.5rem;
         }
 
-        .subtitle {
-            color: var(--neon-yellow);
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1.2rem;
-        }
-
-        /* Audio Controls */
-        .sound-deck {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            padding: 0 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .audio-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            color: #cbd5e1;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.25s ease;
-        }
-
-        .audio-btn:hover {
-            background: rgba(0, 243, 255, 0.15);
-            color: #fff;
-            transform: translateY(-2px);
-        }
-
-        .audio-btn.active {
-            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
-            border-color: transparent;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
-        }
-
-        /* Premium Rocket Launch Action Button */
-        .launch-btn {
-            background: linear-gradient(135deg, #ff007f, #ffe600);
-            color: #030308;
-            font-weight: 900;
+        .rabbit-hero__subtitle {
             font-size: 1.1rem;
-            text-transform: uppercase;
-            padding: 0.9rem 2.2rem;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            box-shadow: 0 0 25px rgba(255, 0, 127, 0.6);
-            transition: all 0.3s ease;
-            display: inline-block;
-            letter-spacing: 1px;
+            color: #9CA3AF;
+            font-weight: 400;
         }
 
-        .launch-btn:hover {
-            transform: scale(1.06);
-            box-shadow: 0 0 40px rgba(255, 230, 0, 0.8);
+        @keyframes rabbit-pulseGlow {
+            0% {
+                text-shadow: 0 0 15px rgba(168, 85, 247, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
+            }
+            100% {
+                text-shadow: 0 0 25px rgba(168, 85, 247, 0.8), 0 0 50px rgba(6, 182, 212, 0.5);
+            }
         }
 
-        /* Card Scaffolding */
-        .content-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 0 35px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .content-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--neon-cyan);
-        }
-
-        .card-tag {
-            color: var(--neon-cyan);
-            font-size: 0.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 0.8rem;
-            display: block;
-        }
-
-        .card-title {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: #ffffff;
-        }
-
-        .card-desc {
-            color: #94a3b8;
-            font-size: 1.05rem;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Media Frame */
-        .img-frame {
-            width: 100%;
-            height: 380px;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .img-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .content-card:hover .img-frame img {
-            transform: scale(1.04);
-        }
-
-        /* Portal Button */
-        .portal-btn {
-            background: linear-gradient(135deg, #005f73, var(--neon-cyan));
-            color: #000;
-            font-weight: 800;
-            font-size: 1rem;
-            padding: 0.9rem 2rem;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
-            transition: all 0.2s ease;
-            display: inline-block;
-        }
-
-        .portal-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
-        }
-
-        /* Interactive Arcade Game Card */
-        .game-card {
-            text-align: center;
-            background: rgba(20, 10, 35, 0.9);
-            border: 2px solid var(--neon-pink);
-        }
-
-        #arcadeCanvas {
-            background: #060612;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 1rem 0;
-            max-width: 100%;
-            cursor: pointer;
-        }
-
-        /* Universe Modal & Rocket Countdown Overlay */
-        .universe-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(3, 3, 8, 0.95);
-            z-index: 1000;
+        /* Main Action Trigger */
+        .rabbit-trigger-container {
+            margin-bottom: 3rem;
             display: flex;
-            align-items: center;
             justify-content: center;
+        }
+
+        .rabbit-btn {
+            background: linear-gradient(135deg, #A855F7 0%, #06B6D4 100%);
+            color: #0A0A0C;
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .rabbit-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 35px rgba(6, 182, 212, 0.7);
+        }
+
+        .rabbit-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* Modular Content Container */
+        .rabbit-content {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .rabbit-card {
+            background: rgba(18, 18, 24, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 16px;
             padding: 2rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none; /* Hidden by default until loaded */
         }
 
-        .universe-modal.active {
-            opacity: 1;
-            pointer-events: auto;
+        .rabbit-card.is-active {
+            display: block;
+            animation: rabbit-fadeIn 0.5s ease forwards;
         }
 
-        .modal-box {
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-purple);
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 600px;
+        @keyframes rabbit-fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Placeholder state for container */
+        .rabbit-placeholder {
             text-align: center;
-            box-shadow: 0 0 50px rgba(176, 0, 255, 0.4);
+            color: #6B7280;
+            font-style: italic;
+            padding: 3rem;
+            border: 2px dashed rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
         }
+
+        <!-- MODULES INSERT BELOW THIS LINE -->
     </style>
 </head>
 <body>
 
-    <!-- Background Animated Visualizer -->
-    <canvas id="bgCanvas"></canvas>
+    <!-- Hero Header -->
+    <header class="rabbit-hero">
+        <h1 class="rabbit-hero__title">The Rabbit Hole</h1>
+        <p class="rabbit-hero__subtitle">Click to plunge into the unknown.</p>
+    </header>
 
-    <div class="page-container">
-
-        <!-- Top Sound Deck & Rocket Launch HUD -->
-        <header>
-            <h1>THE COSMIC ARCHIVE</h1>
-            <p class="subtitle">⚡ Multi-Vibe Soundtrack • Infinite Scroll Journey ⚡</p>
-            
-            <div class="sound-deck">
-                <button class="audio-btn active" onclick="playTrack(0, this)">⚡ Energetic Rock</button>
-                <button class="audio-btn" onclick="playTrack(1, this)">🕊️ Peaceful Drift</button>
-                <button class="audio-btn" onclick="playTrack(2, this)">🌆 Cyber Synthwave</button>
-                <button class="audio-btn" onclick="playTrack(3, this)">🔥 Hard Industrial</button>
-                <button class="audio-btn" onclick="playTrack(4, this)">✨ Ambient Cosmos</button>
-                <button class="audio-btn" style="background: var(--neon-pink); color: #fff;" onclick="toggleAudio()">⏹ Mute Sound</button>
-            </div>
-
-            <!-- PREMIER ROCKET LAUNCH BUTTON -->
-            <div>
-                <button class="launch-btn" onclick="startRocketLaunch()">
-                    🚀 LAUNCH TO ALIEN UNIVERSE 👽
-                </button>
-            </div>
-        </header>
-
-        <!-- CHAPTER 01 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 01 • Cybernetics & Code</span>
-            <h2 class="card-title">The Dawn of Quantum Computing</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1000" alt="Quantum Circuit Board">
-            </div>
-            <p class="card-desc">
-                Quantum computers operate using qubits rather than standard binary bits. While classical bits can only exist as a 0 or 1, 
-                a qubit can exist in a superposition state, allowing quantum systems to process complex equations in seconds.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Quantum Dimension')">Enter Quantum Universe 🌌</button>
-        </article>
-
-        <!-- CHAPTER 02 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 02 • Cosmic Anomalies</span>
-            <h2 class="card-title">Pillars of Creation</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000" alt="Deep Space Nebula">
-            </div>
-            <p class="card-desc">
-                Located roughly 6,500 light-years from Earth in the Eagle Nebula, the Pillars of Creation are vast interstellar gas columns. 
-                The tallest pillar stretching from top to bottom is approximately 4 light-years long—about 24 trillion miles in height!
-            </p>
-            <button class="portal-btn" onclick="openPortal('Deep Space Nexus')">Explore Deep Space 🚀</button>
-        </article>
-
-        <!-- ARCADE MINIGAME INTERLUDE -->
-        <article class="content-card game-card">
-            <span class="card-tag" style="color:var(--neon-pink);">Arcade Interlude • Reflex Reaction</span>
-            <h2 class="card-title">NEON PULSE DASH</h2>
-            <p class="card-desc">Click or tap the target as fast as possible to rack up energy points!</p>
-            <canvas id="arcadeCanvas" width="400" height="250"></canvas>
-            <div>
-                <p style="color:var(--neon-yellow); font-size:1.2rem; font-weight:bold;">SCORE: <span id="gameScore">0</span></p>
-            </div>
-        </article>
-
-        <!-- CHAPTER 03 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 03 • Lost Civilizations</span>
-            <h2 class="card-title">The Architecture of Monoliths</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1000" alt="Ancient Monolith">
-            </div>
-            <p class="card-desc">
-                Ancient civilizations erected massive stone structures without modern heavy machinery. From the precise alignment of the Giza Pyramids 
-                with Orion's Belt to Stonehenge, ancient builders possessed incredible knowledge of astronomy.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Ancient Realm')">Enter Ancient Realm 🏛️</button>
-        </article>
-
-        <!-- CHAPTER 04 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 04 • Natural Wonders</span>
-            <h2 class="card-title">Bioluminescence: Nature’s Light</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000" alt="Ocean Glowing Waves">
-            </div>
-            <p class="card-desc">
-                Bioluminescence is light produced by a chemical reaction within living organisms. Certain dinoflagellates turn 
-                entire coastal waves into glowing electric-blue tides when disturbed by movement.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Abyssal Zone')">Descend to Abyssal Zone 🌊</button>
-        </article>
-
-        <!-- CHAPTER 05 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 05 • Synthetic Consciousness</span>
-            <h2 class="card-title">Neural Networks & Deep Learning</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000" alt="Cyber Neon Abstract">
-            </div>
-            <p class="card-desc">
-                Modern artificial neural networks are modeled after the biological structure of the human brain, allowing machines 
-                to recognize visual imagery, compose music, and generate advanced media.
-            </p>
-            <button class="portal-btn" onclick="openPortal('AI Neural Core')">Access AI Core 🧠</button>
-        </article>
-
-        <!-- CHAPTER 06 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 06 • Planetary Geology</span>
-            <h2 class="card-title">The Ring of Fire & Geothermal Energy</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1000" alt="Mountain & Volcanic Peaks">
-            </div>
-            <p class="card-desc">
-                The Pacific Ring of Fire hosts roughly 75% of Earth's active volcanoes. Regions utilizing geothermal energy tap directly 
-                into sub-surface tectonic heat to generate clean power.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Geothermal Core')">Enter Molten Chamber 🌋</button>
-        </article>
-
-        <!-- CHAPTER 07 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 07 • The Unknown Trench</span>
-            <h2 class="card-title">The Mariana Trench & Hadal Zone</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1000" alt="Deep Ocean Blue Void">
-            </div>
-            <p class="card-desc">
-                At nearly 36,000 feet deep, the Mariana Trench reaches pressures over 1,000 times greater than sea level. Deep-sea organisms 
-                thrive here surviving off hydrothermal minerals.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Hadal Trench')">Explore Hadal Abyss ⚓</button>
-        </article>
-
-        <!-- CHAPTER 08 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 08 • Retro-Futurism</span>
-            <h2 class="card-title">The Rise of Neon Synthwave</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=1000" alt="Retro Synthwave Aesthetic">
-            </div>
-            <p class="card-desc">
-                Inspired by 1980s arcade culture and sci-fi cinema, synthwave art blends glowing gridlines, magenta horizons, 
-                and analog synthesizer beats into a timeless retro aesthetic.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Synthwave Grid')">Launch Synth Grid 🌆</button>
-        </article>
-
-        <!-- CHAPTER 09 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 09 • Theoretical Physics</span>
-            <h2 class="card-title">The Multiverse & String Theory</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1000" alt="Cosmic Galaxy Stars">
-            </div>
-            <p class="card-desc">
-                String theory proposes that fundamental particles are microscopic vibrating 1D strings, mathematically pointing 
-                to up to 11 hidden dimensions in space-time.
-            </p>
-            <button class="portal-btn" onclick="openPortal('11th Dimension')">Warp to 11th Dimension 🌀</button>
-        </article>
-
-        <!-- CHAPTER 10 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 10 • Architectural Wonders</span>
-            <h2 class="card-title">Megastructures of the Future</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1000" alt="Futuristic City Skyscrapers">
-            </div>
-            <p class="card-desc">
-                As urban populations expand toward space-age limits, architects conceptualize vertical arcologies—self-sustaining 
-                megastructures housing entire cities with vertical farming.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Arcology Spire')">Enter Sky Spire 🏙️</button>
-        </article>
-
-        <!-- CHAPTER 11 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 11 • Botanical Mysteries</span>
-            <h2 class="card-title">The Wood Wide Web: Mycelial Networks</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1516214104703-d870798883c5?w=1000" alt="Mystical Forest Trees">
-            </div>
-            <p class="card-desc">
-                Beneath forest floors lies an intricate network of fungal threads. Trees use this underground network to share 
-                nutrients and send warning signals about pest attacks.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Forest Mycelium')">Connect to Forest Net 🍄</button>
-        </article>
-
-        <!-- CHAPTER 12 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 12 • Aeronautical Engineering</span>
-            <h2 class="card-title">Supersonic Flight & Hypersonic Travel</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1000" alt="Jet Aircraft in Flight">
-            </div>
-            <p class="card-desc">
-                Engineers are currently developing hypersonic aircraft capable of traveling at Mach 5 or higher, bridging 
-                continents across the globe in under two hours.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Hypersonic Hangar')">Ignite Afterburners ✈️</button>
-        </article>
-
-        <!-- CHAPTER 13 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 13 • Stellar Evolution</span>
-            <h2 class="card-title">Supernovae & The Birth of Gold</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1000" alt="Stellar Explosion Nebula">
-            </div>
-            <p class="card-desc">
-                Most elements heavier than iron—including gold and platinum—are created exclusively during catastrophic stellar 
-                explosions called supernovae.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Supernova Forge')">Witness Supernova 🌟</button>
-        </article>
-
-        <!-- CHAPTER 14 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 14 • Cybernetic Horizons</span>
-            <h2 class="card-title">The Final Frontier: Interstellar Probes</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000" alt="Spacecraft in Deep Orbit">
-            </div>
-            <p class="card-desc">
-                Voyager 1 has traveled billions of miles away from our solar system, carrying the Golden Record containing sounds 
-                and images of human civilization.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Interstellar Void')">Broadcast to Void 🛸</button>
-        </article>
-
-        <!-- CHAPTER 15 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 15 • Quantum Mechanics</span>
-            <h2 class="card-title">Quantum Entanglement & Teleportation</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1000" alt="Quantum Particles Matrix">
-            </div>
-            <p class="card-desc">
-                When two particles become entangled, the state of one instantly dictates the state of the other, regardless of 
-                whether they are separated by galaxies.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Quantum Entanglement')">Initiate Entanglement ⚛️</button>
-        </article>
-
-        <!-- CHAPTER 16 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 16 • Archaeology & History</span>
-            <h2 class="card-title">Göbekli Tepe: The World's First Temple</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1548013146-72479768bada?w=1000" alt="Ancient Stone Ruins">
-            </div>
-            <p class="card-desc">
-                Dating back over 11,500 years, Göbekli Tepe predates Stonehenge and was built before humanity invented agriculture or writing.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Ancient Temple')">Explore Ruins 🏛️</button>
-        </article>
-
-        <!-- CHAPTER 17 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 17 • Advanced Medicine</span>
-            <h2 class="card-title">Nanotechnology & Cellular Repair Bots</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=1000" alt="Microscopic Nanobots">
-            </div>
-            <p class="card-desc">
-                Future medical nanobots could travel through our bloodstream, targeting cancer cells at a molecular level and 
-                repairing damaged neural pathways.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Nanotech Grid')">Deploy Nanobots 🦠</button>
-        </article>
-
-        <!-- CHAPTER 18 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 18 • Stellar Engineering</span>
-            <h2 class="card-title">Dyson Spheres & Kardashev Civilizations</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=1000" alt="Star Dyson Sphere Concept">
-            </div>
-            <p class="card-desc">
-                A Dyson Sphere is a hypothetical megastructure that completely encompasses a star to capture its solar energy output.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Dyson Megaframe')">Power Up Megaframe ☀️</button>
-        </article>
-
-        <!-- CHAPTER 19 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 19 • Atmospheric Wonders</span>
-            <h2 class="card-title">Bioluminescent Aurora Borealis</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1000" alt="Northern Lights Aurora">
-            </div>
-            <p class="card-desc">
-                Northern Lights occur when charged solar particles collide with gases in Earth's upper atmosphere, producing neon green and purple curtains of light.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Aurora Sky')">Gaze into Aurora 🌌</button>
-        </article>
-
-        <!-- CHAPTER 20 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 20 • Temporal Physics</span>
-            <h2 class="card-title">Time Dilation & Relativistic Speed</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1000" alt="Futuristic Clock Space Time">
-            </div>
-            <p class="card-desc">
-                According to Einstein, time is relative to speed. Traveling close to the speed of light means decades can pass back on Earth while only years pass for the traveler.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Temporal Rift')">Bend Time-Space ⏳</button>
-        </article>
-
-        <!-- CHAPTER 21 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 21 • Cybernetic Habitats</span>
-            <h2 class="card-title">Sub-Aquatic Cities & Ocean Colonies</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1000" alt="Underwater Futuristic Base">
-            </div>
-            <p class="card-desc">
-                Visionary marine architects design self-sustaining underwater habitats powered by ocean thermal energy to house thousands of citizens.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Aquatic Colony')">Submerge to Colony 🌊</button>
-        </article>
-
-        <!-- CHAPTER 22 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 22 • Deep Space Exploration</span>
-            <h2 class="card-title">Exoplanets & The Search for Earth 2.0</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=1000" alt="Alien Planet Exoplanet">
-            </div>
-            <p class="card-desc">
-                Telescopes have discovered thousands of exoplanets in the habitable "Goldilocks Zone" where liquid water can exist on rocky surfaces.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Exoplanet Kepler')">Scan Exoplanet 🪐</button>
-        </article>
-
-        <!-- CHAPTER 23 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 23 • Neural Architecture</span>
-            <h2 class="card-title">Brain-Computer Interfaces & Telepathic Links</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=1000" alt="Cyberpunk Neural Link">
-            </div>
-            <p class="card-desc">
-                Brain-computer interfaces allow patients to control digital cursors and play video games using pure thought alone.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Neural Interface')">Engage Neural Link 🧠</button>
-        </article>
-
-        <!-- CHAPTER 24 -->
-        <article class="content-card">
-            <span class="card-tag">Chapter 24 • The Ultimate Horizon</span>
-            <h2 class="card-title">The Omega Point & Heat Death of the Universe</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000" alt="Distant Galaxy Cosmos">
-            </div>
-            <p class="card-desc">
-                The "Heat Death" theory suggests that over trillions of years, all stars will burn out and the cosmos will reach maximum entropy in eternal silence.
-            </p>
-            <button class="portal-btn" onclick="openPortal('Omega Horizon')">Peer into Omega Point 🌌</button>
-        </article>
-
-        <!-- ========================================== -->
-        <!-- ALIEN UNIVERSE SECTION (ROCKET DESTINATION)-->
-        <!-- ========================================== -->
-        <article class="content-card" id="alienUniverseSection" style="border: 2px solid var(--neon-yellow); background: rgba(25, 10, 40, 0.95);">
-            <span class="card-tag" style="color:var(--neon-yellow);">Chapter 25 • Extraterrestrial Archives</span>
-            <h2 class="card-title" style="color:var(--neon-yellow);">Alien Worlds & Deep Space Craft</h2>
-            <div class="img-frame">
-                <img src="https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=1000" alt="Alien Spaceship Cosmic Void">
-            </div>
-            <p class="card-desc">
-                Welcome to the Alien Sector! Scientists estimate that within the Milky Way galaxy alone, there are over 100 billion stars, 
-                most hosting planetary systems. Advanced interstellar craft utilize antimatter propulsion and theoretical Alcubierre warp drives 
-                to travel faster than light across cosmic voids.
-            </p>
-            <button class="portal-btn" style="background: linear-gradient(135deg, var(--neon-yellow), var(--neon-cyan)); color:#000;" onclick="openPortal('Extraterrestrial Contact Zone')">
-                Establish Alien Telemetry 👽
-            </button>
-        </article>
-
+    <!-- Main Trigger Button -->
+    <div class="rabbit-trigger-container">
+        <button id="rabbit-hole-btn" class="rabbit-btn">Drop Me Down 🔮</button>
     </div>
 
-    <!-- ROCKET COUNTDOWN OVERLAY MODAL -->
-    <div id="rocketModal" class="universe-modal">
-        <div class="modal-box" style="border-color: var(--neon-pink);">
-            <h2 style="color:var(--neon-yellow); font-size:2.5rem; margin-bottom:1rem;">🚀 ROCKET IGNITION 🚀</h2>
-            <p style="color:#cbd5e1; font-size:1.2rem; margin-bottom:1.5rem;">Warping engines warming up... Launching in:</p>
-            <div id="launchTimer" style="font-size: 5rem; font-weight: 900; color: var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink); margin-bottom: 1.5rem;">5</div>
-            <p style="color:var(--neon-cyan); font-size:0.95rem; font-family:monospace;">STATUS: THRUSTERS AT 100% CAPACITY</p>
-        </div>
-    </div>
-
-    <!-- UNIVERSE PORTAL MODAL -->
-    <div id="universeModal" class="universe-modal">
-        <div class="modal-box">
-            <h2 id="modalTitle" style="color:var(--neon-cyan); font-size:2.2rem; margin-bottom:1rem;">UNIVERSE PORTAL</h2>
-            <p id="modalDesc" style="color:#cbd5e1; font-size:1.1rem; line-height:1.6; margin-bottom:2rem;">
-                Warping to alternative dimension parameters...
-            </p>
-            <button class="portal-btn" onclick="closePortal()">Close Portal ❌</button>
-        </div>
-    </div>
+    <!-- Dynamic Modular Display Area -->
+    <main id="content-display" class="rabbit-content">
+        <div class="rabbit-placeholder">The rabbit hole is waiting... Hit the button above to begin your journey.</div>
+    </main>
 
     <script>
-        // --- Web Audio Synthesizer (5 Vibe Tracks) ---
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-        let isAudioPlaying = false;
-        let soundTimer = null;
-        let currentTrack = 0;
-
-        const vibeTracks = [
-            { name: "Energetic Rock", scale: [110, 130.81, 146.83, 164.81, 196, 220], wave: 'sawtooth', tempo: 200 },
-            { name: "Peaceful Drift", scale: [261.63, 293.66, 329.63, 392, 440, 523.25], wave: 'sine', tempo: 450 },
-            { name: "Cyber Synthwave", scale: [146.83, 164.81, 220, 293.66, 329.63, 440], wave: 'square', tempo: 170 },
-            { name: "Hard Industrial", scale: [65.41, 82.41, 98, 110, 130.81, 146.83], wave: 'sawtooth', tempo: 150 },
-            { name: "Ambient Cosmos", scale: [174.61, 196, 220, 261.63, 329.63, 392], wave: 'triangle', tempo: 500 }
-        ];
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioCtx();
-        }
-
-        function playSoundStep() {
-            if (!isAudioPlaying) return;
-            initAudio();
-
-            const track = vibeTracks[currentTrack];
-            const freq = track.scale[Math.floor(Math.random() * track.scale.length)];
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = track.wave;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.03, audioCtx.currentTime + 0.08);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.4);
-
-            soundTimer = setTimeout(playSoundStep, track.tempo);
-        }
-
-        function playTrack(index, btn) {
-            initAudio();
-            currentTrack = index;
-            document.querySelectorAll('.audio-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
+        /* ==========================================
+           GLOBAL JAVASCRIPT STATE ENGINE
+           ================================---------- */
+        window.RabbitHole = {
+            modules: [],
+            current: 0,
             
-            isAudioPlaying = true;
-            clearTimeout(soundTimer);
-            playSoundStep();
-        }
+            // Register a new interactive module
+            registerModule: function(moduleObj) {
+                this.modules.push(moduleObj);
+            },
 
-        function toggleAudio() {
-            isAudioPlaying = !isAudioPlaying;
-            if (!isAudioPlaying) clearTimeout(soundTimer);
-        }
+            // Load a module by its identifier or index
+            loadModule: function(identifier) {
+                const displayArea = document.getElementById('content-display');
+                if (!displayArea) return;
 
-        // --- Background Particle Canvas ---
-        const bgCanvas = document.getElementById('bgCanvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        let bgParticles = [];
-
-        function resizeBg() {
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeBg);
-        resizeBg();
-
-        for (let i = 0; i < 60; i++) {
-            bgParticles.push({
-                x: Math.random() * bgCanvas.width,
-                y: Math.random() * bgCanvas.height,
-                radius: Math.random() * 2 + 1,
-                vy: Math.random() * -0.5 - 0.2,
-                color: Math.random() > 0.5 ? '#00f3ff' : '#b000ff'
-            });
-        }
-
-        function animateBg() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            bgParticles.forEach(p => {
-                p.y += p.vy;
-                if (p.y < 0) p.y = bgCanvas.height;
-                bgCtx.fillStyle = p.color;
-                bgCtx.beginPath();
-                bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                bgCtx.fill();
-            });
-            requestAnimationFrame(animateBg);
-        }
-        animateBg();
-
-        // --- Arcade Interlude Mini-Game ---
-        const arcCanvas = document.getElementById('arcadeCanvas');
-        const arcCtx = arcCanvas.getContext('2d');
-        let score = 0;
-        let target = { x: 200, y: 125, r: 25 };
-
-        function drawArcade() {
-            arcCtx.clearRect(0, 0, arcCanvas.width, arcCanvas.height);
-            arcCtx.fillStyle = '#ff007f';
-            arcCtx.beginPath();
-            arcCtx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
-            arcCtx.fill();
-            arcCtx.strokeStyle = '#00f3ff';
-            arcCtx.lineWidth = 3;
-            arcCtx.stroke();
-        }
-
-        arcCanvas.addEventListener('click', (e) => {
-            const rect = arcCanvas.getBoundingClientRect();
-            const cx = e.clientX - rect.left;
-            const cy = e.clientY - rect.top;
-
-            const dist = Math.hypot(cx - target.x, cy - target.y);
-            if (dist < target.r) {
-                score += 10;
-                document.getElementById('gameScore').innerText = score;
-                target.x = Math.random() * (arcCanvas.width - 60) + 30;
-                target.y = Math.random() * (arcCanvas.height - 60) + 30;
-                drawArcade();
-            }
-        });
-        drawArcade();
-
-        // --- Rocket Launch & Synthesized Audio ---
-        let launchInterval = null;
-
-        function playRocketSound(freq, duration, type = 'sawtooth') {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + duration * 0.5);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function startRocketLaunch() {
-            let count = 5;
-            const modal = document.getElementById('rocketModal');
-            const timerDisplay = document.getElementById('launchTimer');
-            
-            modal.classList.add('active');
-            timerDisplay.innerText = count;
-            playRocketSound(80, 0.4, 'sawtooth');
-
-            launchInterval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    timerDisplay.innerText = count;
-                    playRocketSound(120 + (5 - count) * 40, 0.4, 'square');
+                let targetModule;
+                if (typeof identifier === 'number') {
+                    this.current = identifier;
+                    targetModule = this.modules[this.current];
                 } else {
-                    clearInterval(launchInterval);
-                    timerDisplay.innerText = "🚀 BLASTOFF!";
-                    
-                    playRocketSound(55, 1.8, 'sawtooth');
-                    playRocketSound(40, 2.0, 'triangle');
-
-                    setTimeout(() => {
-                        modal.classList.remove('active');
-                        const alienSec = document.getElementById('alienUniverseSection');
-                        if (alienSec) {
-                            alienSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            alienSec.style.boxShadow = '0 0 60px #ffe600';
-                            setTimeout(() => {
-                                alienSec.style.boxShadow = '0 0 35px rgba(0, 0, 0, 0.5)';
-                            }, 2000);
-                        }
-                    }, 1000);
+                    targetModule = this.modules.find(m => m.id === identifier);
+                    if (targetModule) {
+                        this.current = this.modules.indexOf(targetModule);
+                    }
                 }
-            }, 1000);
-        }
 
-        // --- Portal Modal Logic ---
-        function openPortal(name) {
-            document.getElementById('modalTitle').innerText = name;
-            document.getElementById('modalDesc').innerText = "Initializing quantum bridge to " + name + "... Dimensional alignment complete!";
-            document.getElementById('universeModal').classList.add('active');
-        }
+                if (!targetModule) return;
 
-        function closePortal() {
-            document.getElementById('universeModal').classList.remove('active');
-        }
+                // Clear container and render module HTML template or DOM element
+                displayArea.innerHTML = '';
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'rabbit-card is-active';
+                cardWrapper.innerHTML = targetModule.render();
+                displayArea.appendChild(cardWrapper);
+
+                // Execute any lifecycle mount hook if defined
+                if (typeof targetModule.onMount === 'function') {
+                    targetModule.onMount(cardWrapper);
+                }
+            },
+
+            // Random teleportation trigger
+            randomize: function() {
+                if (this.modules.length === 0) return;
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * this.modules.length);
+                } while (randomIndex === this.current && this.modules.length > 1);
+                
+                this.loadModule(randomIndex);
+            },
+
+            // Initialize event bindings
+            init: function() {
+                const triggerBtn = document.getElementById('rabbit-hole-btn');
+                if (triggerBtn) {
+                    triggerBtn.addEventListener('click', () => {
+                        if (this.modules.length === 0) {
+                            alert("No modules loaded yet! Ready for upcoming stackable blocks.");
+                            return;
+                        }
+                        this.randomize();
+                    });
+                }
+            }
+        };
+
+        // Auto-initialize core state engine on DOM content loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.RabbitHole.init();
+        });
+
+        // JAVASCRIPT MODULES GO HERE
     </script>
 </body>
 </html>
+    <!-- ==========================================
+       MODULE 1: WHAT-IF PHYSICS SANDBOX (STACKABLE)
+       ========================================== -->
+    <style>
+        .sandbox-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .sandbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sandbox-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #A855F7;
+            letter-spacing: 0.05em;
+        }
+
+        .sandbox-canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            background: rgba(10, 10, 12, 0.85);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .sandbox-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .sandbox-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .sandbox-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sandbox-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .sandbox-label {
+            font-size: 0.85rem;
+            color: #9CA3AF;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sandbox-label span {
+            color: #06B6D4;
+            font-weight: 600;
+        }
+
+        .sandbox-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #1E1E28;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .sandbox-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #06B6D4;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+            transition: transform 0.2s;
+        }
+
+        .sandbox-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .sandbox-action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+
+        .sandbox-hint {
+            font-size: 0.8rem;
+            color: #6B7280;
+            font-style: italic;
+        }
+
+        .sandbox-reset-btn {
+            background: transparent;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #F3F4F6;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sandbox-reset-btn:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: #A855F7;
+        }
+    </style>
+
+    <script>
+        // Self-register Module 1 into window.RabbitHole architecture
+        (function() {
+            const whatIfModule = {
+                id: 'what-if-sandbox',
+                
+                render: function() {
+                    return `
+                        <div class="sandbox-card">
+                            <div class="sandbox-header">
+                                <h3 class="sandbox-title">🌌 What-If Physics Sandbox</h3>
+                                <span class="sandbox-hint">Click canvas to spawn energy</span>
+                            </div>
+                            <div class="sandbox-canvas-wrap">
+                                <canvas id="sandbox-canvas-el" class="sandbox-canvas"></canvas>
+                            </div>
+                            <div class="sandbox-controls">
+                                <div class="sandbox-control-group">
+                                    <label class="sandbox-label">Gravity Level: <span id="val-gravity">0.3</span></label>
+                                    <input type="range" id="slider-gravity" class="sandbox-slider" min="-0.5" max="1.0" step="0.05" value="0.3">
+                                </div>
+                                <div class="sandbox-control-group">
+                                    <label class="sandbox-label">Particle Elasticity: <span id="val-elasticity">0.8</span></label>
+                                    <input type="range" id="slider-elasticity" class="sandbox-slider" min="0.1" max="1.0" step="0.05" value="0.8">
+                                </div>
+                            </div>
+                            <div class="sandbox-action-row">
+                                <span class="sandbox-hint">Simulating autonomous neon particles in real time.</span>
+                                <button id="sandbox-reset" class="sandbox-reset-btn">Respawn Particles</button>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                onMount: function(wrapperEl) {
+                    const canvas = wrapperEl.querySelector('#sandbox-canvas-el');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+
+                    // Set canvas internal resolution matching layout size
+                    function resizeCanvas() {
+                        canvas.width = canvas.clientWidth;
+                        canvas.height = canvas.clientHeight;
+                    }
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+
+                    // Physics state variables
+                    let particles = [];
+                    const particleCount = 35;
+                    const colors = ['#A855F7', '#06B6D4', '#EC4899', '#3B82F6', '#10B981'];
+
+                    function initParticles() {
+                        particles = [];
+                        for (let i = 0; i < particleCount; i++) {
+                            particles.push({
+                                x: Math.random() * (canvas.width - 40) + 20,
+                                y: Math.random() * (canvas.height - 40) + 20,
+                                vx: (Math.random() - 0.5) * 6,
+                                vy: (Math.random() - 0.5) * 6,
+                                radius: Math.random() * 8 + 6,
+                                color: colors[Math.floor(Math.random() * colors.length)]
+                            });
+                        }
+                    }
+                    initParticles();
+
+                    // Slider DOM references
+                    const gravitySlider = wrapperEl.querySelector('#slider-gravity');
+                    const elasticitySlider = wrapperEl.querySelector('#slider-elasticity');
+                    const valGravity = wrapperEl.querySelector('#val-gravity');
+                    const valElasticity = wrapperEl.querySelector('#val-elasticity');
+                    const resetBtn = wrapperEl.querySelector('#sandbox-reset');
+
+                    let animationFrameId;
+
+                    // Simulation Loop
+                    function loop() {
+                        const gravity = parseFloat(gravitySlider.value);
+                        const elasticity = parseFloat(elasticitySlider.value);
+
+                        valGravity.textContent = gravity.toFixed(2);
+                        valElasticity.textContent = elasticity.toFixed(2);
+
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // Update & Draw Particles
+                        for (let i = 0; i < particles.length; i++) {
+                            let p = particles[i];
+
+                            // Apply gravity
+                            p.vy += gravity;
+                            
+                            // Apply drag damping
+                            p.vx *= 0.99;
+                            p.vy *= 0.99;
+
+                            p.x += p.vx;
+                            p.y += p.vy;
+
+                            // Wall boundaries collision with elasticity
+                            if (p.x - p.radius < 0) {
+                                p.x = p.radius;
+                                p.vx *= -elasticity;
+                            } else if (p.x + p.radius > canvas.width) {
+                                p.x = canvas.width - p.radius;
+                                p.vx *= -elasticity;
+                            }
+
+                            if (p.y - p.radius < 0) {
+                                p.y = p.radius;
+                                p.vy *= -elasticity;
+                            } else if (p.y + p.radius > canvas.height) {
+                                p.y = canvas.height - p.radius;
+                                p.vy *= -elasticity;
+                            }
+
+                            // Render Glowing Ball
+                            ctx.save();
+                            ctx.shadowBlur = 12;
+                            ctx.shadowColor = p.color;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                            ctx.fillStyle = p.color;
+                            ctx.fill();
+                            ctx.restore();
+                        }
+
+                        animationFrameId = requestAnimationFrame(loop);
+                    }
+                    loop();
+
+                    // Click to spawn burst
+                    canvas.addEventListener('click', (e) => {
+                        const rect = canvas.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left;
+                        const clickY = e.clientY - rect.top;
+
+                        for (let i = 0; i < 5; i++) {
+                            particles.push({
+                                x: clickX,
+                                y: clickY,
+                                vx: (Math.random() - 0.5) * 10,
+                                vy: (Math.random() - 0.5) * 10,
+                                radius: Math.random() * 10 + 5,
+                                color: colors[Math.floor(Math.random() * colors.length)]
+                            });
+                        }
+                        if (particles.length > 80) particles.splice(0, 5);
+                    });
+
+                    resetBtn.addEventListener('click', initParticles);
+
+                    // Clean up animation frame when module unloads
+                    const originalUnload = whatIfModule.onUnload;
+                    whatIfModule.onUnload = function() {
+                        cancelAnimationFrame(animationFrameId);
+                        window.removeEventListener('resize', resizeCanvas);
+                        if (typeof originalUnload === 'function') originalUnload();
+                    };
+                }
+            };
+
+            // Register module into global state
+            if (window.RabbitHole && typeof window.RabbitHole.registerModule === 'function') {
+                window.RabbitHole.registerModule(whatIfModule);
+            }
+        })();
+    </script>
+    <!-- ==========================================
+       MODULE 8: MATRIX RAIN & AUDIO CHILL LOUNGE (STACKABLE)
+       ========================================== -->
+    <style>
+        .matrix-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .matrix-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .matrix-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #10B981;
+            letter-spacing: 0.05em;
+        }
+
+        .matrix-canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #050508;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
+        }
+
+        .matrix-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .matrix-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .matrix-controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .matrix-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .matrix-label {
+            font-size: 0.85rem;
+            color: #9CA3AF;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .matrix-label span {
+            color: #10B981;
+            font-weight: 600;
+        }
+
+        .matrix-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #1E1E28;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .matrix-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #10B981;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+            transition: transform 0.2s;
+        }
+
+        .matrix-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .matrix-audio-btn {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #F3F4F6;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .matrix-audio-btn:hover {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10B981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .matrix-hint {
+            font-size: 0.8rem;
+            color: #6B7280;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+
+    <script>
+        // Self-register Module 8 into window.RabbitHole architecture
+        (function() {
+            const matrixChillModule = {
+                id: 'matrix-chill',
+
+                render: function() {
+                    return `
+                        <div class="matrix-card">
+                            <div class="matrix-header">
+                                <h3 class="matrix-title">💻 Matrix Rain & Ambient Rain</h3>
+                                <span class="matrix-hint">Procedural Synthesis</span>
+                            </div>
+                            
+                            <div class="matrix-canvas-wrap">
+                                <canvas id="matrix-canvas-el" class="matrix-canvas"></canvas>
+                            </div>
+
+                            <div class="matrix-controls-grid">
+                                <div class="matrix-control-group">
+                                    <label class="matrix-label">Fall Velocity Speed: <span id="val-matrix-speed">33</span>ms</label>
+                                    <input type="range" id="slider-matrix-speed" class="matrix-slider" min="15" max="80" step="5" value="33">
+                                </div>
+                                <div style="display: flex; align-items: flex-end;">
+                                    <button id="matrix-audio-toggle" class="matrix-audio-btn" style="width: 100%;">
+                                        <span>🌧️</span> Play Ambient Rain
+                                    </button>
+                                </div>
+                            </div>
+
+                            <span class="matrix-hint">Immersive green character cascades paired with procedural white-noise rain synthesis.</span>
+                        </div>
+                    `;
+                },
+
+                onMount: function(wrapperEl) {
+                    const canvas = wrapperEl.querySelector('#matrix-canvas-el');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+
+                    function resizeCanvas() {
+                        canvas.width = canvas.clientWidth;
+                        canvas.height = canvas.clientHeight;
+                    }
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+
+                    // Matrix Characters (Latin, Katakana, Numbers, Math symbols)
+                    const chars = 'ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/?[]*+@#$';
+                    const fontSize = 14;
+                    let columns = Math.floor(canvas.width / fontSize);
+                    let drops = [];
+
+                    function initDrops() {
+                        columns = Math.floor(canvas.width / fontSize);
+                        drops = [];
+                        for (let i = 0; i < columns; i++) {
+                            drops[i] = Math.floor(Math.random() * -50);
+                        }
+                    }
+                    initDrops();
+
+                    const speedSlider = wrapperEl.querySelector('#slider-matrix-speed');
+                    const valSpeed = wrapperEl.querySelector('#val-matrix-speed');
+                    let lastTime = 0;
+                    let animationFrameId;
+
+                    function drawMatrix(timestamp) {
+                        const interval = parseInt(speedSlider.value);
+                        valSpeed.textContent = interval;
+
+                        if (!lastTime) lastTime = timestamp;
+                        const elapsed = timestamp - lastTime;
+
+                        if (elapsed > interval) {
+                            lastTime = timestamp - (elapsed % interval);
+
+                            // Semi-transparent black fade to create tail effect
+                            ctx.fillStyle = 'rgba(5, 5, 8, 0.12)';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                            ctx.fillStyle = '#10B981'; // Neon Matrix Green
+                            ctx.font = fontSize + 'px monospace';
+
+                            for (let i = 0; i < drops.length; i++) {
+                                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                                const x = i * fontSize;
+                                const y = drops[i] * fontSize;
+
+                                // Lead character highlight
+                                if (Math.random() > 0.85) {
+                                    ctx.fillStyle = '#A7F3D0';
+                                } else {
+                                    ctx.fillStyle = '#10B981';
+                                }
+
+                                ctx.fillText(text, x, y);
+
+                                if (y > canvas.height && Math.random() > 0.975) {
+                                    drops[i] = 0;
+                                }
+                                drops[i]++;
+                            }
+                        }
+
+                        animationFrameId = requestAnimationFrame(drawMatrix);
+                    }
+                    animationFrameId = requestAnimationFrame(drawMatrix);
+
+                    // Web Audio API Procedural Rain (White Noise + LowPass Filter)
+                    let audioCtx = null;
+                    let noiseNode = null;
+                    let filterNode = null;
+                    let gainNode = null;
+                    let isPlayingAudio = false;
+                    const audioBtn = wrapperEl.querySelector('#matrix-audio-toggle');
+
+                    function toggleAmbientRain() {
+                        if (!audioCtx) {
+                            const AudioContext = window.AudioContext || window.webkitAudioContext;
+                            audioCtx = new AudioContext();
+                        }
+                        if (audioCtx.state === 'suspended') {
+                            audioCtx.resume();
+                        }
+
+                        if (!isPlayingAudio) {
+                            // Create White Noise buffer (2 seconds)
+                            const bufferSize = audioCtx.sampleRate * 2;
+                            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                            const output = buffer.getChannelData(0);
+                            for (let i = 0; i < bufferSize; i++) {
+                                output[i] = Math.random() * 2 - 1;
+                            }
+
+                            noiseNode = audioCtx.createBufferSource();
+                            noiseNode.buffer = buffer;
+                            noiseNode.loop = true;
+
+                            // Biquad Filter to simulate soft falling rain (Low Pass)
+                            filterNode = audioCtx.createBiquadFilter();
+                            filterNode.type = 'lowpass';
+                            filterNode.frequency.value = 850;
+
+                            gainNode = audioCtx.createGain();
+                            gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+                            noiseNode.connect(filterNode);
+                            filterNode.connect(gainNode);
+                            gainNode.connect(audioCtx.destination);
+
+                            noiseNode.start();
+                            isPlayingAudio = true;
+                            audioBtn.innerHTML = '<span>⏸️</span> Pause Ambient Rain';
+                            audioBtn.style.background = 'rgba(16, 185, 129, 0.3)';
+                        } else {
+                            if (noiseNode) {
+                                noiseNode.stop();
+                                noiseNode.disconnect();
+                            }
+                            isPlayingAudio = false;
+                            audioBtn.innerHTML = '<span>🌧️</span> Play Ambient Rain';
+                            audioBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+                        }
+                    }
+
+                    audioBtn.addEventListener('click', toggleAmbientRain);
+
+                    // Cleanup hook on unmount
+                    const originalUnload = matrixChillModule.onUnload;
+                    matrixChillModule.onUnload = function() {
+                        cancelAnimationFrame(animationFrameId);
+                        window.removeEventListener('resize', resizeCanvas);
+                        if (isPlayingAudio && noiseNode) {
+                            try { noiseNode.stop(); } catch(e) {}
+                        }
+                        if (audioCtx && audioCtx.state !== 'closed') {
+                            audioCtx.close();
+                        }
+                        if (typeof originalUnload === 'function') originalUnload();
+                    };
+                }
+            };
+
+            // Register module into global state
+            if (window.RabbitHole && typeof window.RabbitHole.registerModule === 'function') {
+                window.RabbitHole.registerModule(matrixChillModule);
+            }
+        })();
+    </script>

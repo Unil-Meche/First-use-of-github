@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VoxelCraft 3D — Mobile & Desktop Sandbox</title>
+<title>VoxelCraft 3D — Dual Stick Mobile Sandbox</title>
 <style>
   * {
     box-sizing: border-box;
@@ -49,11 +49,10 @@
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 0 2px rgba(0,0,0,0.8);
   }
-
   #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
   #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
 
-  /* HUD & Debug Overlay */
+  /* HUD Top */
   #hud-top {
     position: fixed;
     top: 14px;
@@ -69,7 +68,6 @@
     border: 1px solid rgba(255, 255, 255, 0.15);
     z-index: 10;
   }
-
   #hud-top strong { color: #38bdf8; }
 
   /* Hotbar */
@@ -142,7 +140,9 @@
     z-index: 10;
   }
 
-  /* Android On-Screen Touch Controls */
+  /* ==========================================
+     ANDROID DUAL CONTROLLER UI STYLES
+     ========================================== */
   #mobile-controls {
     position: fixed;
     inset: 0;
@@ -150,44 +150,48 @@
     z-index: 30;
   }
 
-  .touch-pad {
+  /* Left Virtual Joystick Area */
+  #joystick-base {
     position: absolute;
-    bottom: 24px;
-    left: 20px;
-    width: 140px;
-    height: 140px;
+    bottom: 30px;
+    left: 30px;
+    width: 130px;
+    height: 130px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
     pointer-events: auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 6px;
+    touch-action: none;
   }
 
-  .t-btn {
-    background: rgba(255, 255, 255, 0.28);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 12px;
-    color: white;
-    font-weight: 800;
-    font-size: 18px;
-    display: grid;
-    place-items: center;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  }
-  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.65); transform: scale(0.95); }
-  .t-up { grid-column: 2; grid-row: 1; }
-  .t-left { grid-column: 1; grid-row: 2; }
-  .t-right { grid-column: 3; grid-row: 2; }
-  .t-down { grid-column: 2; grid-row: 3; }
-
-  .action-pad {
+  #joystick-thumb {
     position: absolute;
-    bottom: 24px;
-    right: 20px;
+    top: 39px;
+    left: 39px;
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: transform 0.05s linear;
+  }
+
+  /* Right Side Action Buttons & Look Zone */
+  .right-action-cluster {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
     pointer-events: auto;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 12px;
   }
 
   .act-btn {
@@ -204,7 +208,7 @@
     backdrop-filter: blur(6px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
   }
-  .act-btn:active { transform: scale(0.9); }
+  .act-btn:active { transform: scale(0.9); background: rgba(51, 65, 85, 0.9); }
 
   /* Start Menu Overlay */
   #menu-overlay {
@@ -295,27 +299,30 @@
   <div id="block-label">Grass Block</div>
   <div id="hotbar"></div>
 
-  <!-- Android On-Screen D-Pad & Action Buttons -->
+  <!-- Android Dual Joystick Controller Overlay -->
   <div id="mobile-controls">
-    <div class="touch-pad">
-      <div class="t-btn t-up" id="btn-w">▲</div>
-      <div class="t-btn t-left" id="btn-a">◀</div>
-      <div class="t-btn t-right" id="btn-d">▶</div>
-      <div class="t-btn t-down" id="btn-s">▼</div>
+    <div id="joystick-base">
+      <div id="joystick-thumb"></div>
     </div>
-    <div class="action-pad">
-      <div class="act-btn" id="btn-jump">JUMP</div>
-      <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.8);">BREAK</div>
-      <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.8);">PLACE</div>
+    <div class="right-action-cluster">
+      <div class="action-row">
+        <div class="act-btn" id="btn-jump">JUMP</div>
+      </div>
+      <div class="action-row">
+        <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.8);">BREAK</div>
+        <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.8);">PLACE</div>
+      </div>
     </div>
   </div>
 
   <div id="menu-overlay">
     <div class="menu-box">
       <h1>VoxelCraft 3D</h1>
-      <p>Android & Browser Sandbox Engine</p>
+      <p>Android Dual-Stick Sandbox Edition</p>
       <div class="controls-info">
-        <div>📱 <span>Android:</span> Use left D-pad to walk, drag anywhere on the screen to look around, tap Jump/Break/Place.</div>
+        <div>🕹️ <span>Left Thumb:</span> Slide inside left circle to walk.</div>
+        <div>👁️ <span>Right Screen:</span> Drag anywhere on the right side to look around.</div>
+        <div>🔨 <span>Buttons:</span> Tap Jump, Break, or Place.</div>
       </div>
       <button id="start-btn" class="btn-play">Start Game</button>
       <button id="regen-btn" class="btn-secondary">Generate New World</button>
@@ -498,7 +505,6 @@
         iconCopy.getContext('2d').drawImage(b.icon, 0, 0);
         slot.appendChild(iconCopy);
         
-        // Use pointerdown/click to ensure mobile hotbar selection works smoothly
         slot.addEventListener('click', (e) => {
           e.stopPropagation();
           selectSlot(index);
@@ -516,7 +522,7 @@
     }
 
     // ==========================================
-    // 4. PLAYER & TOUCH CONTROLS BINDING
+    // 4. PLAYER & DUAL CONTROLLER LOGIC
     // ==========================================
     const player = {
       pos: new THREE.Vector3(0, 10, 0),
@@ -531,34 +537,6 @@
     const keys = {};
     let isGameStarted = false;
 
-    // Helper to bind touch buttons reliably
-    function bindTouchButton(elementId, keyName) {
-      const el = document.getElementById(elementId);
-      if (!el) return;
-      el.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys[keyName] = true;
-        el.classList.add('touched');
-      }, { passive: false });
-
-      el.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys[keyName] = false;
-        el.classList.remove('touched');
-      }, { passive: false });
-
-      el.addEventListener('touchcancel', (e) => {
-        keys[keyName] = false;
-        el.classList.remove('touched');
-      });
-    }
-
-    bindTouchButton('btn-w', 'KeyW');
-    bindTouchButton('btn-a', 'KeyA');
-    bindTouchButton('btn-s', 'KeyS');
-    bindTouchButton('btn-d', 'KeyD');
-    bindTouchButton('btn-jump', 'Space');
-
     // Menu Triggers
     const menuOverlay = document.getElementById('menu-overlay');
     document.getElementById('start-btn').addEventListener('click', () => {
@@ -571,57 +549,103 @@
       isGameStarted = true;
     });
 
-    // Android Touch Look Handling (Swipe anywhere on screen)
-    let activeTouchId = null;
-    let lastTouchX = 0, lastTouchY = 0;
+    // --- LEFT VIRTUAL JOYSTICK STATE ---
+    let joystickTouchId = null;
+    let joystickVector = { x: 0, y: 0 };
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickThumb = document.getElementById('joystick-thumb');
 
-    window.addEventListener('touchstart', (e) => {
-      if (!isGameStarted) return;
-      // Pick the first touch that is not on a control button or hotbar
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        const target = document.elementFromPoint(t.clientX, t.clientY);
-        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar') || target.closest('#menu-overlay'))) {
-          continue;
-        }
-        if (activeTouchId === null) {
-          activeTouchId = t.identifier;
-          lastTouchX = t.clientX;
-          lastTouchY = t.clientY;
-          break;
-        }
-      }
-    }, { passive: true });
+    joystickBase.addEventListener('touchstart', (e) => {
+      if (!isGameStarted || joystickTouchId !== null) return;
+      const touch = e.changedTouches[0];
+      joystickTouchId = touch.identifier;
+      updateJoystick(touch);
+    }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
-      if (!isGameStarted || activeTouchId === null) return;
+      if (!isGameStarted) return;
       for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (t.identifier === activeTouchId) {
-          const dx = t.clientX - lastTouchX;
-          const dy = t.clientY - lastTouchY;
-          lastTouchX = t.clientX;
-          lastTouchY = t.clientY;
-
-          const sensitivity = 0.0035;
-          player.yaw -= dx * sensitivity;
-          player.pitch -= dy * sensitivity;
-          player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
-          break;
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystickTouchId) {
+          updateJoystick(touch);
+        } else if (touch.identifier === rightLookTouchId) {
+          updateRightLook(touch);
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     window.addEventListener('touchend', (e) => {
       for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier === activeTouchId) {
-          activeTouchId = null;
-          break;
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystickTouchId) {
+          joystickTouchId = null;
+          joystickVector = { x: 0, y: 0 };
+          joystickThumb.style.transform = `translate(0px, 0px)`;
+        }
+        if (touch.identifier === rightLookTouchId) {
+          rightLookTouchId = null;
         }
       }
     }, { passive: true });
 
-    // Desktop Keyboard & Mouse Fallbacks
+    function updateJoystick(touch) {
+      const rect = joystickBase.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      let dx = touch.clientX - centerX;
+      let dy = touch.clientY - centerY;
+      const dist = Math.hypot(dx, dy);
+      const maxRadius = 45;
+
+      if (dist > maxRadius) {
+        dx = (dx / dist) * maxRadius;
+        dy = (dy / dist) * maxRadius;
+      }
+
+      joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+      joystickVector.x = dx / maxRadius;
+      joystickVector.y = dy / maxRadius; // Up/Down
+    }
+
+    // --- RIGHT LOOK & SWIPE STATE ---
+    let rightLookTouchId = null;
+    let lastLookX = 0, lastLookY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      if (!isGameStarted) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        // If touch is on right half of screen and not on UI buttons
+        if (touch.clientX > window.innerWidth / 2 && rightLookTouchId === null) {
+          const target = document.elementFromPoint(touch.clientX, touch.clientY);
+          if (target && (target.closest('.right-action-cluster') || target.closest('#hotbar'))) continue;
+          
+          rightLookTouchId = touch.identifier;
+          lastLookX = touch.clientX;
+          lastLookY = touch.clientY;
+        }
+      }
+    }, { passive: true });
+
+    function updateRightLook(touch) {
+      const dx = touch.clientX - lastLookX;
+      const dy = touch.clientY - lastLookY;
+      lastLookX = touch.clientX;
+      lastLookY = touch.clientY;
+
+      const sensitivity = 0.0038;
+      player.yaw -= dx * sensitivity;
+      player.pitch -= dy * sensitivity;
+      player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
+    }
+
+    // Jump, Break, Place Button bindings
+    const jumpBtn = document.getElementById('btn-jump');
+    jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Space'] = true; }, { passive: false });
+    jumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['Space'] = false; }, { passive: false });
+
+    // Desktop Mouse Fallbacks
     window.addEventListener('keydown', (e) => { keys[e.code] = true; });
     window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
@@ -707,10 +731,19 @@
       const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
       const moveDir = new THREE.Vector3();
 
-      if (keys['KeyW']) moveDir.add(forward);
-      if (keys['KeyS']) moveDir.sub(forward);
-      if (keys['KeyD']) moveDir.add(right);
-      if (keys['KeyA']) moveDir.sub(right);
+      // Combine keyboard WASD + Mobile Joystick Vector
+      let moveX = 0, moveZ = 0;
+      if (keys['KeyW']) moveZ += 1;
+      if (keys['KeyS']) moveZ -= 1;
+      if (keys['KeyD']) moveX += 1;
+      if (keys['KeyA']) moveX -= 1;
+
+      // Add joystick vector (joystickVector.y is forward/backward, joystickVector.x is left/right)
+      moveZ -= joystickVector.y;
+      moveX += joystickVector.x;
+
+      if (moveZ !== 0) moveDir.addScaledVector(forward, moveZ);
+      if (moveX !== 0) moveDir.addScaledVector(right, moveX);
       if (moveDir.lengthSq() > 0) moveDir.normalize();
 
       const speed = 5.2;

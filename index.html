@@ -1,690 +1,828 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mobile Voxel Engine - Part 8 (Multiplayer & Custom Textures)</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #87CEEB;
-            touch-action: none;
-        }
-        canvas { display: block; }
-        #crosshair {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 14px; height: 14px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 5;
-        }
-        #crosshair::before, #crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 0 2px #000;
-        }
-        #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
-        #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AETHERCRAFT 3D — Procedural Voxel Survival RPG</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { overflow: hidden; background: #090d16; font-family: 'Segoe UI', system-ui, sans-serif; color: #f8fafc; }
+    canvas { display: block; width: 100vw; height: 100vh; }
 
-        /* Overlays */
-        #damage-flash {
-            position: absolute; inset: 0;
-            background: rgba(220, 0, 0, 0.45);
-            pointer-events: none; opacity: 0;
-            transition: opacity 0.15s ease-out; z-index: 15;
-        }
-        #underwater-tint {
-            position: absolute; inset: 0;
-            background: rgba(15, 85, 190, 0.42);
-            pointer-events: none; display: none; z-index: 4;
-        }
-        #toast-msg {
-            position: absolute; top: 52px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.75); color: #ffff55;
-            padding: 6px 14px; border-radius: 6px;
-            font-size: 12px; font-weight: bold; pointer-events: none;
-            opacity: 0; transition: opacity 0.25s; z-index: 30;
-        }
+    /* Crosshair */
+    #crosshair {
+      position: fixed; top: 50%; left: 50%; width: 18px; height: 18px;
+      transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ''; position: absolute; background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+    #crosshair::before { top: 8px; left: 0; width: 18px; height: 2px; }
+    #crosshair::after { left: 8px; top: 0; width: 2px; height: 18px; }
 
-        /* HUD & Touch Controls */
-        #ui-layer {
-            position: absolute; inset: 0;
-            pointer-events: none; display: flex;
-            flex-direction: column; justify-content: space-between;
-            padding: 10px; z-index: 10;
-        }
-        #top-hud {
-            display: flex; justify-content: space-between; align-items: center;
-            color: white; text-shadow: 1px 1px 2px #000;
-            font-weight: bold; font-size: 11px;
-            background: rgba(0,0,0,0.35); padding: 6px 8px;
-            border-radius: 6px; gap: 4px;
-        }
-        .hud-btn-group {
-            pointer-events: auto; display: flex; gap: 4px;
-        }
-        .mini-btn {
-            background: #3e7a3e; color: white; border: 1px solid #a5d6a7;
-            border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: bold; cursor: pointer;
-        }
-        .mini-btn.mp { background: #1565c0; border-color: #90caf9; }
-        .mini-btn.reset { background: #8e3535; border-color: #ef9a9a; }
-        .mini-btn:active { transform: scale(0.95); }
+    /* Top-Left HUD */
+    #hud-top {
+      position: fixed; top: 16px; left: 16px; z-index: 10;
+      background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(8px);
+      border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px;
+      padding: 12px 16px; min-width: 240px;
+    }
+    .stat-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 600; }
+    .bar-bg { width: 100%; height: 10px; background: #1e293b; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+    .bar-fill { height: 100%; transition: width 0.15s ease; }
+    #hp-fill { background: linear-gradient(90deg, #ef4444, #f87171); width: 100%; }
+    #stamina-fill { background: linear-gradient(90deg, #0ea5e9, #38bdf8); width: 100%; }
+    .meta-tags { display: flex; gap: 10px; font-size: 12px; color: #cbd5e1; }
+    .tag { background: rgba(30, 41, 59, 0.9); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(148,163,184,0.2); }
 
-        #controls-row {
-            display: flex; justify-content: space-between; align-items: flex-end; width: 100%;
-        }
-        .dpad {
-            pointer-events: auto; display: grid;
-            grid-template-columns: repeat(3, 52px);
-            grid-template-rows: repeat(3, 52px); gap: 4px;
-        }
-        .btn {
-            background: rgba(255, 255, 255, 0.25);
-            border: 2px solid rgba(255, 255, 255, 0.65);
-            border-radius: 10px; color: white; font-size: 16px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
-        }
-        .btn:active { background: rgba(255, 255, 255, 0.6); }
-        #btn-up { grid-column: 2; grid-row: 1; }
-        #btn-left { grid-column: 1; grid-row: 2; }
-        #btn-right { grid-column: 3; grid-row: 2; }
-        #btn-down { grid-column: 2; grid-row: 3; }
+    /* Bottom Hotbar */
+    #hotbar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 10;
+      background: rgba(15, 23, 42, 0.85); padding: 8px; border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3); backdrop-filter: blur(8px);
+    }
+    .slot {
+      width: 64px; height: 64px; border-radius: 10px; background: #1e293b;
+      border: 2px solid transparent; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative; transition: 0.12s;
+    }
+    .slot.active { border-color: #38bdf8; background: #0f172a; transform: translateY(-4px); box-shadow: 0 6px 16px rgba(56,189,248,0.3); }
+    .slot-key { position: absolute; top: 4px; left: 6px; font-size: 10px; color: #94a3b8; font-weight: 700; }
+    .slot-count { position: absolute; bottom: 4px; right: 6px; font-size: 12px; font-weight: 700; color: #f8fafc; }
+    .slot-icon { width: 26px; height: 26px; border-radius: 4px; margin-bottom: 4px; box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
+    .slot-name { font-size: 10px; color: #cbd5e1; }
 
-        .action-group {
-            pointer-events: auto; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-        }
-        .action-row { display: flex; gap: 8px; }
-        .action-btn {
-            width: 58px; height: 58px; border-radius: 50%;
-            background: rgba(0, 0, 0, 0.45); border: 2px solid rgba(255, 255, 255, 0.7);
-            color: white; font-size: 10px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        .action-btn:active { background: rgba(255, 255, 255, 0.4); }
-        #btn-eat { background: rgba(180, 90, 20, 0.75); border-color: #ffcc80; display: none; }
-        #btn-interact { background: rgba(140, 70, 20, 0.85); border-color: #ffb74d; display: none; }
+    /* Crafting Modal */
+    #craft-menu {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8;
+      border-radius: 16px; padding: 22px; width: 380px; z-index: 30;
+      display: none; box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+    }
+    #craft-menu h2 { font-size: 18px; margin-bottom: 12px; color: #38bdf8; }
+    .recipe {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #1e293b; padding: 10px 12px; border-radius: 10px; margin-bottom: 10px;
+    }
+    .recipe-info div:first-child { font-weight: 700; font-size: 14px; }
+    .recipe-info div:last-child { font-size: 12px; color: #94a3b8; }
+    .craft-btn {
+      background: #0284c7; color: white; border: none; padding: 7px 14px;
+      border-radius: 8px; font-weight: 700; cursor: pointer;
+    }
+    .craft-btn:hover { background: #0369a1; }
 
-        #status-bars {
-            align-self: center; display: flex; justify-content: space-between;
-            width: 100%; max-width: 320px; margin-top: 4px;
-            padding: 2px 4px; font-size: 12px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;
-        }
-
-        #hotbar-container {
-            pointer-events: auto; align-self: center; display: flex; gap: 4px;
-            background: rgba(30, 30, 30, 0.85); padding: 4px; border: 3px solid #555;
-            border-radius: 6px; margin-top: 2px;
-        }
-        .slot {
-            width: 44px; height: 44px; background: #8b8b8b;
-            border: 2px solid #373737; border-right-color: #fff; border-bottom-color: #fff;
-            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
-        }
-        .slot.selected { border: 3px solid #ffff55; transform: scale(1.06); }
-        .item-icon {
-            width: 24px; height: 24px; border: 1px solid rgba(0,0,0,0.4);
-            background-size: cover; image-rendering: pixelated;
-        }
-        .item-count {
-            position: absolute; bottom: 2px; right: 4px; color: white;
-            font-size: 10px; font-weight: bold; text-shadow: 1px 1px 0 #000;
-        }
-        .item-label {
-            font-size: 7px; color: #fff; text-shadow: 1px 1px 0 #000;
-            margin-top: 1px; text-align: center; line-height: 1;
-        }
-
-        /* Modals */
-        #mp-modal, #crafting-modal, #furnace-modal, #death-modal {
-            display: none; position: absolute; inset: 0;
-            background: rgba(0, 0, 0, 0.7); z-index: 25;
-            align-items: center; justify-content: center; padding: 15px;
-        }
-        #death-modal { background: rgba(110, 0, 0, 0.8); flex-direction: column; color: white; text-align: center; }
-        #respawn-btn {
-            margin-top: 16px; padding: 12px 28px; font-size: 16px; font-weight: bold;
-            background: #777; color: white; border: 3px solid #fff; cursor: pointer;
-        }
-        .window-box {
-            background: #c6c6c6; border: 4px solid #373737;
-            border-top-color: #fff; border-left-color: #fff;
-            padding: 16px; width: 100%; max-width: 380px; color: #222;
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px; font-weight: bold; font-size: 15px;
-        }
-        .close-btn {
-            background: #aa3333; color: white; border: 2px solid #550000;
-            padding: 4px 10px; font-weight: bold; cursor: pointer;
-        }
-        .window-content {
-            display: flex; align-items: center; justify-content: center;
-            gap: 16px; margin-bottom: 14px; background: #b0b0b0; padding: 12px; border: 2px solid #777;
-        }
-        .recipe-hints { font-size: 11px; background: #dcdcdc; padding: 8px; border: 1px solid #888; margin-bottom: 10px; line-height: 1.4; }
-        .modal-inventory { display: flex; justify-content: center; gap: 5px; }
-        input[type="text"] { width: 100%; padding: 8px; font-size: 14px; border: 2px solid #555; background: #fff; margin-bottom: 8px; }
-    </style>
+    /* Start / Lock Overlay */
+    #overlay {
+      position: fixed; inset: 0; background: rgba(9, 13, 22, 0.88);
+      backdrop-filter: blur(10px); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 50; text-align: center; padding: 20px;
+    }
+    #overlay h1 { font-size: 42px; letter-spacing: 2px; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+    #overlay p { max-width: 540px; color: #cbd5e1; line-height: 1.6; margin-bottom: 24px; font-size: 15px; }
+    #start-btn {
+      background: linear-gradient(135deg, #0284c7, #4f46e5); color: white;
+      border: none; padding: 14px 36px; font-size: 16px; font-weight: 700;
+      border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(56,189,248,0.35);
+    }
+    .controls-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px;
+      margin-top: 24px; font-size: 13px; color: #94a3b8; text-align: left;
+      background: rgba(30, 41, 59, 0.6); padding: 16px 24px; border-radius: 12px;
+    }
+    .controls-grid b { color: #f8fafc; }
+    #toast {
+      position: fixed; top: 20px; right: 20px; background: rgba(15, 23, 42, 0.9);
+      border-left: 4px solid #38bdf8; padding: 10px 16px; border-radius: 8px;
+      font-size: 13px; opacity: 0; transition: opacity 0.25s; z-index: 20; pointer-events: none;
+    }
+  </style>
 </head>
 <body>
-    <div id="crosshair"></div>
-    <div id="damage-flash"></div>
-    <div id="underwater-tint"></div>
-    <div id="toast-msg">Multiplayer Connected!</div>
 
-    <div id="ui-layer">
-        <div id="top-hud">
-            <span id="zone-label">Los Santos Hills</span>
-            <span id="time-label">Day 12:00</span>
-            <div class="hud-btn-group">
-                <button class="mini-btn mp" id="btn-mp">Play MP</button>
-                <button class="mini-btn" id="btn-save">Save</button>
-                <button class="mini-btn reset" id="btn-reset">Reset</button>
-            </div>
-        </div>
+<div id="crosshair"></div>
+<div id="toast"></div>
 
-        <div style="display:flex; flex-direction:column; width:100%;">
-            <div id="controls-row">
-                <div class="dpad">
-                    <div class="btn" id="btn-up">W</div>
-                    <div class="btn" id="btn-left">A</div>
-                    <div class="btn" id="btn-right">D</div>
-                    <div class="btn" id="btn-down">S</div>
-                </div>
-                <div class="action-group">
-                    <div class="action-row">
-                        <div class="action-btn" id="btn-eat">Eat</div>
-                        <div class="action-btn" id="btn-interact">Use</div>
-                        <div class="action-btn" id="btn-break">Break /<br>Hit</div>
-                        <div class="action-btn" id="btn-place">Place</div>
-                    </div>
-                    <div class="action-row">
-                        <div class="action-btn" id="btn-jump">Jump /<br>Swim</div>
-                    </div>
-                </div>
-            </div>
+<div id="hud-top">
+  <div class="stat-row"><span>HEALTH</span><span id="hp-text">100 / 100</span></div>
+  <div class="bar-bg"><div class="bar-fill" id="hp-fill"></div></div>
+  <div class="stat-row"><span>STAMINA</span><span id="stamina-text">100%</span></div>
+  <div class="bar-bg"><div class="bar-fill" id="stamina-fill"></div></div>
+  <div class="meta-tags">
+    <div class="tag" id="time-tag">Day 1 • Noon</div>
+    <div class="tag" id="score-tag">Kills: 0</div>
+    <div class="tag" id="enemy-tag">Hostiles: 0</div>
+  </div>
+</div>
 
-            <div id="status-bars">
-                <div id="health-bar" style="color:#ff3333;">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
-                <div id="hunger-bar" style="color:#d28e46;">🍗🍗🍗🍗🍗🍗🍗🍗🍗🍗</div>
-            </div>
+<div id="hotbar">
+  <div class="slot active" data-slot="0"><span class="slot-key">1</span><div class="slot-icon" style="background:#38bdf8"></div><span class="slot-name">Staff</span><span class="slot-count">∞</span></div>
+  <div class="slot" data-slot="1"><span class="slot-key">2</span><div class="slot-icon" style="background:#65a30d"></div><span class="slot-name">Dirt</span><span class="slot-count" id="cnt-dirt">12</span></div>
+  <div class="slot" data-slot="2"><span class="slot-key">3</span><div class="slot-icon" style="background:#64748b"></div><span class="slot-name">Stone</span><span class="slot-count" id="cnt-stone">8</span></div>
+  <div class="slot" data-slot="3"><span class="slot-key">4</span><div class="slot-icon" style="background:#92400e"></div><span class="slot-name">Wood</span><span class="slot-count" id="cnt-wood">6</span></div>
+  <div class="slot" data-slot="4"><span class="slot-key">5</span><div class="slot-icon" style="background:#a855f7"></div><span class="slot-name">Turret</span><span class="slot-count" id="cnt-turret">1</span></div>
+</div>
 
-            <div id="hotbar-container">
-                <div class="slot selected" data-slot="0" id="hotbar-0"></div>
-                <div class="slot" data-slot="1" id="hotbar-1"></div>
-                <div class="slot" data-slot="2" id="hotbar-2"></div>
-                <div class="slot" data-slot="3" id="hotbar-3"></div>
-                <div class="slot" data-slot="4" id="hotbar-4"></div>
-                <div class="slot" id="btn-open-craft" style="background:#5a5a5a; color:#fff; font-weight:bold;">
-                    <span>•••</span>
-                    <span class="item-label">Craft</span>
-                </div>
-            </div>
-        </div>
+<div id="craft-menu">
+  <h2>Field Crafting [Press C to Close]</h2>
+  <div class="recipe">
+    <div class="recipe-info">
+      <div>Auto Plasma Turret</div>
+      <div>Cost: 4 Stone + 2 Wood</div>
     </div>
-
-    <!-- Multiplayer Lobby Modal -->
-    <div id="mp-modal">
-        <div class="window-box">
-            <div class="modal-header">
-                <span>Multiplayer LAN / Peer</span>
-                <button class="close-btn" id="close-mp">X</button>
-            </div>
-            <div style="font-size:12px; margin-bottom:10px;">
-                Share your Room Code with a friend to play together in this world!
-            </div>
-            <input type="text" id="room-code-input" placeholder="Enter Room Code...">
-            <div style="display:flex; gap:8px; margin-bottom:12px;">
-                <button class="mini-btn mp" id="create-room-btn" style="flex:1; padding:10px; font-size:13px;">Create Room</button>
-                <button class="mini-btn mp" id="join-room-btn" style="flex:1; padding:10px; font-size:13px;">Join Room</button>
-            </div>
-            <div id="mp-status" style="font-size:11px; font-weight:bold; color:#333;">Status: Offline</div>
-        </div>
+    <button class="craft-btn" id="craft-turret">Craft</button>
+  </div>
+  <div class="recipe">
+    <div class="recipe-info">
+      <div>Aether Elixir (+40 HP)</div>
+      <div>Cost: 3 Wood + 2 Dirt</div>
     </div>
+    <button class="craft-btn" id="craft-heal">Drink</button>
+  </div>
+</div>
 
-    <!-- Death Screen -->
-    <div id="death-modal">
-        <h1 style="font-size:32px; margin:0; text-shadow:2px 2px 0 #000;">WASTED / YOU DIED!</h1>
-        <button id="respawn-btn">Respawn on Island</button>
-    </div>
+<div id="overlay">
+  <h1>AETHERCRAFT 3D</h1>
+  <p>A procedural 3D voxel survival RPG built entirely in pure code. Mine terrain, build fortresses, craft automated plasma turrets, and survive the night cycle against Shadow Stalkers.</p>
+  <button id="start-btn">CLICK TO ENTER WORLD</button>
+  <div class="controls-grid">
+    <div><b>W A S D</b> — Move</div>
+    <div><b>SPACE / SHIFT</b> — Jump / Sprint</div>
+    <div><b>LEFT CLICK</b> — Mine Block / Fire Staff</div>
+    <div><b>RIGHT CLICK / E</b> — Place Block or Turret</div>
+    <div><b>1 – 5</b> — Select Hotbar Slot</div>
+    <div><b>C</b> — Open Crafting Menu</div>
+  </div>
+</div>
 
-    <!-- Crafting Modal -->
-    <div id="crafting-modal">
-        <div class="window-box">
-            <div class="modal-header">
-                <span>Crafting (2x2)</span>
-                <button class="close-btn" id="close-craft">X</button>
-            </div>
-            <div class="window-content">
-                <div id="craft-grid" style="display:grid; grid-template-columns:repeat(2,50px); grid-template-rows:repeat(2,50px); gap:4px;">
-                    <div class="slot" id="craft-0"></div>
-                    <div class="slot" id="craft-1"></div>
-                    <div class="slot" id="craft-2"></div>
-                    <div class="slot" id="craft-3"></div>
-                </div>
-                <div style="font-size:24px; font-weight:bold; color:#444;">➔</div>
-                <div class="slot" id="craft-output" style="width:56px; height:56px;"></div>
-            </div>
-            <div class="recipe-hints">
-                <strong>Recipes:</strong> 4 Wood = Table | 8 Stone = Furnace | 3 Stone + 2 Sticks = Stone Pick
-            </div>
-            <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">Inventory:</div>
-            <div class="modal-inventory" id="modal-inventory"></div>
-        </div>
-    </div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"
+  }
+}
+</script>
 
-    <!-- Furnace Modal -->
-    <div id="furnace-modal">
-        <div class="window-box">
-            <div class="modal-header">
-                <span>Furnace Smelting</span>
-                <button class="close-btn" id="close-furnace">X</button>
-            </div>
-            <div class="window-content" style="flex-direction:column; gap:8px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
-                        <span style="font-size:10px;">Input</span><div class="slot" id="furnace-input"></div>
-                        <span style="font-size:10px;">Fuel</span><div class="slot" id="furnace-fuel"></div>
-                    </div>
-                    <div style="font-size:18px; font-weight:bold;">🔥 ➔</div>
-                    <div class="slot" id="furnace-output" style="width:56px; height:56px;"></div>
-                </div>
-            </div>
-            <div class="recipe-hints">Raw Pork + Coal = Cooked Pork | Iron Ore + Coal = Iron Ingot</div>
-            <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">Inventory:</div>
-            <div class="modal-inventory" id="furnace-inv"></div>
-        </div>
-    </div>
+<script type="module">
+import * as THREE from 'three';
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        const SAVE_KEY = 'pocket_voxel_gta_island_v3';
-        function showToast(text) {
-            const t = document.getElementById('toast-msg');
-            t.textContent = text; t.style.opacity = '1';
-            setTimeout(() => { t.style.opacity = '0'; }, 1800);
+// ==========================================
+// 1. PROCEDURAL WEB AUDIO SYNTHESIZER
+// ==========================================
+class SoundEngine {
+  constructor() { this.ctx = null; }
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+  play(type) {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    if (type === 'shoot') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.16);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      osc.start(now); osc.stop(now + 0.16);
+    } else if (type === 'break') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+    } else if (type === 'place') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(340, now + 0.08);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now); osc.stop(now + 0.08);
+    } else if (type === 'hit') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(95, now);
+      osc.frequency.linearRampToValueAtTime(40, now + 0.22);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now); osc.stop(now + 0.22);
+    } else if (type === 'craft') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(660, now + 0.08);
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now); osc.stop(now + 0.22);
+    }
+  }
+}
+const sfx = new SoundEngine();
+
+// ==========================================
+// 2. PROCEDURAL CANVAS TEXTURE GENERATOR
+// ==========================================
+function makeBlockTexture(baseHex, noiseHex, speckDensity = 120) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = baseHex;
+  ctx.fillRect(0, 0, 64, 64);
+
+  for (let i = 0; i < speckDensity; i++) {
+    ctx.fillStyle = noiseHex;
+    ctx.globalAlpha = 0.15 + Math.random() * 0.25;
+    const x = Math.floor(Math.random() * 16) * 4;
+    const y = Math.floor(Math.random() * 16) * 4;
+    ctx.fillRect(x, y, 4, 4);
+  }
+  ctx.globalAlpha = 0.2;
+  ctx.strokeStyle = '#000000';
+  ctx.strokeRect(0, 0, 64, 64);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+const MATERIALS = {
+  grass: new THREE.MeshStandardMaterial({ map: makeBlockTexture('#4d7c0f', '#84cc16', 160), roughness: 0.85 }),
+  dirt:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#713f12', '#451a03', 150), roughness: 0.9 }),
+  stone: new THREE.MeshStandardMaterial({ map: makeBlockTexture('#64748b', '#334155', 180), roughness: 0.75 }),
+  wood:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#92400e', '#451a03', 140), roughness: 0.8 }),
+  leaf:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#15803d', '#22c55e', 140), roughness: 0.85 }),
+  sand:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#eab308', '#ca8a04', 120), roughness: 0.9 }),
+  turret: new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x581c87, emissiveIntensity: 0.6, metalness: 0.7, roughness: 0.2 })
+};
+
+// ==========================================
+// 3. THREE.JS SCENE & LIGHTING SETUP
+// ==========================================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x7dd3fc);
+scene.fog = new THREE.FogExp2(0x7dd3fc, 0.018);
+
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 140);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const ambientLight = new THREE.HemisphereLight(0xdbeafe, 0x3f6212, 0.75);
+scene.add(ambientLight);
+
+const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.5);
+sunLight.position.set(25, 45, 20);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.set(2048, 2048);
+sunLight.shadow.camera.near = 5;
+sunLight.shadow.camera.far = 110;
+const d = 32;
+sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
+sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
+scene.add(sunLight);
+
+// ==========================================
+// 4. VOXEL WORLD & PROCEDURAL GENERATION
+// ==========================================
+const WORLD_RADIUS = 18;
+const blockGeo = new THREE.BoxGeometry(1, 1, 1);
+const blocks = new Map(); // key: "x,y,z" -> { mesh, type }
+const blockMeshes = [];
+const turrets = [];
+
+function keyOf(x, y, z) { return `${x},${y},${z}`; }
+
+function addBlock(x, y, z, type) {
+  const k = keyOf(x, y, z);
+  if (blocks.has(k)) return;
+  const mesh = new THREE.Mesh(blockGeo, MATERIALS[type]);
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData = { gx: x, gy: y, gz: z, type };
+  scene.add(mesh);
+  blocks.set(k, { mesh, type });
+  blockMeshes.push(mesh);
+
+  if (type === 'turret') {
+    const core = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.35, 0),
+      new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.2 })
+    );
+    core.position.set(x, y + 0.85, z);
+    scene.add(core);
+    turrets.push({ x, y, z, core, cooldown: 0 });
+  }
+}
+
+function removeBlock(x, y, z) {
+  const k = keyOf(x, y, z);
+  const entry = blocks.get(k);
+  if (!entry) return null;
+  scene.remove(entry.mesh);
+  const idx = blockMeshes.indexOf(entry.mesh);
+  if (idx !== -1) blockMeshes.splice(idx, 1);
+  blocks.delete(k);
+
+  if (entry.type === 'turret') {
+    const tIdx = turrets.findIndex(t => t.x === x && t.y === y && t.z === z);
+    if (tIdx !== -1) { scene.remove(turrets[tIdx].core); turrets.splice(tIdx, 1); }
+  }
+  return entry.type;
+}
+
+// Deterministic terrain height function
+function terrainHeight(x, z) {
+  const h1 = Math.sin(x * 0.16) * Math.cos(z * 0.16) * 3.2;
+  const h2 = Math.sin((x + z) * 0.09) * 2.0;
+  return Math.floor(h1 + h2);
+}
+
+// Build initial world
+for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
+  for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
+    const topY = terrainHeight(x, z);
+    addBlock(x, topY - 2, z, 'stone');
+    addBlock(x, topY - 1, z, 'dirt');
+    addBlock(x, topY, z, topY <= -2 ? 'sand' : 'grass');
+
+    // Procedural trees
+    if (topY > 0 && Math.abs(x) > 3 && Math.abs(z) > 3 && Math.random() < 0.025) {
+      for (let ty = 1; ty <= 3; ty++) addBlock(x, topY + ty, z, 'wood');
+      for (let lx = -1; lx <= 1; lx++) {
+        for (let lz = -1; lz <= 1; lz++) {
+          for (let ly = 3; ly <= 4; ly++) {
+            if (lx === 0 && lz === 0 && ly === 3) continue;
+            addBlock(x + lx, topY + ly, z + lz, 'leaf');
+          }
         }
+      }
+    }
+  }
+}
 
-        // ==========================================
-        // 1. SOUND SYNTHESIZER
-        // ==========================================
-        class SoundFX {
-            constructor() { this.ctx = null; }
-            init() {
-                if (!this.ctx) {
-                    const AC = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AC();
-                }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-            }
-            playTone(freq, endFreq, duration, type = 'square', vol = 0.12) {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
-                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + duration);
-            }
-            breakBlock() { this.playTone(180, 70, 0.12, 'sawtooth', 0.15); }
-            placeBlock() { this.playTone(260, 420, 0.08, 'triangle', 0.15); }
-            jump()       { this.playTone(150, 320, 0.14, 'sine', 0.1); }
-            splash()     { this.playTone(110, 210, 0.16, 'sine', 0.08); }
-            step()       { this.playTone(90, 50, 0.05, 'triangle', 0.05); }
-            craft()      { this.playTone(440, 554, 0.1, 'sine', 0.12); setTimeout(() => this.playTone(659, 880, 0.15, 'sine', 0.12), 90); }
-            eat()        { this.playTone(320, 480, 0.08, 'triangle', 0.14); }
-            playerHurt() { this.playTone(160, 55, 0.22, 'sawtooth', 0.22); }
-            mobHit()     { this.playTone(300, 110, 0.16, 'sawtooth', 0.18); }
+// Wireframe block selector highlight
+const highlightBox = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.03, 1.03, 1.03)),
+  new THREE.LineBasicMaterial({ color: 0xffffff })
+);
+highlightBox.visible = false;
+scene.add(highlightBox);
+
+// ==========================================
+// 5. PLAYER STATE, INVENTORY & PHYSICS
+// ==========================================
+const player = {
+  pos: new THREE.Vector3(0, terrainHeight(0, 0) + 3, 0),
+  vel: new THREE.Vector3(),
+  yaw: 0,
+  pitch: 0,
+  hp: 100,
+  maxHp: 100,
+  stamina: 100,
+  onGround: false,
+  selectedSlot: 0,
+  kills: 0,
+  inv: { dirt: 12, stone: 8, wood: 6, turret: 1 }
+};
+
+const SLOT_TYPES = ['staff', 'dirt', 'stone', 'wood', 'turret'];
+const keys = {};
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 2200);
+}
+
+function updateHUD() {
+  document.getElementById('hp-fill').style.width = `${Math.max(0, player.hp)}%`;
+  document.getElementById('hp-text').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+  document.getElementById('stamina-fill').style.width = `${Math.floor(player.stamina)}%`;
+  document.getElementById('stamina-text').textContent = `${Math.floor(player.stamina)}%`;
+  document.getElementById('score-tag').textContent = `Kills: ${player.kills}`;
+  document.getElementById('enemy-tag').textContent = `Hostiles: ${enemies.length}`;
+  document.getElementById('cnt-dirt').textContent = player.inv.dirt;
+  document.getElementById('cnt-stone').textContent = player.inv.stone;
+  document.getElementById('cnt-wood').textContent = player.inv.wood;
+  document.getElementById('cnt-turret').textContent = player.inv.turret;
+
+  document.querySelectorAll('.slot').forEach((el, i) => {
+    el.classList.toggle('active', i === player.selectedSlot);
+  });
+}
+
+function collidesAt(pos) {
+  const r = 0.32;
+  const h = 1.65;
+  const minX = Math.floor(pos.x - r), maxX = Math.floor(pos.x + r);
+  const minY = Math.floor(pos.y),     maxY = Math.floor(pos.y + h);
+  const minZ = Math.floor(pos.z - r), maxZ = Math.floor(pos.z + r);
+
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+      for (let z = minZ; z <= maxZ; z++) {
+        if (blocks.has(keyOf(x, y, z))) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ==========================================
+// 6. PROJECTILES, PARTICLES & HOSTILE AI
+// ==========================================
+const projectiles = [];
+const particles = [];
+const enemies = [];
+
+function spawnParticles(pos, colorHex, count = 12) {
+  const geo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
+  const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+  for (let i = 0; i < count; i++) {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.copy(pos);
+    scene.add(m);
+    particles.push({
+      mesh: m,
+      vel: new THREE.Vector3((Math.random() - 0.5) * 6, Math.random() * 5 + 1, (Math.random() - 0.5) * 6),
+      life: 0.45 + Math.random() * 0.3
+    });
+  }
+}
+
+function firePlasma(origin, dir, fromTurret = false) {
+  sfx.play('shoot');
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.16, 8, 8),
+    new THREE.MeshBasicMaterial({ color: fromTurret ? 0xc084fc : 0x38bdf8 })
+  );
+  mesh.position.copy(origin);
+  scene.add(mesh);
+  projectiles.push({
+    mesh,
+    vel: dir.clone().normalize().multiplyScalar(28),
+    life: 1.6,
+    damage: fromTurret ? 35 : 50
+  });
+}
+
+function spawnEnemy() {
+  if (enemies.length >= 10) return;
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 12 + Math.random() * 5;
+  const ex = Math.max(-WORLD_RADIUS + 2, Math.min(WORLD_RADIUS - 2, Math.round(Math.cos(angle) * dist)));
+  const ez = Math.max(-WORLD_RADIUS + 2, Math.min(WORLD_RADIUS - 2, Math.round(Math.sin(angle) * dist)));
+  const ey = terrainHeight(ex, ez) + 2;
+
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.75, 1.5, 0.75),
+    new THREE.MeshStandardMaterial({ color: 0x1e1b4b, emissive: 0x4c1d95, emissiveIntensity: 0.5 })
+  );
+  body.position.y = 0.75;
+  const eye = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.16, 0.1),
+    new THREE.MeshBasicMaterial({ color: 0xf43f5e })
+  );
+  eye.position.set(0, 1.25, 0.36);
+  group.add(body, eye);
+  group.position.set(ex, ey, ez);
+  scene.add(group);
+
+  enemies.push({ mesh: group, hp: 100, speed: 3.1 + Math.random() * 1.1, attackCd: 0 });
+}
+
+// ==========================================
+// 7. INPUT HANDLING & RAYCAST INTERACTION
+// ==========================================
+const raycaster = new THREE.Raycaster();
+raycaster.far = 6.5;
+
+function getTargetBlock() {
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  const hits = raycaster.intersectObjects(blockMeshes, false);
+  return hits.length > 0 ? hits[0] : null;
+}
+
+window.addEventListener('mousedown', (e) => {
+  if (document.pointerLockElement !== renderer.domElement) return;
+  const hit = getTargetBlock();
+
+  if (e.button === 0) {
+    // Left Click: Fire Plasma Staff if slot 0, or Mine Block if close
+    if (player.selectedSlot === 0) {
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      const start = camera.position.clone().addScaledVector(dir, 0.6);
+      firePlasma(start, dir, false);
+    } else if (hit) {
+      const { gx, gy, gz, type } = hit.object.userData;
+      const removed = removeBlock(gx, gy, gz);
+      if (removed) {
+        sfx.play('break');
+        spawnParticles(hit.object.position, 0x94a3b8, 10);
+        if (removed === 'grass' || removed === 'dirt') player.inv.dirt++;
+        else if (removed === 'stone') player.inv.stone++;
+        else if (removed === 'wood' || removed === 'leaf') player.inv.wood++;
+        else if (removed === 'turret') player.inv.turret++;
+        updateHUD();
+      }
+    }
+  } else if (e.button === 2 && hit) {
+    // Right Click: Place selected block
+    const slotType = SLOT_TYPES[player.selectedSlot];
+    if (slotType === 'staff') {
+      showToast('Select a block slot (2-5) to build!');
+      return;
+    }
+    if ((player.inv[slotType] || 0) <= 0) {
+      showToast(`Out of ${slotType}! Mine blocks or press C to craft.`);
+      return;
+    }
+    const nx = hit.object.userData.gx + Math.round(hit.face.normal.x);
+    const ny = hit.object.userData.gy + Math.round(hit.face.normal.y);
+    const nz = hit.object.userData.gz + Math.round(hit.face.normal.z);
+
+    // Prevent placing block inside player
+    const blockCenter = new THREE.Vector3(nx, ny, nz);
+    if (blockCenter.distanceTo(player.pos) < 1.2) return;
+
+    addBlock(nx, ny, nz, slotType);
+    player.inv[slotType]--;
+    sfx.play('place');
+    updateHUD();
+  }
+});
+
+window.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  if (e.code.startsWith('Digit')) {
+    const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
+    if (idx >= 0 && idx < SLOT_TYPES.length) {
+      player.selectedSlot = idx;
+      updateHUD();
+    }
+  }
+  if (e.code === 'KeyC') {
+    const menu = document.getElementById('craft-menu');
+    const isOpen = menu.style.display === 'block';
+    menu.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) document.exitPointerLock();
+    else renderer.domElement.requestPointerLock();
+  }
+});
+window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+window.addEventListener('mousemove', (e) => {
+  if (document.pointerLockElement !== renderer.domElement) return;
+  player.yaw   -= e.movementX * 0.0022;
+  player.pitch -= e.movementY * 0.0022;
+  player.pitch = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, player.pitch));
+});
+
+// Crafting buttons
+document.getElementById('craft-turret').addEventListener('click', () => {
+  if (player.inv.stone >= 4 && player.inv.wood >= 2) {
+    player.inv.stone -= 4; player.inv.wood -= 2; player.inv.turret += 1;
+    sfx.play('craft'); showToast('Crafted Auto Plasma Turret!'); updateHUD();
+  } else {
+    showToast('Need 4 Stone + 2 Wood');
+  }
+});
+
+document.getElementById('craft-heal').addEventListener('click', () => {
+  if (player.inv.wood >= 3 && player.inv.dirt >= 2) {
+    player.inv.wood -= 3; player.inv.dirt -= 2;
+    player.hp = Math.min(player.maxHp, player.hp + 40);
+    sfx.play('craft'); showToast('Restored +40 Health!'); updateHUD();
+  } else {
+    showToast('Need 3 Wood + 2 Dirt');
+  }
+});
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  sfx.init();
+  renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  const locked = document.pointerLockElement === renderer.domElement;
+  const craftOpen = document.getElementById('craft-menu').style.display === 'block';
+  document.getElementById('overlay').style.display = (locked || craftOpen) ? 'none' : 'flex';
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ==========================================
+// 8. MAIN 60FPS SIMULATION & RENDER LOOP
+// ==========================================
+let worldTime = 0.25; // 0..1 cycle (0.25 = Noon, 0.75 = Midnight)
+let spawnTimer = 0;
+let lastTime = performance.now();
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - lastTime) / 1000);
+  lastTime = now;
+
+  // Day/Night Cycle
+  worldTime = (worldTime + dt * 0.012) % 1;
+  const sunAngle = worldTime * Math.PI * 2;
+  const sunY = Math.sin(sunAngle);
+  sunLight.position.set(Math.cos(sunAngle) * 40, sunY * 45, 18);
+
+  const isNight = sunY < 0.05;
+  const dayFactor = THREE.MathUtils.clamp((sunY + 0.2) / 0.6, 0, 1);
+  const skyColor = new THREE.Color(0x090d16).lerp(new THREE.Color(0x7dd3fc), dayFactor);
+  scene.background.copy(skyColor);
+  scene.fog.color.copy(skyColor);
+  sunLight.intensity = 0.15 + dayFactor * 1.45;
+  ambientLight.intensity = 0.25 + dayFactor * 0.55;
+
+  const dayNum = Math.floor(now / 83000) + 1;
+  document.getElementById('time-tag').textContent = `Day ${dayNum} • ${isNight ? 'Night (Danger)' : 'Daylight'}`;
+
+  // Spawn Shadow Stalkers at night (or occasionally during day)
+  spawnTimer += dt;
+  if (spawnTimer > (isNight ? 3.5 : 11.0)) {
+    spawnTimer = 0;
+    spawnEnemy();
+  }
+
+  // Player Movement & AABB Collision
+  if (document.pointerLockElement === renderer.domElement) {
+    const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+    const moveDir = new THREE.Vector3();
+
+    if (keys['KeyW']) moveDir.add(forward);
+    if (keys['KeyS']) moveDir.sub(forward);
+    if (keys['KeyD']) moveDir.add(right);
+    if (keys['KeyA']) moveDir.sub(right);
+    if (moveDir.lengthSq() > 0) moveDir.normalize();
+
+    const sprinting = (keys['ShiftLeft'] || keys['ShiftRight']) && player.stamina > 5 && moveDir.lengthSq() > 0;
+    const speed = sprinting ? 8.2 : 5.0;
+    if (sprinting) player.stamina = Math.max(0, player.stamina - dt * 28);
+    else player.stamina = Math.min(100, player.stamina + dt * 18);
+
+    player.vel.x = moveDir.x * speed;
+    player.vel.z = moveDir.z * speed;
+    player.vel.y -= 22.0 * dt; // Gravity
+
+    if (keys['Space'] && player.onGround) {
+      player.vel.y = 8.2;
+      player.onGround = false;
+    }
+
+    // Axis-separated collision resolution
+    const nextX = player.pos.clone(); nextX.x += player.vel.x * dt;
+    if (!collidesAt(nextX) && Math.abs(nextX.x) < WORLD_RADIUS) player.pos.x = nextX.x;
+
+    const nextZ = player.pos.clone(); nextZ.z += player.vel.z * dt;
+    if (!collidesAt(nextZ) && Math.abs(nextZ.z) < WORLD_RADIUS) player.pos.z = nextZ.z;
+
+    const nextY = player.pos.clone(); nextY.y += player.vel.y * dt;
+    if (!collidesAt(nextY)) {
+      player.pos.y = nextY.y;
+      player.onGround = false;
+    } else {
+      if (player.vel.y < 0) player.onGround = true;
+      player.vel.y = 0;
+    }
+
+    // Respawn safety if fallen off edge
+    if (player.pos.y < -15) {
+      player.pos.set(0, terrainHeight(0, 0) + 4, 0);
+      player.vel.set(0, 0, 0);
+    }
+  }
+
+  camera.position.set(player.pos.x, player.pos.y + 1.5, player.pos.z);
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = player.yaw;
+  camera.rotation.x = player.pitch;
+
+  // Highlight targeted block
+  const hit = getTargetBlock();
+  if (hit && player.selectedSlot !== 0) {
+    highlightBox.visible = true;
+    highlightBox.position.copy(hit.object.position);
+  } else {
+    highlightBox.visible = false;
+  }
+
+  // Automated Turret AI
+  for (const t of turrets) {
+    t.core.rotation.y += dt * 2.5;
+    t.cooldown -= dt;
+    if (t.cooldown <= 0 && enemies.length > 0) {
+      let nearest = null, minDist = 14;
+      const tPos = new THREE.Vector3(t.x, t.y + 0.9, t.z);
+      for (const e of enemies) {
+        const d = tPos.distanceTo(e.mesh.position);
+        if (d < minDist) { minDist = d; nearest = e; }
+      }
+      if (nearest) {
+        t.cooldown = 1.1;
+        const aimDir = nearest.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0)).sub(tPos);
+        firePlasma(tPos, aimDir, true);
+      }
+    }
+  }
+
+  // Update Projectiles
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.life -= dt;
+    p.mesh.position.addScaledVector(p.vel, dt);
+
+    let hitSomething = false;
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      if (p.mesh.position.distanceTo(e.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0))) < 0.85) {
+        e.hp -= p.damage;
+        hitSomething = true;
+        spawnParticles(p.mesh.position, 0xf43f5e, 8);
+        if (e.hp <= 0) {
+          scene.remove(e.mesh);
+          enemies.splice(j, 1);
+          player.kills++;
+          player.inv.stone += 2;
+          showToast('Shadow Stalker defeated! (+2 Stone)');
         }
-        const sfx = new SoundFX();
+        break;
+      }
+    }
 
-        // ==========================================
-        // 2. TEXTURES & MATERIALS (MULTI-FACE SUPPORT)
-        // ==========================================
-        function createPixelTexture(draw) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 16; canvas.height = 16;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-            draw(ctx);
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
-            return tex;
+    if (hitSomething || p.life <= 0) {
+      scene.remove(p.mesh);
+      projectiles.splice(i, 1);
+    }
+  }
+
+  // Update Enemy AI
+  for (const e of enemies) {
+    const toPlayer = player.pos.clone().sub(e.mesh.position);
+    const flatDist = Math.hypot(toPlayer.x, toPlayer.z);
+    e.mesh.rotation.y = Math.atan2(toPlayer.x, toPlayer.z);
+
+    if (flatDist > 1.2) {
+      const stepX = (toPlayer.x / flatDist) * e.speed * dt;
+      const stepZ = (toPlayer.z / flatDist) * e.speed * dt;
+      e.mesh.position.x += stepX;
+      e.mesh.position.z += stepZ;
+      const groundY = terrainHeight(Math.round(e.mesh.position.x), Math.round(e.mesh.position.z)) + 0.5;
+      e.mesh.position.y = THREE.MathUtils.lerp(e.mesh.position.y, groundY, 0.18);
+    } else {
+      e.attackCd -= dt;
+      if (e.attackCd <= 0) {
+        e.attackCd = 1.0;
+        player.hp -= 12;
+        sfx.play('hit');
+        if (player.hp <= 0) {
+          player.hp = 100;
+          player.pos.set(0, terrainHeight(0, 0) + 4, 0);
+          showToast('You fell in battle! Respawned at center.');
         }
+      }
+    }
+  }
 
-        const textures = {
-            grass_top: createPixelTexture(ctx => { ctx.fillStyle = '#55aa33'; ctx.fillRect(0,0,16,16); }),
-            grass_side: createPixelTexture(ctx => {
-                ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16);
-                ctx.fillStyle = '#55aa33'; ctx.fillRect(0,0,16,5);
-            }),
-            dirt: createPixelTexture(ctx => { ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16); }),
-            stone: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); }),
-            coal_ore: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#111'; ctx.fillRect(3,3,4,4); ctx.fillRect(9,9,3,3); }),
-            iron_ore: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#d7ccc8'; ctx.fillRect(4,4,3,3); }),
-            snow: createPixelTexture(ctx => { ctx.fillStyle = '#f4f8fb'; ctx.fillRect(0,0,16,16); }),
-            road: createPixelTexture(ctx => { ctx.fillStyle = '#33363b'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#f5c542'; ctx.fillRect(7,2,2,5); }),
-            wood: createPixelTexture(ctx => { ctx.fillStyle = '#6b4226'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#4e301b'; ctx.fillRect(0,6,16,2); }),
-            leaves: createPixelTexture(ctx => { ctx.fillStyle = '#2d7a22'; ctx.fillRect(0,0,16,16); }),
-            sand: createPixelTexture(ctx => { ctx.fillStyle = '#e6d28a'; ctx.fillRect(0,0,16,16); }),
-            table: createPixelTexture(ctx => { ctx.fillStyle = '#a0522d'; ctx.fillRect(0,0,16,16); ctx.strokeRect(1,1,14,14); }),
-            furnace: createPixelTexture(ctx => { ctx.fillStyle = '#666'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#ff9800'; ctx.fillRect(6,6,4,4); }),
-            torch: createPixelTexture(ctx => { ctx.fillStyle = '#ffeb3b'; ctx.fillRect(6,2,4,6); }),
-            coal: createPixelTexture(ctx => { ctx.fillStyle = '#212121'; ctx.fillRect(3,3,10,10); }),
-            iron_ingot: createPixelTexture(ctx => { ctx.fillStyle = '#b0bec5'; ctx.fillRect(2,5,12,6); }),
-            stick: createPixelTexture(ctx => { ctx.fillStyle = '#c19a6b'; ctx.fillRect(6,2,4,12); }),
-            pickaxe: createPixelTexture(ctx => { ctx.fillStyle = '#4fc3f7'; ctx.fillRect(2,2,12,4); ctx.fillStyle = '#6b4226'; ctx.fillRect(7,5,2,9); }),
-            iron_pickaxe: createPixelTexture(ctx => { ctx.fillStyle = '#eceff1'; ctx.fillRect(2,2,12,4); ctx.fillStyle = '#6b4226'; ctx.fillRect(7,5,2,9); }),
-            pork: createPixelTexture(ctx => { ctx.fillStyle = '#f48fb1'; ctx.fillRect(3,4,10,8); }),
-            cooked_pork: createPixelTexture(ctx => { ctx.fillStyle = '#8d5524'; ctx.fillRect(3,4,10,8); }),
-            apple: createPixelTexture(ctx => { ctx.fillStyle = '#e53935'; ctx.fillRect(4,5,8,8); })
-        };
+  // Update Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.life -= dt;
+    pt.vel.y -= 14 * dt;
+    pt.mesh.position.addScaledVector(pt.vel, dt);
+    if (pt.life <= 0) {
+      scene.remove(pt.mesh);
+      particles.splice(i, 1);
+    }
+  }
 
-        function getBlockMaterials(type) {
-            if (type === 'grass') {
-                return [
-                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
-                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
-                    new THREE.MeshLambertMaterial({ map: textures.grass_top }),
-                    new THREE.MeshLambertMaterial({ map: textures.dirt }),
-                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
-                    new THREE.MeshLambertMaterial({ map: textures.grass_side })
-                ];
-            }
-            const t = textures[type] || textures.stone;
-            return new THREE.MeshLambertMaterial({ map: t });
-        }
+  updateHUD();
+  renderer.render(scene, camera);
+}
 
-        const ITEMS = {
-            grass: { name: 'Grass', placeable: true }, dirt: { name: 'Dirt', placeable: true },
-            stone: { name: 'Stone', placeable: true }, coal_ore: { name: 'CoalOre', placeable: true },
-            iron_ore: { name: 'IronOre', placeable: true }, snow: { name: 'Snow', placeable: true },
-            road: { name: 'Road', placeable: true }, wood: { name: 'Wood', placeable: true },
-            leaves: { name: 'Leaves', placeable: true }, sand: { name: 'Sand', placeable: true },
-            table: { name: 'Table', placeable: true }, furnace: { name: 'Furnace', placeable: true },
-            torch: { name: 'Torch', placeable: true, light: true }, coal: { name: 'Coal', placeable: false },
-            iron_ingot: { name: 'IronIngot', placeable: false }, wool: { name: 'Wool', placeable: true },
-            stick: { name: 'Stick', placeable: false }, pickaxe: { name: 'StonePick', placeable: false, power: 2 },
-            iron_pickaxe: { name: 'IronPick', placeable: false, power: 3 },
-            pork: { name: 'RawPork', placeable: false, foodValue: 3 },
-            cooked_pork: { name: 'CookedPork', placeable: false, foodValue: 8 },
-            apple: { name: 'Apple', placeable: false, foodValue: 4 }
-        };
-
-        // ==========================================
-        // 3. MULTIPLAYER P2P (SIMULATED / LAN WEBRTC)
-        // ==========================================
-        let mpPeer = null, mpConn = null, remotePlayerMesh = null;
-        let remotePosition = new THREE.Vector3(0, 10, 14);
-
-        function initMultiplayer() {
-            const code = document.getElementById('room-code-input').value.trim();
-            if (!code) { alert('Enter a room code!'); return; }
-            document.getElementById('mp-status').textContent = 'Status: Connecting as host/peer...';
-            
-            // WebRTC signaling stub setup for local LAN/Peer sync
-            setTimeout(() => {
-                document.getElementById('mp-status').textContent = `Status: Connected to Room [${code}]!`;
-                showToast(`Joined MP Room: ${code}`);
-                document.getElementById('mp-modal').style.display = 'none';
-
-                // Spawn Remote Friend Avatar
-                const avatarMat = new THREE.MeshLambertMaterial({ color: 0x2196f3 });
-                remotePlayerMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), avatarMat);
-                remotePlayerMesh.position.set(0, 8, 12);
-                scene.add(remotePlayerMesh);
-            }, 1000);
-        }
-
-        // ==========================================
-        // 4. ENGINE & GAME STATE
-        // ==========================================
-        const WATER_LEVEL = 0.35;
-        let inventory = [{ id: 'grass', count: 20 }, { id: 'stone', count: 12 }, { id: 'torch', count: 8 }, null, null];
-        let selectedSlot = 0, craftGrid = [null,null,null,null], craftResult = null;
-        let furnaceInput = null, furnaceFuel = null, furnaceOutput = null;
-
-        let gameTime = 6000, stepTimer = 0, playerHealth = 10, playerHunger = 10, isDead = false;
-        let scene, camera, renderer, raycaster, highlightBox, dirLight, ambientLight, oceanMesh;
-        let blockMap = new Map(), blockMeshes = [], mobs = [], mobHitboxes = [];
-        const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-
-        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let velocity = new THREE.Vector3(), position = new THREE.Vector3(0, 8, 14), rotation = { x: -0.15, y: 0 };
-
-        init();
-        animate();
-
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-            scene.fog = new THREE.FogExp2(0x87CEEB, 0.018);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 600);
-            renderer = new THREE.WebGLRenderer({ antialias: false });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            document.body.appendChild(renderer.domElement);
-
-            ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
-            dirLight.position.set(60, 100, 40);
-            scene.add(dirLight);
-
-            const oceanGeo = new THREE.PlaneGeometry(320, 320);
-            oceanMesh = new THREE.Mesh(oceanGeo, new THREE.MeshLambertMaterial({ color: 0x1e88e5, transparent: true, opacity: 0.72, side: THREE.DoubleSide }));
-            oceanMesh.rotation.x = -Math.PI / 2; oceanMesh.position.y = WATER_LEVEL;
-            scene.add(oceanMesh);
-
-            const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.02, 1.02, 1.02));
-            highlightBox = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
-            highlightBox.visible = false; scene.add(highlightBox);
-
-            raycaster = new THREE.Raycaster(); raycaster.far = 6;
-
-            if (!loadSavedWorld()) generateGTAIsland();
-            setupControls(); setupUI(); renderInventory(); updateSurvivalBars();
-        }
-
-        function generateGTAIsland() {
-            const radius = 24;
-            for (let x = -radius; x <= radius; x++) {
-                for (let z = -radius; z <= radius; z++) {
-                    const dist = Math.hypot(x / 20, z / 24);
-                    if (dist > 1.05) continue;
-                    const surfaceY = Math.max(-2, Math.floor((1 - dist) * 4.5 + Math.sin(x*0.2)*Math.cos(z*0.2)*2));
-
-                    for (let y = surfaceY - 3; y <= surfaceY; y++) {
-                        let type = (y === surfaceY) ? (surfaceY >= 5 ? 'stone' : (z > 14 ? 'sand' : 'grass')) : 'stone';
-                        addBlock(x, y, z, type);
-                    }
-                }
-            }
-            position.set(0, getRawGroundY(0, 14) + 2.5, 14);
-        }
-
-        function addBlock(x, y, z, type) {
-            const key = `${x},${y},${z}`;
-            if (blockMap.has(key)) return;
-            const mat = getBlockMaterials(type);
-            const mesh = new THREE.Mesh(blockGeo, mat);
-            mesh.position.set(x, y, z);
-            mesh.userData = { x, y, z, type };
-
-            if (ITEMS[type] && ITEMS[type].light) {
-                mesh.add(new THREE.PointLight(0xffaa22, 1.2, 5));
-            }
-            scene.add(mesh);
-            blockMap.set(key, mesh);
-            blockMeshes.push(mesh);
-        }
-
-        function removeBlock(x, y, z) {
-            const key = `${x},${y},${z}`;
-            const mesh = blockMap.get(key);
-            if (!mesh) return null;
-            scene.remove(mesh);
-            blockMap.delete(key);
-            blockMeshes = blockMeshes.filter(m => m !== mesh);
-            return mesh.userData.type;
-        }
-
-        function saveWorld() {
-            const blocksData = [];
-            blockMap.forEach(m => blocksData.push([m.userData.x, m.userData.y, m.userData.z, m.userData.type]));
-            localStorage.setItem(SAVE_KEY, JSON.stringify({ blocks: blocksData, inventory }));
-            showToast('World Saved!');
-        }
-
-        function loadSavedWorld() {
-            try {
-                const raw = localStorage.getItem(SAVE_KEY);
-                if (!raw) return false;
-                const data = JSON.parse(raw);
-                data.blocks.forEach(([x,y,z,t]) => addBlock(x,y,z,t));
-                if (data.inventory) inventory = data.inventory;
-                showToast('Loaded Save!');
-                return true;
-            } catch(e) { return false; }
-        }
-
-        function updateSurvivalBars() {
-            document.getElementById('health-bar').textContent = '❤️'.repeat(playerHealth) + '🖤'.repeat(10-playerHealth);
-            document.getElementById('hunger-bar').textContent = '🍗'.repeat(playerHunger) + '🦴'.repeat(10-playerHunger);
-        }
-
-        function getTargetObject() {
-            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-            const hits = raycaster.intersectObjects(blockMeshes);
-            return hits.length > 0 ? { type: 'block', hit: hits[0] } : null;
-        }
-
-        function setupUI() {
-            for(let i=0; i<5; i++) {
-                document.getElementById(`hotbar-${i}`).addEventListener('click', () => { selectedSlot = i; renderInventory(); });
-            }
-            document.getElementById('btn-mp').addEventListener('click', () => { document.getElementById('mp-modal').style.display = 'flex'; });
-            document.getElementById('close-mp').addEventListener('click', () => { document.getElementById('mp-modal').style.display = 'none'; });
-            document.getElementById('create-room-btn').addEventListener('click', initMultiplayer);
-            document.getElementById('join-room-btn').addEventListener('click', initMultiplayer);
-            document.getElementById('btn-save').addEventListener('click', saveWorld);
-            document.getElementById('btn-reset').addEventListener('click', () => { localStorage.clear(); location.reload(); });
-        }
-
-        function renderSlotContent(el, item) {
-            el.innerHTML = '';
-            if (!item) return;
-            const tex = textures[item.id] || textures.stone;
-            el.innerHTML = `<div class="item-icon" style="background-image:url(${tex.image.toDataURL()});"></div><div class="item-label">${item.id}</div>${item.count > 1 ? `<div class="item-count">${item.count}</div>`:''}`;
-        }
-
-        function renderInventory() {
-            for(let i=0; i<5; i++) {
-                const el = document.getElementById(`hotbar-${i}`);
-                el.classList.toggle('selected', i === selectedSlot);
-                renderSlotContent(el, inventory[i]);
-            }
-        }
-
-        function setupControls() {
-            const bind = (id, start, end) => {
-                const el = document.getElementById(id);
-                el.addEventListener('touchstart', e => { e.preventDefault(); sfx.init(); start(); });
-                el.addEventListener('touchend', e => { e.preventDefault(); end(); });
-                el.addEventListener('mousedown', start); el.addEventListener('mouseup', end);
-            };
-            bind('btn-up', () => moveForward=true, () => moveForward=false);
-            bind('btn-down', () => moveBackward=true, () => moveBackward=false);
-            bind('btn-left', () => moveLeft=true, () => moveLeft=false);
-            bind('btn-right', () => moveRight=true, () => moveRight=false);
-
-            document.getElementById('btn-jump').addEventListener('click', () => {
-                if(Math.abs(velocity.y) < 0.01) { velocity.y = 0.16; sfx.jump(); }
-            });
-            document.getElementById('btn-break').addEventListener('click', () => {
-                const t = getTargetObject();
-                if(t) { removeBlock(t.hit.object.userData.x, t.hit.object.userData.y, t.hit.object.userData.z); sfx.breakBlock(); }
-            });
-            document.getElementById('btn-place').addEventListener('click', () => {
-                const item = inventory[selectedSlot];
-                if(!item || !ITEMS[item.id].placeable) return;
-                const t = getTargetObject();
-                if(!t) return;
-                const n = t.hit.face.normal;
-                const nx = t.hit.object.userData.x + Math.round(n.x);
-                const ny = t.hit.object.userData.y + Math.round(n.y);
-                const nz = t.hit.object.userData.z + Math.round(n.z);
-                addBlock(nx, ny, nz, item.id);
-                sfx.placeBlock();
-                item.count--; if(item.count<=0) inventory[selectedSlot]=null;
-                renderInventory();
-            });
-
-            let dragging = false, lx=0, ly=0;
-            window.addEventListener('touchstart', e => {
-                if(e.target.closest('#ui-layer') || e.target.closest('.window-box')) return;
-                dragging = true; lx = e.touches[0].clientX; ly = e.touches[0].clientY;
-            });
-            window.addEventListener('touchmove', e => {
-                if(!dragging) return;
-                rotation.y -= (e.touches[0].clientX - lx) * 0.006;
-                rotation.x = Math.max(-1.45, Math.min(1.45, rotation.x - (e.touches[0].clientY - ly) * 0.006));
-                lx = e.touches[0].clientX; ly = e.touches[0].clientY;
-            });
-            window.addEventListener('touchend', () => dragging = false);
-        }
-
-        function getRawGroundY(px, pz) {
-            const bx = Math.round(px), bz = Math.round(pz);
-            for(let y=16; y>=-5; y--) if(blockMap.has(`${bx},${y},${bz}`)) return y+0.5;
-            return -2.5;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Remote Player Animation Sim
-            if(remotePlayerMesh) {
-                remotePosition.x += Math.sin(Date.now()*0.001)*0.01;
-                remotePlayerMesh.position.copy(remotePosition);
-            }
-
-            const dir = new THREE.Vector3();
-            if(moveForward) dir.z -= 1; if(moveBackward) dir.z += 1;
-            if(moveLeft) dir.x -= 1; if(moveRight) dir.x += 1;
-            if(dir.lengthSq() > 0) {
-                dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0), rotation.y);
-                position.x += dir.x * 0.11; position.z += dir.z * 0.11;
-            }
-
-            const floorY = getRawGroundY(position.x, position.z) + 1.7;
-            velocity.y -= 0.009; position.y += velocity.y;
-            if(position.y <= floorY) { position.y = floorY; velocity.y = 0; }
-
-            camera.position.copy(position);
-            camera.quaternion.setFromEuler(new THREE.Euler(rotation.x, rotation.y, 0, 'YXZ'));
-
-            const t = getTargetObject();
-            highlightBox.visible = !!t;
-            if(t) highlightBox.position.copy(t.hit.object.position);
-
-            renderer.render(scene, camera);
-        }
-    </script>
+updateHUD();
+animate(performance.now());
+</script>
 </body>
 </html>

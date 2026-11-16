@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VoxelCraft 3D — Dual Stick Mobile Sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>VoxelCraft Mobile Edition</title>
 <style>
   * {
     box-sizing: border-box;
@@ -36,34 +36,33 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 10;
   }
-
   #crosshair::before, #crosshair::after {
     content: '';
     position: absolute;
-    background: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0 2px rgba(0,0,0,0.8);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 3px rgba(0,0,0,0.9);
   }
-  #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
-  #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+  #crosshair::before { top: 10px; left: 0; width: 22px; height: 2px; }
+  #crosshair::after { top: 0; left: 10px; width: 2px; height: 22px; }
 
   /* HUD Top */
   #hud-top {
     position: fixed;
-    top: 14px;
-    left: 14px;
-    background: rgba(15, 23, 42, 0.6);
+    top: 12px;
+    left: 12px;
+    background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(6px);
     color: #f8fafc;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.15);
     z-index: 10;
@@ -73,28 +72,28 @@
   /* Hotbar */
   #hotbar {
     position: fixed;
-    bottom: 22px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 6px;
-    background: rgba(15, 23, 42, 0.75);
+    gap: 5px;
+    background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(8px);
     padding: 6px;
     border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.18);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     z-index: 20;
-    max-width: 95vw;
+    max-width: 96vw;
     overflow-x: auto;
     pointer-events: auto;
   }
 
   .slot {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    background: rgba(30, 41, 59, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    background: rgba(30, 41, 59, 0.75);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -106,21 +105,21 @@
 
   .slot.active {
     border-color: #ffffff;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
-    background: rgba(51, 65, 85, 0.9);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    background: rgba(51, 65, 85, 0.95);
   }
 
   .slot canvas {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     image-rendering: pixelated;
     border-radius: 2px;
   }
 
   .slot-num {
     position: absolute;
-    top: 2px;
+    top: 1px;
     left: 3px;
     font-size: 8px;
     font-weight: 700;
@@ -129,11 +128,11 @@
 
   #block-label {
     position: fixed;
-    bottom: 78px;
+    bottom: 74px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     pointer-events: none;
@@ -141,7 +140,7 @@
   }
 
   /* ==========================================
-     ANDROID DUAL CONTROLLER UI STYLES
+     MOBILE MINECRAFT-STYLE CONTROLLER LAYOUT
      ========================================== */
   #mobile-controls {
     position: fixed;
@@ -150,53 +149,57 @@
     z-index: 30;
   }
 
-  /* Left Virtual Joystick Area */
-  #joystick-base {
+  /* Left D-Pad Movement */
+  .touch-pad {
     position: absolute;
-    bottom: 30px;
-    left: 30px;
+    bottom: 20px;
+    left: 20px;
     width: 130px;
     height: 130px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 2px solid rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
     pointer-events: auto;
-    touch-action: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
   }
 
-  #joystick-thumb {
-    position: absolute;
-    top: 39px;
-    left: 39px;
-    width: 52px;
-    height: 52px;
-    background: rgba(255, 255, 255, 0.45);
-    border: 2px solid rgba(255, 255, 255, 0.7);
-    border-radius: 50%;
-    pointer-events: none;
-    transition: transform 0.05s linear;
+  .t-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    display: grid;
+    place-items: center;
+    backdrop-filter: blur(4px);
   }
+  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.65); transform: scale(0.94); }
+  .t-up { grid-column: 2; grid-row: 1; }
+  .t-left { grid-column: 1; grid-row: 2; }
+  .t-right { grid-column: 3; grid-row: 2; }
+  .t-down { grid-column: 2; grid-row: 3; }
 
-  /* Right Side Action Buttons & Look Zone */
-  .right-action-cluster {
+  /* Right Action Cluster (Jump, Break, Place) */
+  .action-pad {
     position: absolute;
-    bottom: 30px;
-    right: 30px;
+    bottom: 20px;
+    right: 20px;
     pointer-events: auto;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-end;
   }
 
-  .action-row {
+  .col-actions {
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .act-btn {
-    width: 62px;
-    height: 62px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: rgba(15, 23, 42, 0.75);
     border: 2px solid rgba(255, 255, 255, 0.4);
@@ -208,13 +211,13 @@
     backdrop-filter: blur(6px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
   }
-  .act-btn:active { transform: scale(0.9); background: rgba(51, 65, 85, 0.9); }
+  .act-btn:active { transform: scale(0.9); }
 
   /* Start Menu Overlay */
   #menu-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.82);
+    background: rgba(15, 23, 42, 0.88);
     backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
@@ -231,14 +234,14 @@
     background: rgba(30, 41, 59, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
-    padding: 28px 32px;
-    max-width: 420px;
+    padding: 24px 28px;
+    max-width: 380px;
     width: 100%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   }
 
   .menu-box h1 {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     margin-bottom: 6px;
     background: linear-gradient(135deg, #4ade80, #38bdf8);
@@ -246,15 +249,15 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .menu-box p { color: #cbd5e1; font-size: 13px; margin-bottom: 16px; }
+  .menu-box p { color: #cbd5e1; font-size: 12px; margin-bottom: 14px; }
 
   .controls-info {
     text-align: left;
-    background: rgba(15, 23, 42, 0.7);
-    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.75);
+    padding: 10px 14px;
     border-radius: 10px;
-    margin-bottom: 20px;
-    font-size: 12px;
+    margin-bottom: 18px;
+    font-size: 11px;
     color: #cbd5e1;
     line-height: 1.5;
   }
@@ -263,7 +266,7 @@
   .btn-play {
     width: 100%;
     padding: 14px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #0f172a;
     background: linear-gradient(135deg, #4ade80, #22c55e);
@@ -274,10 +277,10 @@
   }
 
   .btn-secondary {
-    margin-top: 10px;
+    margin-top: 8px;
     width: 100%;
     padding: 10px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #e2e8f0;
     background: rgba(255, 255, 255, 0.08);
@@ -299,32 +302,33 @@
   <div id="block-label">Grass Block</div>
   <div id="hotbar"></div>
 
-  <!-- Android Dual Joystick Controller Overlay -->
+  <!-- Mobile Minecraft-Style Controls -->
   <div id="mobile-controls">
-    <div id="joystick-base">
-      <div id="joystick-thumb"></div>
+    <div class="touch-pad">
+      <div class="t-btn t-up" id="btn-w">▲</div>
+      <div class="t-btn t-left" id="btn-a">◀</div>
+      <div class="t-btn t-right" id="btn-d">▶</div>
+      <div class="t-btn t-down" id="btn-s">▼</div>
     </div>
-    <div class="right-action-cluster">
-      <div class="action-row">
-        <div class="act-btn" id="btn-jump">JUMP</div>
+    <div class="action-pad">
+      <div class="col-actions">
+        <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.85);">BREAK</div>
+        <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.85);">PLACE</div>
       </div>
-      <div class="action-row">
-        <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.8);">BREAK</div>
-        <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.8);">PLACE</div>
-      </div>
+      <div class="act-btn" id="btn-jump" style="width:68px; height:68px; background:rgba(37,99,235,0.85);">JUMP</div>
     </div>
   </div>
 
   <div id="menu-overlay">
     <div class="menu-box">
       <h1>VoxelCraft 3D</h1>
-      <p>Android Dual-Stick Sandbox Edition</p>
+      <p>Mobile Pocket Edition</p>
       <div class="controls-info">
-        <div>🕹️ <span>Left Thumb:</span> Slide inside left circle to walk.</div>
-        <div>👁️ <span>Right Screen:</span> Drag anywhere on the right side to look around.</div>
-        <div>🔨 <span>Buttons:</span> Tap Jump, Break, or Place.</div>
+        <div>🕹️ <span>Move:</span> Use left D-Pad buttons (▲ ◀ ▶ ▼).</div>
+        <div>👁️ <span>Look:</span> Drag finger anywhere on the screen.</div>
+        <div>🔨 <span>Action:</span> Tap JUMP, BREAK, or PLACE buttons.</div>
       </div>
-      <button id="start-btn" class="btn-play">Start Game</button>
+      <button id="start-btn" class="btn-play">Enter Fullscreen & Play</button>
       <button id="regen-btn" class="btn-secondary">Generate New World</button>
     </div>
   </div>
@@ -439,7 +443,7 @@
     highlightBox.visible = false;
     scene.add(highlightBox);
 
-    const WORLD_RADIUS = 18;
+    const WORLD_RADIUS = 16;
     const blockGeo = new THREE.BoxGeometry(1, 1, 1);
     const worldMap = new Map();
     const meshesArray = [];
@@ -522,7 +526,7 @@
     }
 
     // ==========================================
-    // 4. PLAYER & DUAL CONTROLLER LOGIC
+    // 4. PLAYER & MOBILE CONTROLS
     // ==========================================
     const player = {
       pos: new THREE.Vector3(0, 10, 0),
@@ -537,132 +541,107 @@
     const keys = {};
     let isGameStarted = false;
 
+    // Fullscreen helper
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      }
+    }
+
     // Menu Triggers
     const menuOverlay = document.getElementById('menu-overlay');
     document.getElementById('start-btn').addEventListener('click', () => {
+      requestFullscreen();
       menuOverlay.style.display = 'none';
       isGameStarted = true;
     });
     document.getElementById('regen-btn').addEventListener('click', () => {
+      requestFullscreen();
       generateWorld();
       menuOverlay.style.display = 'none';
       isGameStarted = true;
     });
 
-    // --- LEFT VIRTUAL JOYSTICK STATE ---
-    let joystickTouchId = null;
-    let joystickVector = { x: 0, y: 0 };
-    const joystickBase = document.getElementById('joystick-base');
-    const joystickThumb = document.getElementById('joystick-thumb');
+    // Bind Mobile D-Pad Buttons
+    function bindTouchButton(elementId, keyName) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys[keyName] = true;
+        el.classList.add('touched');
+      }, { passive: false });
 
-    joystickBase.addEventListener('touchstart', (e) => {
-      if (!isGameStarted || joystickTouchId !== null) return;
-      const touch = e.changedTouches[0];
-      joystickTouchId = touch.identifier;
-      updateJoystick(touch);
-    }, { passive: false });
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+        el.classList.remove('touched');
+      }, { passive: false });
 
-    window.addEventListener('touchmove', (e) => {
-      if (!isGameStarted) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === joystickTouchId) {
-          updateJoystick(touch);
-        } else if (touch.identifier === rightLookTouchId) {
-          updateRightLook(touch);
-        }
-      }
-    }, { passive: false });
-
-    window.addEventListener('touchend', (e) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === joystickTouchId) {
-          joystickTouchId = null;
-          joystickVector = { x: 0, y: 0 };
-          joystickThumb.style.transform = `translate(0px, 0px)`;
-        }
-        if (touch.identifier === rightLookTouchId) {
-          rightLookTouchId = null;
-        }
-      }
-    }, { passive: true });
-
-    function updateJoystick(touch) {
-      const rect = joystickBase.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      let dx = touch.clientX - centerX;
-      let dy = touch.clientY - centerY;
-      const dist = Math.hypot(dx, dy);
-      const maxRadius = 45;
-
-      if (dist > maxRadius) {
-        dx = (dx / dist) * maxRadius;
-        dy = (dy / dist) * maxRadius;
-      }
-
-      joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
-      joystickVector.x = dx / maxRadius;
-      joystickVector.y = dy / maxRadius; // Up/Down
+      el.addEventListener('touchcancel', () => {
+        keys[keyName] = false;
+        el.classList.remove('touched');
+      });
     }
 
-    // --- RIGHT LOOK & SWIPE STATE ---
-    let rightLookTouchId = null;
-    let lastLookX = 0, lastLookY = 0;
+    bindTouchButton('btn-w', 'KeyW');
+    bindTouchButton('btn-a', 'KeyA');
+    bindTouchButton('btn-s', 'KeyS');
+    bindTouchButton('btn-d', 'KeyD');
+    bindTouchButton('btn-jump', 'Space');
+
+    // Mobile Look Swipe (Anywhere on screen except UI)
+    let lookTouchId = null;
+    let lastX = 0, lastY = 0;
 
     window.addEventListener('touchstart', (e) => {
       if (!isGameStarted) return;
       for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        // If touch is on right half of screen and not on UI buttons
-        if (touch.clientX > window.innerWidth / 2 && rightLookTouchId === null) {
-          const target = document.elementFromPoint(touch.clientX, touch.clientY);
-          if (target && (target.closest('.right-action-cluster') || target.closest('#hotbar'))) continue;
-          
-          rightLookTouchId = touch.identifier;
-          lastLookX = touch.clientX;
-          lastLookY = touch.clientY;
+        const t = e.changedTouches[i];
+        const target = document.elementFromPoint(t.clientX, t.clientY);
+        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar'))) continue;
+        
+        if (lookTouchId === null) {
+          lookTouchId = t.identifier;
+          lastX = t.clientX;
+          lastY = t.clientY;
+          break;
         }
       }
     }, { passive: true });
 
-    function updateRightLook(touch) {
-      const dx = touch.clientX - lastLookX;
-      const dy = touch.clientY - lastLookY;
-      lastLookX = touch.clientX;
-      lastLookY = touch.clientY;
+    window.addEventListener('touchmove', (e) => {
+      if (!isGameStarted || lookTouchId === null) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === lookTouchId) {
+          const dx = t.clientX - lastX;
+          const dy = t.clientY - lastY;
+          lastX = t.clientX;
+          lastY = t.clientY;
 
-      const sensitivity = 0.0038;
-      player.yaw -= dx * sensitivity;
-      player.pitch -= dy * sensitivity;
-      player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
-    }
-
-    // Jump, Break, Place Button bindings
-    const jumpBtn = document.getElementById('btn-jump');
-    jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Space'] = true; }, { passive: false });
-    jumpBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['Space'] = false; }, { passive: false });
-
-    // Desktop Mouse Fallbacks
-    window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isGameStarted || document.pointerLockElement !== renderer.domElement) return;
-      player.yaw -= e.movementX * 0.0022;
-      player.pitch -= e.movementY * 0.0022;
-      player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
-    });
-
-    renderer.domElement.addEventListener('click', () => {
-      if (isGameStarted && !window.matchMedia('(pointer: coarse)').matches) {
-        renderer.domElement.requestPointerLock();
+          const sensitivity = 0.0035;
+          player.yaw -= dx * sensitivity;
+          player.pitch -= dy * sensitivity;
+          player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
+          break;
+        }
       }
-    });
+    }, { passive: true });
 
-    // Raycaster for Breaking / Placing Blocks
+    window.addEventListener('touchend', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === lookTouchId) {
+          lookTouchId = null;
+          break;
+        }
+      }
+    }, { passive: true });
+
+    // Raycaster for Breaking and Placing Blocks
     const raycaster = new THREE.Raycaster();
     raycaster.far = 6.5;
 
@@ -698,13 +677,6 @@
       performAction('place');
     }, { passive: false });
 
-    document.addEventListener('mousedown', (e) => {
-      if (!isGameStarted) return;
-      if (e.button === 0) performAction('break');
-      else if (e.button === 2) performAction('place');
-    });
-    document.addEventListener('contextmenu', e => e.preventDefault());
-
     // Collision & Physics Loop
     function collidesAt(px, py, pz) {
       const minX = Math.floor(px - player.radius + 0.5);
@@ -731,19 +703,10 @@
       const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
       const moveDir = new THREE.Vector3();
 
-      // Combine keyboard WASD + Mobile Joystick Vector
-      let moveX = 0, moveZ = 0;
-      if (keys['KeyW']) moveZ += 1;
-      if (keys['KeyS']) moveZ -= 1;
-      if (keys['KeyD']) moveX += 1;
-      if (keys['KeyA']) moveX -= 1;
-
-      // Add joystick vector (joystickVector.y is forward/backward, joystickVector.x is left/right)
-      moveZ -= joystickVector.y;
-      moveX += joystickVector.x;
-
-      if (moveZ !== 0) moveDir.addScaledVector(forward, moveZ);
-      if (moveX !== 0) moveDir.addScaledVector(right, moveX);
+      if (keys['KeyW']) moveDir.add(forward);
+      if (keys['KeyS']) moveDir.sub(forward);
+      if (keys['KeyD']) moveDir.add(right);
+      if (keys['KeyA']) moveDir.sub(right);
       if (moveDir.lengthSq() > 0) moveDir.normalize();
 
       const speed = 5.2;
@@ -788,7 +751,7 @@
     }
 
     // ==========================================
-    // 5. BOOT & ANIMATION LOOP
+    // 5. BOOT & LOOP
     // ==========================================
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;

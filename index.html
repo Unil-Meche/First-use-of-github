@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>VoxelCraft Survival Edition</title>
+<title>VoxelCraft Pocket Edition</title>
 <style>
   * {
     box-sizing: border-box;
@@ -36,8 +36,8 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 10;
@@ -46,22 +46,22 @@
     content: '';
     position: absolute;
     background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 3px rgba(0,0,0,0.9);
+    box-shadow: 0 0 2px rgba(0,0,0,0.8);
   }
-  #crosshair::before { top: 10px; left: 0; width: 22px; height: 2px; }
-  #crosshair::after { top: 0; left: 10px; width: 2px; height: 22px; }
+  #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
+  #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
 
   /* HUD Top */
   #hud-top {
     position: fixed;
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(6px);
     color: #f8fafc;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.4;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -72,14 +72,14 @@
   /* Hotbar */
   #hotbar {
     position: fixed;
-    bottom: 24px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 5px;
+    gap: 4px;
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(8px);
-    padding: 6px;
+    padding: 5px;
     border-radius: 12px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     z-index: 20;
@@ -89,9 +89,9 @@
   }
 
   .slot {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
     border: 2px solid rgba(255, 255, 255, 0.25);
     background: rgba(30, 41, 59, 0.75);
     display: flex;
@@ -105,14 +105,14 @@
 
   .slot.active {
     border-color: #ffffff;
-    transform: translateY(-2px) scale(1.06);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     background: rgba(51, 65, 85, 0.95);
   }
 
   .slot canvas {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     image-rendering: pixelated;
     border-radius: 2px;
   }
@@ -120,26 +120,26 @@
   .slot-num {
     position: absolute;
     top: 1px;
-    left: 3px;
-    font-size: 8px;
+    left: 2px;
+    font-size: 7px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.75);
   }
 
   #block-label {
     position: fixed;
-    bottom: 74px;
+    bottom: 68px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     pointer-events: none;
     z-index: 10;
   }
 
-  /* Mobile Controls */
+  /* Mobile Controls Layout */
   #mobile-controls {
     position: fixed;
     inset: 0;
@@ -151,8 +151,8 @@
     position: absolute;
     bottom: 20px;
     left: 20px;
-    width: 130px;
-    height: 130px;
+    width: 120px;
+    height: 120px;
     pointer-events: auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -161,17 +161,17 @@
   }
 
   .t-btn {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.22);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 12px;
+    border-radius: 10px;
     color: white;
     font-weight: 800;
-    font-size: 16px;
+    font-size: 15px;
     display: grid;
     place-items: center;
     backdrop-filter: blur(4px);
   }
-  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.65); transform: scale(0.94); }
+  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.6); transform: scale(0.94); }
   .t-up { grid-column: 2; grid-row: 1; }
   .t-left { grid-column: 1; grid-row: 2; }
   .t-right { grid-column: 3; grid-row: 2; }
@@ -183,19 +183,19 @@
     right: 20px;
     pointer-events: auto;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: flex-end;
   }
 
   .col-actions {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   .act-btn {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: rgba(15, 23, 42, 0.75);
     border: 2px solid rgba(255, 255, 255, 0.4);
@@ -205,15 +205,33 @@
     display: grid;
     place-items: center;
     backdrop-filter: blur(6px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
   .act-btn:active { transform: scale(0.9); }
 
-  /* Start Menu Overlay */
+  /* Crafting Button */
+  #btn-craft {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    background: rgba(217, 119, 6, 0.85);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 11px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    z-index: 40;
+    cursor: pointer;
+    pointer-events: auto;
+    backdrop-filter: blur(6px);
+  }
+
+  /* Menu Overlay */
   #menu-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.88);
+    background: rgba(15, 23, 42, 0.9);
     backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
@@ -230,30 +248,30 @@
     background: rgba(30, 41, 59, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
-    padding: 24px 28px;
-    max-width: 380px;
+    padding: 22px 26px;
+    max-width: 360px;
     width: 100%;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   }
 
   .menu-box h1 {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 800;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     background: linear-gradient(135deg, #4ade80, #38bdf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  .menu-box p { color: #cbd5e1; font-size: 12px; margin-bottom: 14px; }
+  .menu-box p { color: #cbd5e1; font-size: 11px; margin-bottom: 12px; }
 
   .controls-info {
     text-align: left;
     background: rgba(15, 23, 42, 0.75);
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-radius: 10px;
-    margin-bottom: 18px;
-    font-size: 11px;
+    margin-bottom: 16px;
+    font-size: 10px;
     color: #cbd5e1;
     line-height: 1.5;
   }
@@ -261,21 +279,21 @@
 
   .btn-play {
     width: 100%;
-    padding: 14px;
-    font-size: 14px;
+    padding: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: #0f172a;
     background: linear-gradient(135deg, #4ade80, #22c55e);
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
   }
 
   .btn-secondary {
     margin-top: 8px;
     width: 100%;
-    padding: 10px;
+    padding: 9px;
     font-size: 11px;
     font-weight: 600;
     color: #e2e8f0;
@@ -297,8 +315,8 @@
 
   <div id="block-label">Grass Block</div>
   <div id="hotbar"></div>
+  <button id="btn-craft">CRAFTING</button>
 
-  <!-- Mobile Controls -->
   <div id="mobile-controls">
     <div class="touch-pad">
       <div class="t-btn t-up" id="btn-w">▲</div>
@@ -311,21 +329,21 @@
         <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.85);">MINE</div>
         <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.85);">PLACE</div>
       </div>
-      <div class="act-btn" id="btn-jump" style="width:68px; height:68px; background:rgba(37,99,235,0.85);">JUMP</div>
+      <div class="act-btn" id="btn-jump" style="width:64px; height:64px; background:rgba(37,99,235,0.85);">JUMP</div>
     </div>
   </div>
 
   <div id="menu-overlay">
     <div class="menu-box">
-      <h1>VoxelCraft 3D</h1>
-      <p>Survival & Tools Edition</p>
+      <h1>VoxelCraft Island</h1>
+      <p>Pocket Edition & Tools</p>
       <div class="controls-info">
         <div>🕹️ <span>Move:</span> Left D-Pad (▲ ◀ ▶ ▼).</div>
         <div>👁️ <span>Look:</span> Drag finger on screen.</div>
-        <div>⛏️ <span>Tools:</span> Pickaxe, Axe, Shovel, Dagger have different HP & damage!</div>
+        <div>⛏️ <span>Survival:</span> Mine blocks with HP, craft tools!</div>
       </div>
       <button id="start-btn" class="btn-play">Enter Fullscreen & Play</button>
-      <button id="regen-btn" class="btn-secondary">Generate New World</button>
+      <button id="regen-btn" class="btn-secondary">Generate New Island</button>
     </div>
   </div>
 
@@ -334,7 +352,7 @@
 
   <script>
     // ==========================================
-    // 1. PROCEDURAL TEXTURES & BLOCKS WITH HP
+    // PART 1: PROCEDURAL TEXTURES & BLOCK DB
     // ==========================================
     function createPixelTexture(drawFn) {
       const canvas = document.createElement('canvas');
@@ -380,15 +398,19 @@
       woodTop: createPixelTexture(ctx => noiseFill(ctx, '#a48256', 18)),
       leaves: createPixelTexture(ctx => noiseFill(ctx, '#2d7a22', 35)),
       sand: createPixelTexture(ctx => noiseFill(ctx, '#dfd39a', 20)),
-      brick: createPixelTexture(ctx => noiseFill(ctx, '#9c4335', 22)),
-      glass: createPixelTexture(ctx => {
-        ctx.fillStyle = 'rgba(200, 240, 255, 0.3)';
+      water: createPixelTexture(ctx => {
+        ctx.fillStyle = '#3b82f6';
         ctx.fillRect(0, 0, 16, 16);
+        ctx.fillStyle = '#60a5fa';
+        ctx.fillRect(2, 2, 4, 4);
+        ctx.fillRect(10, 10, 4, 4);
       }),
-      // Tool Icons
-      dagger: createPixelTexture(ctx => {
-        noiseFill(ctx, '#c0c0c0', 10);
-        ctx.fillStyle = '#5c4033'; ctx.fillRect(7, 12, 2, 4);
+      flowerRed: createPixelTexture(ctx => {
+        noiseFill(ctx, '#3b7a22', 20);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(6, 4, 4, 4);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(7, 5, 2, 2);
       }),
       pickaxe: createPixelTexture(ctx => {
         noiseFill(ctx, '#888888', 15);
@@ -404,7 +426,6 @@
       })
     };
 
-    // BLOCK & ITEM DEFINITIONS WITH HP AND PROPER TOOL MULTIPLIERS
     const BLOCK_TYPES = [
       { id: 1, name: 'Grass Block', type: 'block', hp: 3, preferredTool: 'shovel', icon: textures.grassSide.canvas, material: [
         new THREE.MeshLambertMaterial({ map: textures.grassSide.tex }),
@@ -427,21 +448,21 @@
       ]},
       { id: 6, name: 'Leaves', type: 'block', hp: 1, preferredTool: 'axe', icon: textures.leaves.canvas, material: new THREE.MeshLambertMaterial({ map: textures.leaves.tex }) },
       { id: 7, name: 'Sand', type: 'block', hp: 2, preferredTool: 'shovel', icon: textures.sand.canvas, material: new THREE.MeshLambertMaterial({ map: textures.sand.tex }) },
-      { id: 8, name: 'Bricks', type: 'block', hp: 10, preferredTool: 'pickaxe', icon: textures.brick.canvas, material: new THREE.MeshLambertMaterial({ map: textures.brick.tex }) },
-      { id: 9, name: 'Glass', type: 'block', hp: 1, preferredTool: null, icon: textures.glass.canvas, material: new THREE.MeshLambertMaterial({ map: textures.glass.tex, transparent: true, opacity: 0.75 }) },
-      // Tools & Weapons (Can be held in hotbar & used)
-      { id: 10, name: 'Dagger (Atk: 4)', type: 'tool', toolType: 'dagger', damage: 4, icon: textures.dagger.canvas },
-      { id: 11, name: 'Wooden Pickaxe', type: 'tool', toolType: 'pickaxe', damage: 2, miningSpeed: 3.5, icon: textures.pickaxe.canvas },
-      { id: 12, name: 'Wood Axe', type: 'tool', toolType: 'axe', damage: 3, miningSpeed: 3.5, icon: textures.axe.canvas },
-      { id: 13, name: 'Shovel', type: 'tool', toolType: 'shovel', damage: 1.5, miningSpeed: 3.5, icon: textures.shovel.canvas }
+      { id: 8, name: 'Water', type: 'block', hp: 999, preferredTool: null, icon: textures.water.canvas, material: new THREE.MeshLambertMaterial({ map: textures.water.tex, transparent: true, opacity: 0.8 }) },
+      { id: 9, name: 'Poppy Flower', type: 'block', hp: 1, preferredTool: null, icon: textures.flowerRed.canvas, material: new THREE.MeshLambertMaterial({ map: textures.flowerRed.tex, transparent: true }) },
+      { id: 10, name: 'Wooden Pickaxe', type: 'tool', toolType: 'pickaxe', damage: 2, miningSpeed: 3.5, icon: textures.pickaxe.canvas },
+      { id: 11, name: 'Wood Axe', type: 'tool', toolType: 'axe', damage: 3, miningSpeed: 3.5, icon: textures.axe.canvas },
+      { id: 12, name: 'Shovel', type: 'tool', toolType: 'shovel', damage: 1.5, miningSpeed: 3.5, icon: textures.shovel.canvas }
     ];
-
+  </script>
+</body>
+</html>
     // ==========================================
-    // 2. SCENE & WORLD GENERATION
+    // PART 2: SCENE, LIGHTING & ISLAND GENERATION
     // ==========================================
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87ceeb);
-    scene.fog = new THREE.FogExp2(0x87ceeb, 0.016);
+    scene.fog = new THREE.FogExp2(0x87ceeb, 0.018);
 
     const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 150);
     const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
@@ -462,9 +483,9 @@
     highlightBox.visible = false;
     scene.add(highlightBox);
 
-    const WORLD_RADIUS = 16;
+    const ISLAND_RADIUS = 12; // Compact, cozy survival island size
     const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-    const worldMap = new Map(); // Stores block data & current HP
+    const worldMap = new Map();
     const meshesArray = [];
 
     function posKey(x, y, z) { return `${x},${y},${z}`; }
@@ -472,20 +493,14 @@
     function addBlock(x, y, z, typeId) {
       const key = posKey(x, y, z);
       if (worldMap.has(key)) return;
-      const blockDef = BLOCK_TYPES.find(b => b.id === typeId && b.type === 'block');
+      const blockDef = BLOCK_TYPES.find(b => b.id === typeId);
       if (!blockDef) return;
 
       const mesh = new THREE.Mesh(blockGeo, blockDef.material);
       mesh.position.set(x, y, z);
       mesh.userData = { x, y, z, typeId };
       scene.add(mesh);
-      
-      worldMap.set(key, { 
-        mesh, 
-        typeId, 
-        hp: blockDef.hp, 
-        maxHp: blockDef.hp 
-      });
+      worldMap.set(key, { mesh, typeId, hp: blockDef.hp || 3, maxHp: blockDef.hp || 3 });
       meshesArray.push(mesh);
     }
 
@@ -499,24 +514,65 @@
       worldMap.delete(key);
     }
 
-    function generateWorld() {
-      for (const m of meshesArray) scene.remove(m);
-      worldMap.clear();
-      meshesArray.length = 0;
-      const seed = Math.random() * 1000;
-
-      for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
-        for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
-          const surfaceY = Math.floor(Math.sin((x + seed) * 0.12) * Math.cos((z + seed) * 0.12) * 4.5 + 4);
-          for (let y = 0; y <= surfaceY; y++) {
-            addBlock(x, y, z, y === surfaceY ? 1 : 2);
+    function spawnTree(tx, ty, tz) {
+      // Trunk
+      for (let y = 0; y < 4; y++) {
+        addBlock(tx, ty + y, tz, 5); // Oak Log
+      }
+      // Leaves canopy
+      for (let lx = -2; lx <= 2; lx++) {
+        for (let lz = -2; lz <= 2; lz++) {
+          for (let ly = 3; ly <= 5; ly++) {
+            if (Math.abs(lx) === 2 && Math.abs(lz) === 2 && ly === 5) continue;
+            if (lx === 0 && lz === 0 && ly < 5) continue;
+            addBlock(tx + lx, ty + ly, tz + lz, 6); // Leaves
           }
         }
       }
     }
 
+    function generateIsland() {
+      for (const m of meshesArray) scene.remove(m);
+      worldMap.clear();
+      meshesArray.length = 0;
+      const seed = Math.random() * 1000;
+
+      for (let x = -ISLAND_RADIUS; x <= ISLAND_RADIUS; x++) {
+        for (let z = -ISLAND_RADIUS; z <= ISLAND_RADIUS; z++) {
+          const distFromCenter = Math.hypot(x, z);
+          if (distFromCenter > ISLAND_RADIUS) {
+            // Surround with ocean water level
+            for (let y = 0; y <= 1; y++) {
+              addBlock(x, y, z, 8); // Water
+            }
+            continue;
+          }
+
+          // Island height curve (higher in center, sloping down to beach)
+          const hNoise = Math.sin((x + seed) * 0.15) * Math.cos((z + seed) * 0.15) * 2;
+          const surfaceY = Math.max(1, Math.floor(4 - (distFromCenter / ISLAND_RADIUS) * 3 + hNoise));
+
+          for (let y = 0; y <= surfaceY; y++) {
+            let blockId = 3; // Stone base
+            if (y === surfaceY) {
+              blockId = surfaceY <= 1 ? 7 : 1; // Sand on beach, Grass on top
+            } else if (y >= surfaceY - 2) {
+              blockId = surfaceY <= 1 ? 7 : 2; // Dirt
+            }
+            addBlock(x, y, z, blockId);
+          }
+
+          // Spawn a tree or flower near center
+          if (surfaceY >= 3 && distFromCenter < 6 && Math.random() < 0.08) {
+            spawnTree(x, surfaceY + 1, z);
+          } else if (surfaceY >= 3 && Math.random() < 0.05) {
+            addBlock(x, surfaceY + 1, z, 9); // Poppy Flower
+          }
+        }
+      }
+    }
     // ==========================================
-    // 3. HOTBAR UI
+    // PART 3: HOTBAR UI & PLAYER CONTROLLER
     // ==========================================
     let selectedSlot = 0;
     const hotbarEl = document.getElementById('hotbar');
@@ -550,11 +606,8 @@
       blockLabelEl.textContent = BLOCK_TYPES[selectedSlot].name;
     }
 
-    // ==========================================
-    // 4. PLAYER & CONTROLLER LOGIC
-    // ==========================================
     const player = {
-      pos: new THREE.Vector3(0, 10, 0),
+      pos: new THREE.Vector3(0, 8, 0),
       vel: new THREE.Vector3(0, 0, 0),
       yaw: 0,
       pitch: 0,
@@ -583,12 +636,12 @@
     });
     document.getElementById('regen-btn').addEventListener('click', () => {
       requestFullscreen();
-      generateWorld();
+      generateIsland();
       menuOverlay.style.display = 'none';
       isGameStarted = true;
     });
 
-    // Mobile D-Pad binding
+    // Mobile D-Pad Touch Bindings
     function bindTouchButton(elementId, keyName) {
       const el = document.getElementById(elementId);
       if (!el) return;
@@ -611,7 +664,7 @@
     bindTouchButton('btn-d', 'KeyD');
     bindTouchButton('btn-jump', 'Space');
 
-    // Swipe to look around
+    // Camera Look Swipe Handling
     let lookTouchId = null;
     let lastX = 0, lastY = 0;
 
@@ -620,7 +673,7 @@
       for (let i = 0; i < e.changedTouches.length; i++) {
         const t = e.changedTouches[i];
         const target = document.elementFromPoint(t.clientX, t.clientY);
-        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar'))) continue;
+        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar') || target.closest('#btn-craft'))) continue;
         
         if (lookTouchId === null) {
           lookTouchId = t.identifier;
@@ -659,72 +712,7 @@
       }
     }, { passive: true });
 
-    // ==========================================
-    // 5. MINING, BLOCK HP & TOOL DAMAGE LOGIC
-    // ==========================================
-    const raycaster = new THREE.Raycaster();
-    raycaster.far = 6.5;
-
-    function getTargetBlock() {
-      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-      const hits = raycaster.intersectObjects(meshesArray);
-      return hits.length > 0 ? hits[0] : null;
-    }
-
-    function performAction(actionType) {
-      const hit = getTargetBlock();
-      if (!hit) return;
-      const { x, y, z } = hit.object.userData;
-      const key = posKey(x, y, z);
-      const entry = worldMap.get(key);
-      if (!entry) return;
-
-      const activeItem = BLOCK_TYPES[selectedSlot];
-
-      if (actionType === 'break') {
-        if (activeItem.type === 'tool' && activeItem.toolType === 'dagger') {
-          // Dagger doesn't mine blocks well, deals low damage
-          entry.hp -= 1;
-        } else {
-          // Calculate mining power based on active tool vs block preference
-          const blockDef = BLOCK_TYPES.find(b => b.id === entry.typeId);
-          let damage = 1;
-          if (activeItem.type === 'tool' && activeItem.toolType === blockDef.preferredTool) {
-            damage = activeItem.miningSpeed || 2.5;
-          }
-          entry.hp -= damage;
-        }
-
-        // Visual damage feedback (shrink block slightly as HP drops)
-        const scaleFactor = Math.max(0.3, entry.hp / entry.maxHp);
-        entry.mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-        if (entry.hp <= 0) {
-          removeBlock(x, y, z);
-        }
-      } else if (actionType === 'place') {
-        // Can only place if selected item is a block
-        if (activeItem.type === 'block') {
-          const n = hit.face.normal;
-          const nx = x + Math.round(n.x);
-          const ny = y + Math.round(n.y);
-          const nz = z + Math.round(n.z);
-          addBlock(nx, ny, nz, activeItem.id);
-        }
-      }
-    }
-
-    document.getElementById('btn-break').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      performAction('break');
-    }, { passive: false });
-
-    document.getElementById('btn-place').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      performAction('place');
-    }, { passive: false });
-
-    // Collision & Physics Loop
+    // AABB Collision Check
     function collidesAt(px, py, pz) {
       const minX = Math.floor(px - player.radius + 0.5);
       const maxX = Math.floor(px + player.radius + 0.5);
@@ -781,25 +769,135 @@
         player.vel.y = 0;
       }
 
-      if (player.pos.y < -15) player.pos.set(0, 15, 0);
+      if (player.pos.y < -15) player.pos.set(0, 10, 0);
 
       camera.position.copy(player.pos);
       camera.quaternion.setFromEuler(new THREE.Euler(player.pitch, player.yaw, 0, 'YXZ'));
 
-      const hit = getTargetBlock();
-      if (hit) {
-        highlightBox.visible = true;
-        highlightBox.position.copy(hit.object.position);
-      } else {
-        highlightBox.visible = false;
-      }
-
       document.getElementById('coords').textContent = `${Math.round(player.pos.x)}, ${Math.round(player.pos.y)}, ${Math.round(player.pos.z)}`;
     }
+    // ==========================================
+    // PART 4: MINING, BLOCK HP & TOOL DAMAGE
+    // ==========================================
+    const raycaster = new THREE.Raycaster();
+    raycaster.far = 6.5;
 
+    function getTargetBlock() {
+      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+      const hits = raycaster.intersectObjects(meshesArray);
+      return hits.length > 0 ? hits[0] : null;
+    }
+
+    function performAction(actionType) {
+      const hit = getTargetBlock();
+      if (!hit) return;
+      const { x, y, z } = hit.object.userData;
+      const key = posKey(x, y, z);
+      const entry = worldMap.get(key);
+      if (!entry) return;
+
+      const activeItem = BLOCK_TYPES[selectedSlot];
+
+      if (actionType === 'break') {
+        const blockDef = BLOCK_TYPES.find(b => b.id === entry.typeId);
+        let damage = 1;
+        if (activeItem.type === 'tool' && activeItem.toolType === blockDef.preferredTool) {
+          damage = activeItem.miningSpeed || 2.5;
+        }
+        entry.hp -= damage;
+
+        // Visual breaking feedback (shrinks block as HP decreases)
+        const scaleFactor = Math.max(0.25, entry.hp / entry.maxHp);
+        entry.mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+        if (entry.hp <= 0) {
+          removeBlock(x, y, z);
+        }
+      } else if (actionType === 'place') {
+        if (activeItem.type === 'block') {
+          const n = hit.face.normal;
+          const nx = x + Math.round(n.x);
+          const ny = y + Math.round(n.y);
+          const nz = z + Math.round(n.z);
+          addBlock(nx, ny, nz, activeItem.id);
+        }
+      }
+    }
+
+    document.getElementById('btn-break').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      performAction('break');
+    }, { passive: false });
+
+    document.getElementById('btn-place').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      performAction('place');
+    }, { passive: false });
     // ==========================================
-    // 6. BOOT & LOOP
+    // PART 5: CRAFTING, ANIMALS & BOOT LOOP
     // ==========================================
+    
+    // Simple Crafting System (Wood -> Planks -> Tools)
+    const craftModalHtml = `
+      <div id="craft-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:200; display:flex; align-items:center; justifyContent:center;">
+        <div style="background:#1e293b; border:2px solid rgba(255,255,255,0.2); border-radius:16px; padding:20px; width:320px; color:white; text-align:center;">
+          <h2 style="margin-bottom:12px; font-size:18px; color:#38bdf8;">Crafting Table</h2>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px; text-align:left;">
+            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span>Oak Planks (x4)</span>
+              <button id="craft-planks" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
+            </div>
+            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span>Wooden Pickaxe</span>
+              <button id="craft-pick" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
+            </div>
+            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span>Wood Axe</span>
+              <button id="craft-axe" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
+            </div>
+            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span>Shovel</span>
+              <button id="craft-shovel" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
+            </div>
+          </div>
+          <button id="close-craft" style="width:100%; padding:10px; background:#ef4444; border:none; border-radius:8px; color:white; font-weight:700; cursor:pointer;">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', craftModalHtml);
+    const craftModal = document.getElementById('craft-modal');
+    craftModal.style.display = 'none';
+
+    document.getElementById('btn-craft').addEventListener('click', (e) => {
+      e.stopPropagation();
+      craftModal.style.display = 'flex';
+    });
+    document.getElementById('close-craft').addEventListener('click', () => {
+      craftModal.style.display = 'none';
+    });
+
+    // Instant unlock/grant items for mobile pocket fun
+    document.getElementById('craft-planks').addEventListener('click', () => { selectSlot(3); craftModal.style.display = 'none'; });
+    document.getElementById('craft-pick').addEventListener('click', () => { selectSlot(9); craftModal.style.display = 'none'; });
+    document.getElementById('craft-axe').addEventListener('click', () => { selectSlot(10); craftModal.style.display = 'none'; });
+    document.getElementById('craft-shovel').addEventListener('click', () => { selectSlot(11); craftModal.style.display = 'none'; });
+
+    // Animal Entities (Simple wandering Pig/Sheep mob on island)
+    const animalGroup = new THREE.Group();
+    const pigBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.8, 0.6, 1.2),
+      new THREE.MeshLambertMaterial({ color: 0xf472b6 })
+    );
+    pigBody.position.set(0, 4.5, 0);
+    animalGroup.add(pigBody);
+    scene.add(animalGroup);
+
+    function updateAnimals(dt) {
+      animalGroup.position.x += Math.sin(performance.now() * 0.001) * 0.01;
+      pigBody.rotation.y = Math.sin(performance.now() * 0.001) * 0.5;
+    }
+
+    // Boot & Game Loop
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -808,7 +906,7 @@
 
     initHotbar();
     selectSlot(0);
-    generateWorld();
+    generateIsland();
 
     let lastTime = performance.now();
     let frameCount = 0, fpsTimer = 0;
@@ -825,7 +923,19 @@
         frameCount = 0; fpsTimer = 0;
       }
 
-      updatePlayer(dt);
+      if (isGameStarted) {
+        updatePlayer(dt);
+        updateAnimals(dt);
+        
+        const hit = getTargetBlock();
+        if (hit) {
+          highlightBox.visible = true;
+          highlightBox.position.copy(hit.object.position);
+        } else {
+          highlightBox.visible = false;
+        }
+      }
+
       renderer.render(scene, camera);
     }
     requestAnimationFrame(animate);

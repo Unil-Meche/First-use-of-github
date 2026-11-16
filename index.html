@@ -1,944 +1,632 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>VoxelCraft Pocket Edition</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-touch-callout: none;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Pocket Voxel Engine - Ultimate Edition (AK-47 & RPG)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            touch-action: none;
+        }
+        canvas { display: block; }
+        #crosshair {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 14px; height: 14px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 5;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 2px #000;
+        }
+        #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
+        #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
 
-  body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #87ceeb;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    touch-action: none;
-  }
+        #damage-flash {
+            position: absolute; inset: 0;
+            background: rgba(220, 0, 0, 0.45);
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.15s ease-out; z-index: 15;
+        }
+        #toast-msg {
+            position: absolute; top: 52px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75); color: #ffff55;
+            padding: 6px 14px; border-radius: 6px;
+            font-size: 12px; font-weight: bold; pointer-events: none;
+            opacity: 0; transition: opacity 0.25s; z-index: 30;
+        }
 
-  #game-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-  }
+        /* HUD & Touch Controls */
+        #ui-layer {
+            position: absolute; inset: 0;
+            pointer-events: none; display: flex;
+            flex-direction: column; justify-content: space-between;
+            padding: 10px; z-index: 10;
+        }
+        #top-hud {
+            display: flex; justify-content: space-between; align-items: center;
+            color: white; text-shadow: 1px 1px 2px #000;
+            font-weight: bold; font-size: 11px;
+            background: rgba(0,0,0,0.35); padding: 6px 8px;
+            border-radius: 6px; gap: 4px;
+        }
+        .hud-btn-group { pointer-events: auto; display: flex; gap: 4px; }
+        .mini-btn {
+            background: #3e7a3e; color: white; border: 1px solid #a5d6a7;
+            border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: bold; cursor: pointer;
+        }
+        .mini-btn.reset { background: #8e3535; border-color: #ef9a9a; }
+        .mini-btn:active { transform: scale(0.95); }
 
-  /* Crosshair */
-  #crosshair {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 10;
-  }
-  #crosshair::before, #crosshair::after {
-    content: '';
-    position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 2px rgba(0,0,0,0.8);
-  }
-  #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
-  #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+        #controls-row {
+            display: flex; justify-content: space-between; align-items: flex-end; width: 100%;
+        }
+        .dpad {
+            pointer-events: auto; display: grid;
+            grid-template-columns: repeat(3, 52px);
+            grid-template-rows: repeat(3, 52px); gap: 4px;
+        }
+        .btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.65);
+            border-radius: 10px; color: white; font-size: 16px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+        }
+        .btn:active { background: rgba(255, 255, 255, 0.6); }
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 3; }
 
-  /* HUD Top */
-  #hud-top {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(6px);
-    color: #f8fafc;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    line-height: 1.4;
-    pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    z-index: 10;
-  }
-  #hud-top strong { color: #38bdf8; }
+        .action-group {
+            pointer-events: auto; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+        }
+        .action-row { display: flex; gap: 8px; }
+        .action-btn {
+            width: 58px; height: 58px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.45); border: 2px solid rgba(255, 255, 255, 0.7);
+            color: white; font-size: 10px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .action-btn:active { background: rgba(255, 255, 255, 0.4); }
+        #btn-shoot {
+            background: rgba(190, 40, 40, 0.85);
+            border-color: #ff8a80;
+            display: none;
+        }
 
-  /* Hotbar */
-  #hotbar {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 4px;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(8px);
-    padding: 5px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    z-index: 20;
-    max-width: 96vw;
-    overflow-x: auto;
-    pointer-events: auto;
-  }
+        #status-bars {
+            align-self: center; display: flex; justify-content: space-between;
+            width: 100%; max-width: 320px; margin-top: 4px;
+            padding: 2px 4px; font-size: 12px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;
+        }
 
-  .slot {
-    width: 38px;
-    height: 38px;
-    border-radius: 6px;
-    border: 2px solid rgba(255, 255, 255, 0.25);
-    background: rgba(30, 41, 59, 0.75);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
+        #hotbar-container {
+            pointer-events: auto; align-self: center; display: flex; gap: 4px;
+            background: rgba(30, 30, 30, 0.85); padding: 4px; border: 3px solid #555;
+            border-radius: 6px; margin-top: 2px;
+        }
+        .slot {
+            width: 44px; height: 44px; background: #8b8b8b;
+            border: 2px solid #373737; border-right-color: #fff; border-bottom-color: #fff;
+            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .slot.selected { border: 3px solid #ffff55; transform: scale(1.06); }
+        .item-icon {
+            width: 24px; height: 24px; border: 1px solid rgba(0,0,0,0.4);
+            background-size: cover; image-rendering: pixelated;
+        }
+        .item-count {
+            position: absolute; bottom: 2px; right: 4px; color: white;
+            font-size: 10px; font-weight: bold; text-shadow: 1px 1px 0 #000;
+        }
+        .item-label {
+            font-size: 7px; color: #fff; text-shadow: 1px 1px 0 #000;
+            margin-top: 1px; text-align: center; line-height: 1;
+        }
 
-  .slot.active {
-    border-color: #ffffff;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    background: rgba(51, 65, 85, 0.95);
-  }
-
-  .slot canvas {
-    width: 20px;
-    height: 20px;
-    image-rendering: pixelated;
-    border-radius: 2px;
-  }
-
-  .slot-num {
-    position: absolute;
-    top: 1px;
-    left: 2px;
-    font-size: 7px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.75);
-  }
-
-  #block-label {
-    position: fixed;
-    bottom: 68px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  /* Mobile Controls Layout */
-  #mobile-controls {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 30;
-  }
-
-  .touch-pad {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    width: 120px;
-    height: 120px;
-    pointer-events: auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px;
-  }
-
-  .t-btn {
-    background: rgba(255, 255, 255, 0.22);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
-    color: white;
-    font-weight: 800;
-    font-size: 15px;
-    display: grid;
-    place-items: center;
-    backdrop-filter: blur(4px);
-  }
-  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.6); transform: scale(0.94); }
-  .t-up { grid-column: 2; grid-row: 1; }
-  .t-left { grid-column: 1; grid-row: 2; }
-  .t-right { grid-column: 3; grid-row: 2; }
-  .t-down { grid-column: 2; grid-row: 3; }
-
-  .action-pad {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    pointer-events: auto;
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-  }
-
-  .col-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .act-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgba(15, 23, 42, 0.75);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    color: white;
-    font-weight: 800;
-    font-size: 10px;
-    display: grid;
-    place-items: center;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  }
-  .act-btn:active { transform: scale(0.9); }
-
-  /* Crafting Button */
-  #btn-craft {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    background: rgba(217, 119, 6, 0.85);
-    color: white;
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 11px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    z-index: 40;
-    cursor: pointer;
-    pointer-events: auto;
-    backdrop-filter: blur(6px);
-  }
-
-  /* Menu Overlay */
-  #menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(12px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    color: white;
-    text-align: center;
-    padding: 20px;
-    pointer-events: auto;
-  }
-
-  .menu-box {
-    background: rgba(30, 41, 59, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 22px 26px;
-    max-width: 360px;
-    width: 100%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  }
-
-  .menu-box h1 {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 4px;
-    background: linear-gradient(135deg, #4ade80, #38bdf8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .menu-box p { color: #cbd5e1; font-size: 11px; margin-bottom: 12px; }
-
-  .controls-info {
-    text-align: left;
-    background: rgba(15, 23, 42, 0.75);
-    padding: 10px 12px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    font-size: 10px;
-    color: #cbd5e1;
-    line-height: 1.5;
-  }
-  .controls-info span { color: #38bdf8; font-weight: 700; }
-
-  .btn-play {
-    width: 100%;
-    padding: 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f172a;
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
-  }
-
-  .btn-secondary {
-    margin-top: 8px;
-    width: 100%;
-    padding: 9px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #e2e8f0;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    cursor: pointer;
-  }
-</style>
+        #crafting-modal, #death-modal {
+            display: none; position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.7); z-index: 25;
+            align-items: center; justify-content: center; padding: 15px;
+        }
+        #death-modal { background: rgba(110, 0, 0, 0.8); flex-direction: column; color: white; text-align: center; }
+        #respawn-btn {
+            margin-top: 16px; padding: 12px 28px; font-size: 16px; font-weight: bold;
+            background: #777; color: white; border: 3px solid #fff; cursor: pointer;
+        }
+        .window-box {
+            background: #c6c6c6; border: 4px solid #373737;
+            border-top-color: #fff; border-left-color: #fff;
+            padding: 16px; width: 100%; max-width: 380px; color: #222;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px; font-weight: bold; font-size: 15px;
+        }
+        .close-btn {
+            background: #aa3333; color: white; border: 2px solid #550000;
+            padding: 4px 10px; font-weight: bold; cursor: pointer;
+        }
+        .window-content {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; margin-bottom: 14px; background: #b0b0b0; padding: 12px; border: 2px solid #777;
+        }
+        .recipe-hints { font-size: 11px; background: #dcdcdc; padding: 8px; border: 1px solid #888; margin-bottom: 10px; line-height: 1.4; }
+        .modal-inventory { display: flex; justify-content: center; gap: 5px; }
+    </style>
 </head>
 <body>
+    <div id="crosshair"></div>
+    <div id="damage-flash"></div>
+    <div id="toast-msg">Loaded AK-47 & RPG!</div>
 
-  <div id="crosshair"></div>
-
-  <div id="hud-top">
-    <div><strong>VoxelCraft</strong> · FPS: <span id="fps">60</span></div>
-    <div>XYZ: <span id="coords">0, 0, 0</span></div>
-  </div>
-
-  <div id="block-label">Grass Block</div>
-  <div id="hotbar"></div>
-  <button id="btn-craft">CRAFTING</button>
-
-  <div id="mobile-controls">
-    <div class="touch-pad">
-      <div class="t-btn t-up" id="btn-w">▲</div>
-      <div class="t-btn t-left" id="btn-a">◀</div>
-      <div class="t-btn t-right" id="btn-d">▶</div>
-      <div class="t-btn t-down" id="btn-s">▼</div>
-    </div>
-    <div class="action-pad">
-      <div class="col-actions">
-        <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.85);">MINE</div>
-        <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.85);">PLACE</div>
-      </div>
-      <div class="act-btn" id="btn-jump" style="width:64px; height:64px; background:rgba(37,99,235,0.85);">JUMP</div>
-    </div>
-  </div>
-
-  <div id="menu-overlay">
-    <div class="menu-box">
-      <h1>VoxelCraft Island</h1>
-      <p>Pocket Edition & Tools</p>
-      <div class="controls-info">
-        <div>🕹️ <span>Move:</span> Left D-Pad (▲ ◀ ▶ ▼).</div>
-        <div>👁️ <span>Look:</span> Drag finger on screen.</div>
-        <div>⛏️ <span>Survival:</span> Mine blocks with HP, craft tools!</div>
-      </div>
-      <button id="start-btn" class="btn-play">Enter Fullscreen & Play</button>
-      <button id="regen-btn" class="btn-secondary">Generate New Island</button>
-    </div>
-  </div>
-
-  <!-- Three.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-  <script>
-    // ==========================================
-    // PART 1: PROCEDURAL TEXTURES & BLOCK DB
-    // ==========================================
-    function createPixelTexture(drawFn) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext('2d');
-      drawFn(ctx);
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.magFilter = THREE.NearestFilter;
-      tex.minFilter = THREE.NearestFilter;
-      return { tex, canvas };
-    }
-
-    function noiseFill(ctx, baseHex, variance) {
-      const r = parseInt(baseHex.slice(1, 3), 16);
-      const g = parseInt(baseHex.slice(3, 5), 16);
-      const b = parseInt(baseHex.slice(5, 7), 16);
-      for (let x = 0; x < 16; x++) {
-        for (let y = 0; y < 16; y++) {
-          const delta = Math.floor((Math.random() - 0.5) * variance);
-          ctx.fillStyle = `rgb(${Math.min(255, Math.max(0, r + delta))}, ${Math.min(255, Math.max(0, g + delta))}, ${Math.min(255, Math.max(0, b + delta))})`;
-          ctx.fillRect(x, y, 1, 1);
-        }
-      }
-    }
-
-    const textures = {
-      grassTop: createPixelTexture(ctx => noiseFill(ctx, '#56a832', 28)),
-      dirt: createPixelTexture(ctx => noiseFill(ctx, '#79553a', 26)),
-      grassSide: createPixelTexture(ctx => {
-        noiseFill(ctx, '#79553a', 26);
-        for (let x = 0; x < 16; x++) {
-          const depth = 3 + Math.floor(Math.random() * 3);
-          for (let y = 0; y < depth; y++) {
-            ctx.fillStyle = y === depth - 1 ? '#458b28' : '#56a832';
-            ctx.fillRect(x, y, 1, 1);
-          }
-        }
-      }),
-      stone: createPixelTexture(ctx => noiseFill(ctx, '#7d8287', 30)),
-      planks: createPixelTexture(ctx => noiseFill(ctx, '#b38b59', 18)),
-      woodSide: createPixelTexture(ctx => noiseFill(ctx, '#6b4c2f', 18)),
-      woodTop: createPixelTexture(ctx => noiseFill(ctx, '#a48256', 18)),
-      leaves: createPixelTexture(ctx => noiseFill(ctx, '#2d7a22', 35)),
-      sand: createPixelTexture(ctx => noiseFill(ctx, '#dfd39a', 20)),
-      water: createPixelTexture(ctx => {
-        ctx.fillStyle = '#3b82f6';
-        ctx.fillRect(0, 0, 16, 16);
-        ctx.fillStyle = '#60a5fa';
-        ctx.fillRect(2, 2, 4, 4);
-        ctx.fillRect(10, 10, 4, 4);
-      }),
-      flowerRed: createPixelTexture(ctx => {
-        noiseFill(ctx, '#3b7a22', 20);
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(6, 4, 4, 4);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(7, 5, 2, 2);
-      }),
-      pickaxe: createPixelTexture(ctx => {
-        noiseFill(ctx, '#888888', 15);
-        ctx.fillStyle = '#79553a'; ctx.fillRect(4, 7, 8, 2);
-      }),
-      axe: createPixelTexture(ctx => {
-        noiseFill(ctx, '#79553a', 10);
-        ctx.fillStyle = '#a0a0a0'; ctx.fillRect(10, 2, 4, 6);
-      }),
-      shovel: createPixelTexture(ctx => {
-        noiseFill(ctx, '#79553a', 10);
-        ctx.fillStyle = '#999999'; ctx.fillRect(11, 1, 4, 5);
-      })
-    };
-
-    const BLOCK_TYPES = [
-      { id: 1, name: 'Grass Block', type: 'block', hp: 3, preferredTool: 'shovel', icon: textures.grassSide.canvas, material: [
-        new THREE.MeshLambertMaterial({ map: textures.grassSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.grassSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.grassTop.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.dirt.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.grassSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.grassSide.tex })
-      ]},
-      { id: 2, name: 'Dirt', type: 'block', hp: 2, preferredTool: 'shovel', icon: textures.dirt.canvas, material: new THREE.MeshLambertMaterial({ map: textures.dirt.tex }) },
-      { id: 3, name: 'Stone', type: 'block', hp: 8, preferredTool: 'pickaxe', icon: textures.stone.canvas, material: new THREE.MeshLambertMaterial({ map: textures.stone.tex }) },
-      { id: 4, name: 'Oak Planks', type: 'block', hp: 5, preferredTool: 'axe', icon: textures.planks.canvas, material: new THREE.MeshLambertMaterial({ map: textures.planks.tex }) },
-      { id: 5, name: 'Oak Log', type: 'block', hp: 6, preferredTool: 'axe', icon: textures.woodSide.canvas, material: [
-        new THREE.MeshLambertMaterial({ map: textures.woodSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.woodSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.woodTop.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.woodTop.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.woodSide.tex }),
-        new THREE.MeshLambertMaterial({ map: textures.woodSide.tex })
-      ]},
-      { id: 6, name: 'Leaves', type: 'block', hp: 1, preferredTool: 'axe', icon: textures.leaves.canvas, material: new THREE.MeshLambertMaterial({ map: textures.leaves.tex }) },
-      { id: 7, name: 'Sand', type: 'block', hp: 2, preferredTool: 'shovel', icon: textures.sand.canvas, material: new THREE.MeshLambertMaterial({ map: textures.sand.tex }) },
-      { id: 8, name: 'Water', type: 'block', hp: 999, preferredTool: null, icon: textures.water.canvas, material: new THREE.MeshLambertMaterial({ map: textures.water.tex, transparent: true, opacity: 0.8 }) },
-      { id: 9, name: 'Poppy Flower', type: 'block', hp: 1, preferredTool: null, icon: textures.flowerRed.canvas, material: new THREE.MeshLambertMaterial({ map: textures.flowerRed.tex, transparent: true }) },
-      { id: 10, name: 'Wooden Pickaxe', type: 'tool', toolType: 'pickaxe', damage: 2, miningSpeed: 3.5, icon: textures.pickaxe.canvas },
-      { id: 11, name: 'Wood Axe', type: 'tool', toolType: 'axe', damage: 3, miningSpeed: 3.5, icon: textures.axe.canvas },
-      { id: 12, name: 'Shovel', type: 'tool', toolType: 'shovel', damage: 1.5, miningSpeed: 3.5, icon: textures.shovel.canvas }
-    ];
-  </script>
-</body>
-</html>
-    // ==========================================
-    // PART 2: SCENE, LIGHTING & ISLAND GENERATION
-    // ==========================================
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb);
-    scene.fog = new THREE.FogExp2(0x87ceeb, 0.018);
-
-    const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 150);
-    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.domElement.id = 'game-canvas';
-    document.body.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.68));
-    const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.75);
-    sunLight.position.set(40, 80, 30);
-    scene.add(sunLight);
-
-    const highlightBox = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.BoxGeometry(1.006, 1.006, 1.006)),
-      new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.6 })
-    );
-    highlightBox.visible = false;
-    scene.add(highlightBox);
-
-    const ISLAND_RADIUS = 12; // Compact, cozy survival island size
-    const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-    const worldMap = new Map();
-    const meshesArray = [];
-
-    function posKey(x, y, z) { return `${x},${y},${z}`; }
-
-    function addBlock(x, y, z, typeId) {
-      const key = posKey(x, y, z);
-      if (worldMap.has(key)) return;
-      const blockDef = BLOCK_TYPES.find(b => b.id === typeId);
-      if (!blockDef) return;
-
-      const mesh = new THREE.Mesh(blockGeo, blockDef.material);
-      mesh.position.set(x, y, z);
-      mesh.userData = { x, y, z, typeId };
-      scene.add(mesh);
-      worldMap.set(key, { mesh, typeId, hp: blockDef.hp || 3, maxHp: blockDef.hp || 3 });
-      meshesArray.push(mesh);
-    }
-
-    function removeBlock(x, y, z) {
-      const key = posKey(x, y, z);
-      const entry = worldMap.get(key);
-      if (!entry) return;
-      scene.remove(entry.mesh);
-      const idx = meshesArray.indexOf(entry.mesh);
-      if (idx > -1) meshesArray.splice(idx, 1);
-      worldMap.delete(key);
-    }
-
-    function spawnTree(tx, ty, tz) {
-      // Trunk
-      for (let y = 0; y < 4; y++) {
-        addBlock(tx, ty + y, tz, 5); // Oak Log
-      }
-      // Leaves canopy
-      for (let lx = -2; lx <= 2; lx++) {
-        for (let lz = -2; lz <= 2; lz++) {
-          for (let ly = 3; ly <= 5; ly++) {
-            if (Math.abs(lx) === 2 && Math.abs(lz) === 2 && ly === 5) continue;
-            if (lx === 0 && lz === 0 && ly < 5) continue;
-            addBlock(tx + lx, ty + ly, tz + lz, 6); // Leaves
-          }
-        }
-      }
-    }
-
-    function generateIsland() {
-      for (const m of meshesArray) scene.remove(m);
-      worldMap.clear();
-      meshesArray.length = 0;
-      const seed = Math.random() * 1000;
-
-      for (let x = -ISLAND_RADIUS; x <= ISLAND_RADIUS; x++) {
-        for (let z = -ISLAND_RADIUS; z <= ISLAND_RADIUS; z++) {
-          const distFromCenter = Math.hypot(x, z);
-          if (distFromCenter > ISLAND_RADIUS) {
-            // Surround with ocean water level
-            for (let y = 0; y <= 1; y++) {
-              addBlock(x, y, z, 8); // Water
-            }
-            continue;
-          }
-
-          // Island height curve (higher in center, sloping down to beach)
-          const hNoise = Math.sin((x + seed) * 0.15) * Math.cos((z + seed) * 0.15) * 2;
-          const surfaceY = Math.max(1, Math.floor(4 - (distFromCenter / ISLAND_RADIUS) * 3 + hNoise));
-
-          for (let y = 0; y <= surfaceY; y++) {
-            let blockId = 3; // Stone base
-            if (y === surfaceY) {
-              blockId = surfaceY <= 1 ? 7 : 1; // Sand on beach, Grass on top
-            } else if (y >= surfaceY - 2) {
-              blockId = surfaceY <= 1 ? 7 : 2; // Dirt
-            }
-            addBlock(x, y, z, blockId);
-          }
-
-          // Spawn a tree or flower near center
-          if (surfaceY >= 3 && distFromCenter < 6 && Math.random() < 0.08) {
-            spawnTree(x, surfaceY + 1, z);
-          } else if (surfaceY >= 3 && Math.random() < 0.05) {
-            addBlock(x, surfaceY + 1, z, 9); // Poppy Flower
-          }
-        }
-      }
-    }
-    // ==========================================
-    // PART 3: HOTBAR UI & PLAYER CONTROLLER
-    // ==========================================
-    let selectedSlot = 0;
-    const hotbarEl = document.getElementById('hotbar');
-    const blockLabelEl = document.getElementById('block-label');
-
-    function initHotbar() {
-      hotbarEl.innerHTML = '';
-      BLOCK_TYPES.forEach((b, index) => {
-        const slot = document.createElement('div');
-        slot.className = 'slot' + (index === selectedSlot ? ' active' : '');
-        slot.innerHTML = `<span class="slot-num">${index + 1}</span>`;
-        const iconCopy = document.createElement('canvas');
-        iconCopy.width = 16;
-        iconCopy.height = 16;
-        iconCopy.getContext('2d').drawImage(b.icon, 0, 0);
-        slot.appendChild(iconCopy);
-        
-        slot.addEventListener('click', (e) => {
-          e.stopPropagation();
-          selectSlot(index);
-        });
-        hotbarEl.appendChild(slot);
-      });
-    }
-
-    function selectSlot(index) {
-      selectedSlot = index % BLOCK_TYPES.length;
-      document.querySelectorAll('.slot').forEach((el, i) => {
-        el.classList.toggle('active', i === selectedSlot);
-      });
-      blockLabelEl.textContent = BLOCK_TYPES[selectedSlot].name;
-    }
-
-    const player = {
-      pos: new THREE.Vector3(0, 8, 0),
-      vel: new THREE.Vector3(0, 0, 0),
-      yaw: 0,
-      pitch: 0,
-      onGround: false,
-      height: 1.65,
-      radius: 0.3
-    };
-
-    const keys = {};
-    let isGameStarted = false;
-
-    function requestFullscreen() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(() => {});
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      }
-    }
-
-    const menuOverlay = document.getElementById('menu-overlay');
-    document.getElementById('start-btn').addEventListener('click', () => {
-      requestFullscreen();
-      menuOverlay.style.display = 'none';
-      isGameStarted = true;
-    });
-    document.getElementById('regen-btn').addEventListener('click', () => {
-      requestFullscreen();
-      generateIsland();
-      menuOverlay.style.display = 'none';
-      isGameStarted = true;
-    });
-
-    // Mobile D-Pad Touch Bindings
-    function bindTouchButton(elementId, keyName) {
-      const el = document.getElementById(elementId);
-      if (!el) return;
-      el.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys[keyName] = true;
-        el.classList.add('touched');
-      }, { passive: false });
-
-      el.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys[keyName] = false;
-        el.classList.remove('touched');
-      }, { passive: false });
-    }
-
-    bindTouchButton('btn-w', 'KeyW');
-    bindTouchButton('btn-a', 'KeyA');
-    bindTouchButton('btn-s', 'KeyS');
-    bindTouchButton('btn-d', 'KeyD');
-    bindTouchButton('btn-jump', 'Space');
-
-    // Camera Look Swipe Handling
-    let lookTouchId = null;
-    let lastX = 0, lastY = 0;
-
-    window.addEventListener('touchstart', (e) => {
-      if (!isGameStarted) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        const target = document.elementFromPoint(t.clientX, t.clientY);
-        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar') || target.closest('#btn-craft'))) continue;
-        
-        if (lookTouchId === null) {
-          lookTouchId = t.identifier;
-          lastX = t.clientX;
-          lastY = t.clientY;
-          break;
-        }
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!isGameStarted || lookTouchId === null) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (t.identifier === lookTouchId) {
-          const dx = t.clientX - lastX;
-          const dy = t.clientY - lastY;
-          lastX = t.clientX;
-          lastY = t.clientY;
-
-          const sensitivity = 0.0035;
-          player.yaw -= dx * sensitivity;
-          player.pitch -= dy * sensitivity;
-          player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
-          break;
-        }
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchend', (e) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier === lookTouchId) {
-          lookTouchId = null;
-          break;
-        }
-      }
-    }, { passive: true });
-
-    // AABB Collision Check
-    function collidesAt(px, py, pz) {
-      const minX = Math.floor(px - player.radius + 0.5);
-      const maxX = Math.floor(px + player.radius + 0.5);
-      const minY = Math.floor(py - player.height + 0.5);
-      const maxY = Math.floor(py + 0.15 + 0.5);
-      const minZ = Math.floor(pz - player.radius + 0.5);
-      const maxZ = Math.floor(pz + player.radius + 0.5);
-
-      for (let x = minX; x <= maxX; x++) {
-        for (let y = minY; y <= maxY; y++) {
-          for (let z = minZ; z <= maxZ; z++) {
-            if (worldMap.has(posKey(x, y, z))) return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    function updatePlayer(dt) {
-      if (!isGameStarted) return;
-
-      const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-      const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
-      const moveDir = new THREE.Vector3();
-
-      if (keys['KeyW']) moveDir.add(forward);
-      if (keys['KeyS']) moveDir.sub(forward);
-      if (keys['KeyD']) moveDir.add(right);
-      if (keys['KeyA']) moveDir.sub(right);
-      if (moveDir.lengthSq() > 0) moveDir.normalize();
-
-      const speed = 5.2;
-      player.vel.x = moveDir.x * speed;
-      player.vel.z = moveDir.z * speed;
-
-      player.vel.y -= 24 * dt;
-      if (keys['Space'] && player.onGround) {
-        player.vel.y = 8.4;
-        player.onGround = false;
-      }
-
-      const nextX = player.pos.x + player.vel.x * dt;
-      if (!collidesAt(nextX, player.pos.y, player.pos.z)) player.pos.x = nextX;
-
-      const nextZ = player.pos.z + player.vel.z * dt;
-      if (!collidesAt(player.pos.x, player.pos.y, nextZ)) player.pos.z = nextZ;
-
-      const nextY = player.pos.y + player.vel.y * dt;
-      if (!collidesAt(player.pos.x, nextY, player.pos.z)) {
-        player.pos.y = nextY;
-        player.onGround = false;
-      } else {
-        if (player.vel.y < 0) player.onGround = true;
-        player.vel.y = 0;
-      }
-
-      if (player.pos.y < -15) player.pos.set(0, 10, 0);
-
-      camera.position.copy(player.pos);
-      camera.quaternion.setFromEuler(new THREE.Euler(player.pitch, player.yaw, 0, 'YXZ'));
-
-      document.getElementById('coords').textContent = `${Math.round(player.pos.x)}, ${Math.round(player.pos.y)}, ${Math.round(player.pos.z)}`;
-    }
-    // ==========================================
-    // PART 4: MINING, BLOCK HP & TOOL DAMAGE
-    // ==========================================
-    const raycaster = new THREE.Raycaster();
-    raycaster.far = 6.5;
-
-    function getTargetBlock() {
-      raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-      const hits = raycaster.intersectObjects(meshesArray);
-      return hits.length > 0 ? hits[0] : null;
-    }
-
-    function performAction(actionType) {
-      const hit = getTargetBlock();
-      if (!hit) return;
-      const { x, y, z } = hit.object.userData;
-      const key = posKey(x, y, z);
-      const entry = worldMap.get(key);
-      if (!entry) return;
-
-      const activeItem = BLOCK_TYPES[selectedSlot];
-
-      if (actionType === 'break') {
-        const blockDef = BLOCK_TYPES.find(b => b.id === entry.typeId);
-        let damage = 1;
-        if (activeItem.type === 'tool' && activeItem.toolType === blockDef.preferredTool) {
-          damage = activeItem.miningSpeed || 2.5;
-        }
-        entry.hp -= damage;
-
-        // Visual breaking feedback (shrinks block as HP decreases)
-        const scaleFactor = Math.max(0.25, entry.hp / entry.maxHp);
-        entry.mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-        if (entry.hp <= 0) {
-          removeBlock(x, y, z);
-        }
-      } else if (actionType === 'place') {
-        if (activeItem.type === 'block') {
-          const n = hit.face.normal;
-          const nx = x + Math.round(n.x);
-          const ny = y + Math.round(n.y);
-          const nz = z + Math.round(n.z);
-          addBlock(nx, ny, nz, activeItem.id);
-        }
-      }
-    }
-
-    document.getElementById('btn-break').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      performAction('break');
-    }, { passive: false });
-
-    document.getElementById('btn-place').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      performAction('place');
-    }, { passive: false });
-    // ==========================================
-    // PART 5: CRAFTING, ANIMALS & BOOT LOOP
-    // ==========================================
-    
-    // Simple Crafting System (Wood -> Planks -> Tools)
-    const craftModalHtml = `
-      <div id="craft-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:200; display:flex; align-items:center; justifyContent:center;">
-        <div style="background:#1e293b; border:2px solid rgba(255,255,255,0.2); border-radius:16px; padding:20px; width:320px; color:white; text-align:center;">
-          <h2 style="margin-bottom:12px; font-size:18px; color:#38bdf8;">Crafting Table</h2>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px; text-align:left;">
-            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-              <span>Oak Planks (x4)</span>
-              <button id="craft-planks" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
+    <div id="ui-layer">
+        <div id="top-hud">
+            <span id="zone-label">Los Santos Hills</span>
+            <span id="time-label">Day 12:00</span>
+            <div class="hud-btn-group">
+                <button class="mini-btn" id="btn-save">Save</button>
+                <button class="mini-btn reset" id="btn-reset">Reset</button>
             </div>
-            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-              <span>Wooden Pickaxe</span>
-              <button id="craft-pick" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
-            </div>
-            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-              <span>Wood Axe</span>
-              <button id="craft-axe" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
-            </div>
-            <div style="background:rgba(255,255,255,0.06); padding:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-              <span>Shovel</span>
-              <button id="craft-shovel" style="background:#22c55e; border:none; color:white; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer;">Craft</button>
-            </div>
-          </div>
-          <button id="close-craft" style="width:100%; padding:10px; background:#ef4444; border:none; border-radius:8px; color:white; font-weight:700; cursor:pointer;">Close</button>
         </div>
-      </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', craftModalHtml);
-    const craftModal = document.getElementById('craft-modal');
-    craftModal.style.display = 'none';
 
-    document.getElementById('btn-craft').addEventListener('click', (e) => {
-      e.stopPropagation();
-      craftModal.style.display = 'flex';
-    });
-    document.getElementById('close-craft').addEventListener('click', () => {
-      craftModal.style.display = 'none';
-    });
+        <div style="display:flex; flex-direction:column; width:100%;">
+            <div id="controls-row">
+                <div class="dpad">
+                    <div class="btn" id="btn-up">W</div>
+                    <div class="btn" id="btn-left">A</div>
+                    <div class="btn" id="btn-right">D</div>
+                    <div class="btn" id="btn-down">S</div>
+                </div>
+                <div class="action-group">
+                    <div class="action-row">
+                        <div class="action-btn" id="btn-shoot">Shoot</div>
+                        <div class="action-btn" id="btn-break">Break /<br>Hit</div>
+                        <div class="action-btn" id="btn-place">Place</div>
+                    </div>
+                    <div class="action-row">
+                        <div class="action-btn" id="btn-jump">Jump</div>
+                    </div>
+                </div>
+            </div>
 
-    // Instant unlock/grant items for mobile pocket fun
-    document.getElementById('craft-planks').addEventListener('click', () => { selectSlot(3); craftModal.style.display = 'none'; });
-    document.getElementById('craft-pick').addEventListener('click', () => { selectSlot(9); craftModal.style.display = 'none'; });
-    document.getElementById('craft-axe').addEventListener('click', () => { selectSlot(10); craftModal.style.display = 'none'; });
-    document.getElementById('craft-shovel').addEventListener('click', () => { selectSlot(11); craftModal.style.display = 'none'; });
+            <div id="status-bars">
+                <div id="health-bar" style="color:#ff3333;">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+                <div id="hunger-bar" style="color:#d28e46;">🍗🍗🍗🍗🍗🍗🍗🍗🍗🍗</div>
+            </div>
 
-    // Animal Entities (Simple wandering Pig/Sheep mob on island)
-    const animalGroup = new THREE.Group();
-    const pigBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.8, 0.6, 1.2),
-      new THREE.MeshLambertMaterial({ color: 0xf472b6 })
-    );
-    pigBody.position.set(0, 4.5, 0);
-    animalGroup.add(pigBody);
-    scene.add(animalGroup);
+            <div id="hotbar-container">
+                <div class="slot selected" data-slot="0" id="hotbar-0"></div>
+                <div class="slot" data-slot="1" id="hotbar-1"></div>
+                <div class="slot" data-slot="2" id="hotbar-2"></div>
+                <div class="slot" data-slot="3" id="hotbar-3"></div>
+                <div class="slot" id="hotbar-4" id="hotbar-4"></div>
+                <div class="slot" id="btn-open-craft" style="background:#5a5a5a; color:#fff; font-weight:bold;">
+                    <span>•••</span>
+                    <span class="item-label">Craft</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function updateAnimals(dt) {
-      animalGroup.position.x += Math.sin(performance.now() * 0.001) * 0.01;
-      pigBody.rotation.y = Math.sin(performance.now() * 0.001) * 0.5;
-    }
+    <!-- Death Screen -->
+    <div id="death-modal">
+        <h1 style="font-size:32px; margin:0; text-shadow:2px 2px 0 #000;">WASTED / YOU DIED!</h1>
+        <button id="respawn-btn">Respawn on Island</button>
+    </div>
 
-    // Boot & Game Loop
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    <!-- Crafting Modal -->
+    <div id="crafting-modal">
+        <div class="window-box">
+            <div class="modal-header">
+                <span>Crafting (2x2)</span>
+                <button class="close-btn" id="close-craft">X</button>
+            </div>
+            <div class="window-content">
+                <div id="craft-grid" style="display:grid; grid-template-columns:repeat(2,50px); grid-template-rows:repeat(2,50px); gap:4px;">
+                    <div class="slot" id="craft-0"></div><div class="slot" id="craft-1"></div>
+                    <div class="slot" id="craft-2"></div><div class="slot" id="craft-3"></div>
+                </div>
+                <div style="font-size:24px; font-weight:bold; color:#444;">➔</div>
+                <div class="slot" id="craft-output" style="width:56px; height:56px;"></div>
+            </div>
+            <div class="recipe-hints">4 Wood = Table | 2 Iron = AK-47 | 4 Iron = GTA V RPG</div>
+            <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">Inventory:</div>
+            <div class="modal-inventory" id="modal-inventory"></div>
+        </div>
+    </div>
 
-    initHotbar();
-    selectSlot(0);
-    generateIsland();
-
-    let lastTime = performance.now();
-    let frameCount = 0, fpsTimer = 0;
-
-    function animate(now) {
-      requestAnimationFrame(animate);
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
-      lastTime = now;
-
-      frameCount++;
-      fpsTimer += dt;
-      if (fpsTimer >= 0.5) {
-        document.getElementById('fps').textContent = Math.round(frameCount / fpsTimer);
-        frameCount = 0; fpsTimer = 0;
-      }
-
-      if (isGameStarted) {
-        updatePlayer(dt);
-        updateAnimals(dt);
-        
-        const hit = getTargetBlock();
-        if (hit) {
-          highlightBox.visible = true;
-          highlightBox.position.copy(hit.object.position);
-        } else {
-          highlightBox.visible = false;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const SAVE_KEY = 'pocket_voxel_gta_island_v5';
+        function showToast(text) {
+            const t = document.getElementById('toast-msg');
+            t.textContent = text; t.style.opacity = '1';
+            setTimeout(() => { t.style.opacity = '0'; }, 1800);
         }
-      }
 
-      renderer.render(scene, camera);
-    }
-    requestAnimationFrame(animate);
-  </script>
+        class SoundFX {
+            constructor() { this.ctx = null; }
+            init() {
+                if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; this.ctx = new AC(); }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            playTone(freq, endFreq, duration, type = 'square', vol = 0.12) {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + duration);
+            }
+            gunshot() { this.playTone(120, 30, 0.08, 'sawtooth', 0.2); }
+            explosion() {
+                this.init();
+                const bufferSize = this.ctx.sampleRate * 0.6;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 300;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+                noise.start();
+            }
+            breakBlock() { this.playTone(180, 70, 0.12, 'sawtooth', 0.15); }
+            placeBlock() { this.playTone(260, 420, 0.08, 'triangle', 0.15); }
+            jump()       { this.playTone(150, 320, 0.14, 'sine', 0.1); }
+            mobHit()     { this.playTone(300, 110, 0.16, 'sawtooth', 0.18); }
+        }
+        const sfx = new SoundFX();
+
+        function createPixelTexture(draw) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 16; canvas.height = 16;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            draw(ctx);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+            return tex;
+        }
+
+        const textures = {
+            grass_top: createPixelTexture(ctx => { ctx.fillStyle = '#55aa33'; ctx.fillRect(0,0,16,16); }),
+            grass_side: createPixelTexture(ctx => { ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#55aa33'; ctx.fillRect(0,0,16,5); }),
+            dirt: createPixelTexture(ctx => { ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16); }),
+            stone: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); }),
+            wood: createPixelTexture(ctx => { ctx.fillStyle = '#6b4226'; ctx.fillRect(0,0,16,16); }),
+            sand: createPixelTexture(ctx => { ctx.fillStyle = '#e6d28a'; ctx.fillRect(0,0,16,16); }),
+            table: createPixelTexture(ctx => { ctx.fillStyle = '#a0522d'; ctx.fillRect(0,0,16,16); }),
+            ak47: createPixelTexture(ctx => {
+                ctx.fillStyle = '#424242'; ctx.fillRect(2,7,12,3);
+                ctx.fillStyle = '#6b4226'; ctx.fillRect(3,10,3,4);
+            }),
+            rpg: createPixelTexture(ctx => {
+                ctx.fillStyle = '#33691e'; ctx.fillRect(1,6,14,4);
+                ctx.fillStyle = '#212121'; ctx.fillRect(12,5,3,6); ctx.fillRect(3,9,3,4);
+            })
+        };
+
+        function getBlockMaterials(type) {
+            if (type === 'grass') {
+                return [
+                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
+                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
+                    new THREE.MeshLambertMaterial({ map: textures.grass_top }),
+                    new THREE.MeshLambertMaterial({ map: textures.dirt }),
+                    new THREE.MeshLambertMaterial({ map: textures.grass_side }),
+                    new THREE.MeshLambertMaterial({ map: textures.grass_side })
+                ];
+            }
+            return new THREE.MeshLambertMaterial({ map: textures[type] || textures.stone });
+        }
+
+        const ITEMS = {
+            grass: { name: 'Grass', placeable: true }, dirt: { name: 'Dirt', placeable: true },
+            stone: { name: 'Stone', placeable: true }, wood: { name: 'Wood', placeable: true },
+            sand: { name: 'Sand', placeable: true }, table: { name: 'Table', placeable: true },
+            ak47: { name: 'AK-47', placeable: false, ranged: true, damage: 2, fireRate: 150 },
+            rpg:  { name: 'GTA RPG', placeable: false, ranged: true, damage: 10, explosive: true, fireRate: 800 }
+        };
+
+        let inventory = [
+            { id: 'ak47', count: 1 },
+            { id: 'rpg', count: 1 },
+            { id: 'wood', count: 10 },
+            { id: 'grass', count: 15 },
+            null
+        ];
+        let selectedSlot = 0, craftGrid = [null,null,null,null], craftResult = null;
+        let lastShotTime = 0;
+
+        let scene, camera, renderer, raycaster, highlightBox, dirLight, ambientLight;
+        let blockMap = new Map(), blockMeshes = [], mobs = [], mobHitboxes = [];
+        const blockGeo = new THREE.BoxGeometry(1, 1, 1);
+
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3(), position = new THREE.Vector3(0, 8, 14), rotation = { x: -0.15, y: 0 };
+        let playerHealth = 10, playerHunger = 10, isDead = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.018);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 600);
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
+            dirLight = new THREE.DirectionalLight(0xffffff, 0.75); dirLight.position.set(60, 100, 40); scene.add(dirLight);
+
+            const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.02, 1.02, 1.02));
+            highlightBox = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+            highlightBox.visible = false; scene.add(highlightBox);
+
+            raycaster = new THREE.Raycaster(); raycaster.far = 60;
+
+            generateIsland();
+            spawnInitialMobs();
+            setupControls(); setupUI(); renderInventory(); updateSurvivalBars();
+        }
+
+        function generateIsland() {
+            const radius = 22;
+            for (let x = -radius; x <= radius; x++) {
+                for (let z = -radius; z <= radius; z++) {
+                    const dist = Math.hypot(x / 18, z / 22);
+                    if (dist > 1.05) continue;
+                    const surfaceY = Math.max(-1, Math.floor((1 - dist) * 4.5 + Math.sin(x*0.2)*Math.cos(z*0.2)*2));
+                    for (let y = -2; y <= surfaceY; y++) {
+                        let type = (y === surfaceY) ? (surfaceY >= 5 ? 'stone' : (z > 12 ? 'sand' : 'grass')) : 'stone';
+                        addBlock(x, y, z, type);
+                    }
+                }
+            }
+            position.set(0, getRawGroundY(0, 10) + 2.5, 10);
+        }
+
+        function addBlock(x, y, z, type) {
+            const key = `${x},${y},${z}`;
+            if (blockMap.has(key)) return;
+            const mesh = new THREE.Mesh(blockGeo, getBlockMaterials(type));
+            mesh.position.set(x, y, z);
+            mesh.userData = { x, y, z, type };
+            scene.add(mesh);
+            blockMap.set(key, mesh);
+            blockMeshes.push(mesh);
+        }
+
+        function removeBlock(x, y, z) {
+            const key = `${x},${y},${z}`;
+            const mesh = blockMap.get(key);
+            if (!mesh) return null;
+            scene.remove(mesh);
+            blockMap.delete(key);
+            blockMeshes = blockMeshes.filter(m => m !== mesh);
+            return mesh.userData.type;
+        }
+
+        function createMob(type, x, z) {
+            const group = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.4, 1.1), new THREE.MeshLambertMaterial({ color: 0x4caf50 }));
+            body.position.y = 0.7; group.add(body);
+            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.9, 1.1), new THREE.MeshBasicMaterial({ visible: false }));
+            hitbox.position.y = 0.7; group.add(hitbox);
+            group.position.set(x, getRawGroundY(x, z), z);
+            scene.add(group);
+            const mobObj = { type, group, hitbox, hp: 5, yaw: Math.random() * Math.PI * 2 };
+            hitbox.userData.mob = mobObj;
+            mobs.push(mobObj); mobHitboxes.push(hitbox);
+        }
+
+        function spawnInitialMobs() {
+            createMob('zombie', 6, -4);
+            createMob('zombie', -6, 6);
+        }
+
+        function fireWeapon() {
+            const now = Date.now();
+            const held = inventory[selectedSlot];
+            if (!held || !ITEMS[held.id].ranged) return;
+            const weapon = ITEMS[held.id];
+            if (now - lastShotTime < weapon.fireRate) return;
+            lastShotTime = now;
+
+            if (held.id === 'ak47') {
+                sfx.gunshot();
+            } else if (held.id === 'rpg') {
+                sfx.explosion();
+            }
+
+            // Raycast shot
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const mobHits = raycaster.intersectObjects(mobHitboxes);
+            if (mobHits.length > 0) {
+                const mob = mobHits[0].object.userData.mob;
+                mob.hp -= weapon.damage;
+                sfx.mobHit();
+                if (mob.hp <= 0) {
+                    scene.remove(mob.group);
+                    mobs = mobs.filter(x => x !== mob);
+                    mobHitboxes = mobHitboxes.filter(h => h !== mob.hitbox);
+                    showToast('Enemy Eliminated!');
+                }
+            } else if (weapon.explosive) {
+                // Rocket Explosion (Destroys nearby blocks)
+                const blockHits = raycaster.intersectObjects(blockMeshes);
+                if (blockHits.length > 0) {
+                    const hitPos = blockHits[0].object.position;
+                    for (let x = -1; x <= 1; x++) {
+                        for (let y = -1; y <= 1; y++) {
+                            for (let z = -1; z <= 1; z++) {
+                                removeBlock(Math.round(hitPos.x + x), Math.round(hitPos.y + y), Math.round(hitPos.z + z));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateSurvivalBars() {
+            document.getElementById('health-bar').textContent = '❤️'.repeat(playerHealth) + '🖤'.repeat(10-playerHealth);
+            document.getElementById('hunger-bar').textContent = '🍗'.repeat(playerHunger) + '🦴'.repeat(10-playerHunger);
+        }
+
+        function setupUI() {
+            for(let i=0; i<5; i++) {
+                document.getElementById(`hotbar-${i}`).addEventListener('click', () => { selectedSlot = i; renderInventory(); });
+            }
+            document.getElementById('btn-shoot').addEventListener('click', fireWeapon);
+            document.getElementById('btn-save').addEventListener('click', () => showToast('World Saved!'));
+            document.getElementById('btn-reset').addEventListener('click', () => location.reload());
+            document.getElementById('respawn-btn').addEventListener('click', () => {
+                playerHealth = 10; isDead = false; position.set(0, 7, 10);
+                document.getElementById('death-modal').style.display = 'none'; updateSurvivalBars();
+            });
+            document.getElementById('btn-open-craft').addEventListener('click', () => {
+                document.getElementById('crafting-modal').style.display = 'flex';
+                renderCraftingModal();
+            });
+            document.getElementById('close-craft').addEventListener('click', () => {
+                document.getElementById('crafting-modal').style.display = 'none';
+            });
+        }
+
+        function renderSlotContent(el, item) {
+            el.innerHTML = '';
+            if (!item) return;
+            const tex = textures[item.id] || textures.stone;
+            el.innerHTML = `<div class="item-icon" style="background-image:url(${tex.image.toDataURL()});"></div><div class="item-label">${item.id}</div>${item.count > 1 ? `<div class="item-count">${item.count}</div>`:''}`;
+        }
+
+        function renderInventory() {
+            for(let i=0; i<5; i++) {
+                const el = document.getElementById(`hotbar-${i}`);
+                el.classList.toggle('selected', i === selectedSlot);
+                renderSlotContent(el, inventory[i]);
+            }
+            const held = inventory[selectedSlot];
+            document.getElementById('btn-shoot').style.display = (held && ITEMS[held.id].ranged) ? 'flex' : 'none';
+        }
+
+        function renderCraftingModal() {
+            const inv = document.getElementById('modal-inventory'); inv.innerHTML = '';
+            for(let i=0; i<5; i++) {
+                const slot = document.createElement('div'); slot.className = 'slot';
+                renderSlotContent(slot, inventory[i]);
+                inv.appendChild(slot);
+            }
+        }
+
+        function setupControls() {
+            const bind = (id, start, end) => {
+                const el = document.getElementById(id);
+                el.addEventListener('touchstart', e => { e.preventDefault(); sfx.init(); start(); });
+                el.addEventListener('touchend', e => { e.preventDefault(); end(); });
+                el.addEventListener('mousedown', start); el.addEventListener('mouseup', end);
+            };
+            bind('btn-up', () => moveForward=true, () => moveForward=false);
+            bind('btn-down', () => moveBackward=true, () => moveBackward=false);
+            bind('btn-left', () => moveLeft=true, () => moveLeft=false);
+            bind('btn-right', () => moveRight=true, () => moveRight=false);
+
+            document.getElementById('btn-jump').addEventListener('click', () => {
+                if(Math.abs(velocity.y) < 0.01) { velocity.y = 0.16; sfx.jump(); }
+            });
+            document.getElementById('btn-break').addEventListener('click', () => {
+                raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+                const hits = raycaster.intersectObjects(blockMeshes);
+                if(hits.length > 0) {
+                    const p = hits[0].object.userData;
+                    removeBlock(p.x, p.y, p.z); sfx.breakBlock();
+                }
+            });
+            document.getElementById('btn-place').addEventListener('click', () => {
+                const item = inventory[selectedSlot];
+                if(!item || !ITEMS[item.id].placeable) return;
+                raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+                const hits = raycaster.intersectObjects(blockMeshes);
+                if(hits.length > 0) {
+                    const hit = hits[0]; const n = hit.face.normal;
+                    addBlock(hit.object.userData.x + Math.round(n.x), hit.object.userData.y + Math.round(n.y), hit.object.userData.z + Math.round(n.z), item.id);
+                    sfx.placeBlock();
+                    item.count--; if(item.count<=0) inventory[selectedSlot]=null;
+                    renderInventory();
+                }
+            });
+
+            let dragging = false, lx=0, ly=0;
+            window.addEventListener('touchstart', e => {
+                if(e.target.closest('#ui-layer') || e.target.closest('.window-box')) return;
+                dragging = true; lx = e.touches[0].clientX; ly = e.touches[0].clientY;
+            });
+            window.addEventListener('touchmove', e => {
+                if(!dragging) return;
+                rotation.y -= (e.touches[0].clientX - lx) * 0.006;
+                rotation.x = Math.max(-1.45, Math.min(1.45, rotation.x - (e.touches[0].clientY - ly) * 0.006));
+                lx = e.touches[0].clientX; ly = e.touches[0].clientY;
+            });
+            window.addEventListener('touchend', () => dragging = false);
+        }
+
+        function getRawGroundY(px, pz) {
+            const bx = Math.round(px), bz = Math.round(pz);
+            for(let y=16; y>=-5; y--) if(blockMap.has(`${bx},${y},${bz}`)) return y+0.5;
+            return -2.5;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const dir = new THREE.Vector3();
+            if(moveForward) dir.z -= 1; if(moveBackward) dir.z += 1;
+            if(moveLeft) dir.x -= 1; if(moveRight) dir.x += 1;
+            if(dir.lengthSq() > 0) {
+                dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0), rotation.y);
+                position.x += dir.x * 0.11; position.z += dir.z * 0.11;
+            }
+
+            const floorY = getRawGroundY(position.x, position.z) + 1.7;
+            velocity.y -= 0.009; position.y += velocity.y;
+            if(position.y <= floorY) { position.y = floorY; velocity.y = 0; }
+
+            camera.position.copy(position);
+            camera.quaternion.setFromEuler(new THREE.Euler(rotation.x, rotation.y, 0, 'YXZ'));
+
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const hits = raycaster.intersectObjects(blockMeshes);
+            highlightBox.visible = hits.length > 0;
+            if(highlightBox.visible) highlightBox.position.copy(hits[0].object.position);
+
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
 </html>

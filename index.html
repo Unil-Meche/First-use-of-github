@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pocket Voxel Engine - Ultimate Edition (AK-47 & RPG)</title>
+    <title>Pocket Voxel Engine - Ultimate Edition (All Features)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -35,11 +35,17 @@
         #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
         #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
 
+        /* Screen Overlays */
         #damage-flash {
             position: absolute; inset: 0;
             background: rgba(220, 0, 0, 0.45);
             pointer-events: none; opacity: 0;
             transition: opacity 0.15s ease-out; z-index: 15;
+        }
+        #underwater-tint {
+            position: absolute; inset: 0;
+            background: rgba(15, 85, 190, 0.42);
+            pointer-events: none; display: none; z-index: 4;
         }
         #toast-msg {
             position: absolute; top: 52px; left: 50%;
@@ -64,11 +70,14 @@
             background: rgba(0,0,0,0.35); padding: 6px 8px;
             border-radius: 6px; gap: 4px;
         }
-        .hud-btn-group { pointer-events: auto; display: flex; gap: 4px; }
+        .hud-btn-group {
+            pointer-events: auto; display: flex; gap: 4px;
+        }
         .mini-btn {
             background: #3e7a3e; color: white; border: 1px solid #a5d6a7;
             border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: bold; cursor: pointer;
         }
+        .mini-btn.mp { background: #1565c0; border-color: #90caf9; }
         .mini-btn.reset { background: #8e3535; border-color: #ef9a9a; }
         .mini-btn:active { transform: scale(0.95); }
 
@@ -103,11 +112,8 @@
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
         .action-btn:active { background: rgba(255, 255, 255, 0.4); }
-        #btn-shoot {
-            background: rgba(190, 40, 40, 0.85);
-            border-color: #ff8a80;
-            display: none;
-        }
+        #btn-eat { background: rgba(180, 90, 20, 0.75); border-color: #ffcc80; display: none; }
+        #btn-interact { background: rgba(140, 70, 20, 0.85); border-color: #ffb74d; display: none; }
 
         #status-bars {
             align-self: center; display: flex; justify-content: space-between;
@@ -139,7 +145,8 @@
             margin-top: 1px; text-align: center; line-height: 1;
         }
 
-        #crafting-modal, #death-modal {
+        /* Modals */
+        #mp-modal, #crafting-modal, #furnace-modal, #death-modal {
             display: none; position: absolute; inset: 0;
             background: rgba(0, 0, 0, 0.7); z-index: 25;
             align-items: center; justify-content: center; padding: 15px;
@@ -168,18 +175,21 @@
         }
         .recipe-hints { font-size: 11px; background: #dcdcdc; padding: 8px; border: 1px solid #888; margin-bottom: 10px; line-height: 1.4; }
         .modal-inventory { display: flex; justify-content: center; gap: 5px; }
+        input[type="text"] { width: 100%; padding: 8px; font-size: 14px; border: 2px solid #555; background: #fff; margin-bottom: 8px; }
     </style>
 </head>
 <body>
     <div id="crosshair"></div>
     <div id="damage-flash"></div>
-    <div id="toast-msg">Loaded AK-47 & RPG!</div>
+    <div id="underwater-tint"></div>
+    <div id="toast-msg">Engine Loaded!</div>
 
     <div id="ui-layer">
         <div id="top-hud">
             <span id="zone-label">Los Santos Hills</span>
             <span id="time-label">Day 12:00</span>
             <div class="hud-btn-group">
+                <button class="mini-btn mp" id="btn-mp">Play MP</button>
                 <button class="mini-btn" id="btn-save">Save</button>
                 <button class="mini-btn reset" id="btn-reset">Reset</button>
             </div>
@@ -195,12 +205,13 @@
                 </div>
                 <div class="action-group">
                     <div class="action-row">
-                        <div class="action-btn" id="btn-shoot">Shoot</div>
+                        <div class="action-btn" id="btn-eat">Eat</div>
+                        <div class="action-btn" id="btn-interact">Use</div>
                         <div class="action-btn" id="btn-break">Break /<br>Hit</div>
                         <div class="action-btn" id="btn-place">Place</div>
                     </div>
                     <div class="action-row">
-                        <div class="action-btn" id="btn-jump">Jump</div>
+                        <div class="action-btn" id="btn-jump">Jump /<br>Swim</div>
                     </div>
                 </div>
             </div>
@@ -215,12 +226,29 @@
                 <div class="slot" data-slot="1" id="hotbar-1"></div>
                 <div class="slot" data-slot="2" id="hotbar-2"></div>
                 <div class="slot" data-slot="3" id="hotbar-3"></div>
-                <div class="slot" id="hotbar-4" id="hotbar-4"></div>
+                <div class="slot" data-slot="4" id="hotbar-4"></div>
                 <div class="slot" id="btn-open-craft" style="background:#5a5a5a; color:#fff; font-weight:bold;">
                     <span>•••</span>
                     <span class="item-label">Craft</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Multiplayer Lobby Modal -->
+    <div id="mp-modal">
+        <div class="window-box">
+            <div class="modal-header">
+                <span>Multiplayer LAN / Peer</span>
+                <button class="close-btn" id="close-mp">X</button>
+            </div>
+            <div style="font-size:12px; margin-bottom:10px;">Enter Room Code to connect with a peer:</div>
+            <input type="text" id="room-code-input" placeholder="Room Code...">
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <button class="mini-btn mp" id="create-room-btn" style="flex:1; padding:10px;">Create Room</button>
+                <button class="mini-btn mp" id="join-room-btn" style="flex:1; padding:10px;">Join Room</button>
+            </div>
+            <div id="mp-status" style="font-size:11px; font-weight:bold;">Status: Offline</div>
         </div>
     </div>
 
@@ -245,15 +273,38 @@
                 <div style="font-size:24px; font-weight:bold; color:#444;">➔</div>
                 <div class="slot" id="craft-output" style="width:56px; height:56px;"></div>
             </div>
-            <div class="recipe-hints">4 Wood = Table | 2 Iron = AK-47 | 4 Iron = GTA V RPG</div>
+            <div class="recipe-hints">4 Wood = Table | 8 Stone = Furnace | 3 Stone + 2 Sticks = Stone Pick</div>
             <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">Inventory:</div>
             <div class="modal-inventory" id="modal-inventory"></div>
         </div>
     </div>
 
+    <!-- Furnace Modal -->
+    <div id="furnace-modal">
+        <div class="window-box">
+            <div class="modal-header">
+                <span>Furnace Smelting</span>
+                <button class="close-btn" id="close-furnace">X</button>
+            </div>
+            <div class="window-content" style="flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+                        <span style="font-size:10px;">Input</span><div class="slot" id="furnace-input"></div>
+                        <span style="font-size:10px;">Fuel</span><div class="slot" id="furnace-fuel"></div>
+                    </div>
+                    <div style="font-size:18px; font-weight:bold;">🔥 ➔</div>
+                    <div class="slot" id="furnace-output" style="width:56px; height:56px;"></div>
+                </div>
+            </div>
+            <div class="recipe-hints">Raw Pork + Coal = Cooked Pork | Iron Ore + Coal = Iron Ingot</div>
+            <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">Inventory:</div>
+            <div class="modal-inventory" id="furnace-inv"></div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const SAVE_KEY = 'pocket_voxel_gta_island_v5';
+        const SAVE_KEY = 'pocket_voxel_gta_island_v4';
         function showToast(text) {
             const t = document.getElementById('toast-msg');
             t.textContent = text; t.style.opacity = '1';
@@ -277,25 +328,20 @@
                 osc.connect(gain); gain.connect(this.ctx.destination);
                 osc.start(); osc.stop(this.ctx.currentTime + duration);
             }
-            gunshot() { this.playTone(120, 30, 0.08, 'sawtooth', 0.2); }
-            explosion() {
-                this.init();
-                const bufferSize = this.ctx.sampleRate * 0.6;
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
-                const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 300;
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
-                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
-                noise.start();
-            }
             breakBlock() { this.playTone(180, 70, 0.12, 'sawtooth', 0.15); }
             placeBlock() { this.playTone(260, 420, 0.08, 'triangle', 0.15); }
             jump()       { this.playTone(150, 320, 0.14, 'sine', 0.1); }
+            splash()     { this.playTone(110, 210, 0.16, 'sine', 0.08); }
+            step()       { this.playTone(90, 50, 0.05, 'triangle', 0.05); }
+            craft()      { this.playTone(440, 554, 0.1, 'sine', 0.12); setTimeout(() => this.playTone(659, 880, 0.15, 'sine', 0.12), 90); }
+            eat()        { this.playTone(320, 480, 0.08, 'triangle', 0.14); }
+            playerHurt() { this.playTone(160, 55, 0.22, 'sawtooth', 0.22); }
             mobHit()     { this.playTone(300, 110, 0.16, 'sawtooth', 0.18); }
+            mobAmbient(type) {
+                if (type === 'sheep') this.playTone(280, 240, 0.25, 'sawtooth', 0.05);
+                else if (type === 'pig') this.playTone(140, 190, 0.18, 'square', 0.05);
+                else this.playTone(95, 65, 0.35, 'sawtooth', 0.08);
+            }
         }
         const sfx = new SoundFX();
 
@@ -315,17 +361,24 @@
             grass_side: createPixelTexture(ctx => { ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#55aa33'; ctx.fillRect(0,0,16,5); }),
             dirt: createPixelTexture(ctx => { ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0,0,16,16); }),
             stone: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); }),
-            wood: createPixelTexture(ctx => { ctx.fillStyle = '#6b4226'; ctx.fillRect(0,0,16,16); }),
+            coal_ore: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#111'; ctx.fillRect(3,3,4,4); }),
+            iron_ore: createPixelTexture(ctx => { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#d7ccc8'; ctx.fillRect(4,4,3,3); }),
+            snow: createPixelTexture(ctx => { ctx.fillStyle = '#f4f8fb'; ctx.fillRect(0,0,16,16); }),
+            road: createPixelTexture(ctx => { ctx.fillStyle = '#33363b'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#f5c542'; ctx.fillRect(7,2,2,5); }),
+            wood: createPixelTexture(ctx => { ctx.fillStyle = '#6b4226'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#4e301b'; ctx.fillRect(0,6,16,2); }),
+            leaves: createPixelTexture(ctx => { ctx.fillStyle = '#2d7a22'; ctx.fillRect(0,0,16,16); }),
             sand: createPixelTexture(ctx => { ctx.fillStyle = '#e6d28a'; ctx.fillRect(0,0,16,16); }),
-            table: createPixelTexture(ctx => { ctx.fillStyle = '#a0522d'; ctx.fillRect(0,0,16,16); }),
-            ak47: createPixelTexture(ctx => {
-                ctx.fillStyle = '#424242'; ctx.fillRect(2,7,12,3);
-                ctx.fillStyle = '#6b4226'; ctx.fillRect(3,10,3,4);
-            }),
-            rpg: createPixelTexture(ctx => {
-                ctx.fillStyle = '#33691e'; ctx.fillRect(1,6,14,4);
-                ctx.fillStyle = '#212121'; ctx.fillRect(12,5,3,6); ctx.fillRect(3,9,3,4);
-            })
+            table: createPixelTexture(ctx => { ctx.fillStyle = '#a0522d'; ctx.fillRect(0,0,16,16); ctx.strokeRect(1,1,14,14); }),
+            furnace: createPixelTexture(ctx => { ctx.fillStyle = '#666'; ctx.fillRect(0,0,16,16); ctx.fillStyle = '#ff9800'; ctx.fillRect(6,6,4,4); }),
+            torch: createPixelTexture(ctx => { ctx.fillStyle = '#ffeb3b'; ctx.fillRect(6,2,4,6); }),
+            coal: createPixelTexture(ctx => { ctx.fillStyle = '#212121'; ctx.fillRect(3,3,10,10); }),
+            iron_ingot: createPixelTexture(ctx => { ctx.fillStyle = '#b0bec5'; ctx.fillRect(2,5,12,6); }),
+            stick: createPixelTexture(ctx => { ctx.fillStyle = '#c19a6b'; ctx.fillRect(6,2,4,12); }),
+            pickaxe: createPixelTexture(ctx => { ctx.fillStyle = '#4fc3f7'; ctx.fillRect(2,2,12,4); ctx.fillStyle = '#6b4226'; ctx.fillRect(7,5,2,9); }),
+            iron_pickaxe: createPixelTexture(ctx => { ctx.fillStyle = '#eceff1'; ctx.fillRect(2,2,12,4); ctx.fillStyle = '#6b4226'; ctx.fillRect(7,5,2,9); }),
+            pork: createPixelTexture(ctx => { ctx.fillStyle = '#f48fb1'; ctx.fillRect(3,4,10,8); }),
+            cooked_pork: createPixelTexture(ctx => { ctx.fillStyle = '#8d5524'; ctx.fillRect(3,4,10,8); }),
+            apple: createPixelTexture(ctx => { ctx.fillStyle = '#e53935'; ctx.fillRect(4,5,8,8); })
         };
 
         function getBlockMaterials(type) {
@@ -344,29 +397,32 @@
 
         const ITEMS = {
             grass: { name: 'Grass', placeable: true }, dirt: { name: 'Dirt', placeable: true },
-            stone: { name: 'Stone', placeable: true }, wood: { name: 'Wood', placeable: true },
-            sand: { name: 'Sand', placeable: true }, table: { name: 'Table', placeable: true },
-            ak47: { name: 'AK-47', placeable: false, ranged: true, damage: 2, fireRate: 150 },
-            rpg:  { name: 'GTA RPG', placeable: false, ranged: true, damage: 10, explosive: true, fireRate: 800 }
+            stone: { name: 'Stone', placeable: true }, coal_ore: { name: 'CoalOre', placeable: true },
+            iron_ore: { name: 'IronOre', placeable: true }, snow: { name: 'Snow', placeable: true },
+            road: { name: 'Road', placeable: true }, wood: { name: 'Wood', placeable: true },
+            leaves: { name: 'Leaves', placeable: true }, sand: { name: 'Sand', placeable: true },
+            table: { name: 'Table', placeable: true }, furnace: { name: 'Furnace', placeable: true },
+            torch: { name: 'Torch', placeable: true, light: true }, coal: { name: 'Coal', placeable: false },
+            iron_ingot: { name: 'IronIngot', placeable: false }, wool: { name: 'Wool', placeable: true },
+            stick: { name: 'Stick', placeable: false }, pickaxe: { name: 'StonePick', placeable: false, power: 2 },
+            iron_pickaxe: { name: 'IronPick', placeable: false, power: 3 },
+            pork: { name: 'RawPork', placeable: false, foodValue: 3 },
+            cooked_pork: { name: 'CookedPork', placeable: false, foodValue: 8 },
+            apple: { name: 'Apple', placeable: false, foodValue: 4 }
         };
 
-        let inventory = [
-            { id: 'ak47', count: 1 },
-            { id: 'rpg', count: 1 },
-            { id: 'wood', count: 10 },
-            { id: 'grass', count: 15 },
-            null
-        ];
+        const WATER_LEVEL = 0.35;
+        let inventory = [{ id: 'grass', count: 20 }, { id: 'stone', count: 12 }, { id: 'torch', count: 8 }, null, null];
         let selectedSlot = 0, craftGrid = [null,null,null,null], craftResult = null;
-        let lastShotTime = 0;
+        let gameTime = 6000, stepTimer = 0, playerHealth = 10, playerHunger = 10, isDead = false;
+        let hungerTick = 0, regenTick = 0, hurtCooldown = 0;
 
-        let scene, camera, renderer, raycaster, highlightBox, dirLight, ambientLight;
+        let scene, camera, renderer, raycaster, highlightBox, dirLight, ambientLight, oceanMesh;
         let blockMap = new Map(), blockMeshes = [], mobs = [], mobHitboxes = [];
         const blockGeo = new THREE.BoxGeometry(1, 1, 1);
 
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let velocity = new THREE.Vector3(), position = new THREE.Vector3(0, 8, 14), rotation = { x: -0.15, y: 0 };
-        let playerHealth = 10, playerHunger = 10, isDead = false;
 
         init();
         animate();
@@ -382,34 +438,49 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.body.appendChild(renderer.domElement);
 
-            ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
-            dirLight = new THREE.DirectionalLight(0xffffff, 0.75); dirLight.position.set(60, 100, 40); scene.add(dirLight);
+            ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+            dirLight.position.set(60, 100, 40);
+            scene.add(dirLight);
+
+            const oceanGeo = new THREE.PlaneGeometry(320, 320);
+            oceanMesh = new THREE.Mesh(oceanGeo, new THREE.MeshLambertMaterial({ color: 0x1e88e5, transparent: true, opacity: 0.72, side: THREE.DoubleSide }));
+            oceanMesh.rotation.x = -Math.PI / 2; oceanMesh.position.y = WATER_LEVEL;
+            scene.add(oceanMesh);
 
             const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.02, 1.02, 1.02));
             highlightBox = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
             highlightBox.visible = false; scene.add(highlightBox);
 
-            raycaster = new THREE.Raycaster(); raycaster.far = 60;
+            raycaster = new THREE.Raycaster(); raycaster.far = 6;
 
-            generateIsland();
+            if (!loadSavedWorld()) generateGTAIsland();
             spawnInitialMobs();
             setupControls(); setupUI(); renderInventory(); updateSurvivalBars();
         }
 
-        function generateIsland() {
-            const radius = 22;
+        function generateGTAIsland() {
+            const radius = 24;
             for (let x = -radius; x <= radius; x++) {
                 for (let z = -radius; z <= radius; z++) {
-                    const dist = Math.hypot(x / 18, z / 22);
+                    const dist = Math.hypot(x / 20, z / 24);
                     if (dist > 1.05) continue;
-                    const surfaceY = Math.max(-1, Math.floor((1 - dist) * 4.5 + Math.sin(x*0.2)*Math.cos(z*0.2)*2));
-                    for (let y = -2; y <= surfaceY; y++) {
-                        let type = (y === surfaceY) ? (surfaceY >= 5 ? 'stone' : (z > 12 ? 'sand' : 'grass')) : 'stone';
+                    const surfaceY = Math.max(-2, Math.floor((1 - dist) * 4.5 + Math.sin(x*0.2)*Math.cos(z*0.2)*2));
+
+                    for (let y = surfaceY - 3; y <= surfaceY; y++) {
+                        let type = 'stone';
+                        if (y === surfaceY) {
+                            type = surfaceY >= 5 ? 'stone' : (z > 14 ? 'sand' : 'grass');
+                        } else {
+                            const rand = Math.sin(x * 12.98 + y * 78.23 + z * 37.71);
+                            type = rand > 0.82 ? 'coal_ore' : (rand > 0.95 ? 'iron_ore' : 'stone');
+                        }
                         addBlock(x, y, z, type);
                     }
                 }
             }
-            position.set(0, getRawGroundY(0, 10) + 2.5, 10);
+            position.set(0, getRawGroundY(0, 14) + 2.5, 14);
         }
 
         function addBlock(x, y, z, type) {
@@ -418,6 +489,10 @@
             const mesh = new THREE.Mesh(blockGeo, getBlockMaterials(type));
             mesh.position.set(x, y, z);
             mesh.userData = { x, y, z, type };
+
+            if (ITEMS[type] && ITEMS[type].light) {
+                mesh.add(new THREE.PointLight(0xffaa22, 1.2, 5));
+            }
             scene.add(mesh);
             blockMap.set(key, mesh);
             blockMeshes.push(mesh);
@@ -435,62 +510,53 @@
 
         function createMob(type, x, z) {
             const group = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.4, 1.1), new THREE.MeshLambertMaterial({ color: 0x4caf50 }));
-            body.position.y = 0.7; group.add(body);
-            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.9, 1.1), new THREE.MeshBasicMaterial({ visible: false }));
-            hitbox.position.y = 0.7; group.add(hitbox);
+            const isZombie = type === 'zombie';
+            const bodyMat = new THREE.MeshLambertMaterial({ color: isZombie ? 0x4caf50 : 0xf5f5f5 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.75, isZombie ? 1.4 : 0.65, 1.1), bodyMat);
+            body.position.y = 0.65;
+            group.add(body);
+
+            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(0.9, isZombie ? 1.9 : 1.1, 1.1), new THREE.MeshBasicMaterial({ visible: false }));
+            hitbox.position.y = 0.65; group.add(hitbox);
+
             group.position.set(x, getRawGroundY(x, z), z);
             scene.add(group);
-            const mobObj = { type, group, hitbox, hp: 5, yaw: Math.random() * Math.PI * 2 };
+
+            const mobObj = { type, hostile: isZombie, group, hitbox, hp: isZombie ? 4 : 3, yaw: Math.random() * Math.PI * 2, vy: 0 };
             hitbox.userData.mob = mobObj;
             mobs.push(mobObj); mobHitboxes.push(hitbox);
         }
 
         function spawnInitialMobs() {
-            createMob('zombie', 6, -4);
-            createMob('zombie', -6, 6);
+            createMob('sheep', 4, 2); createMob('pig', -6, -3);
         }
 
-        function fireWeapon() {
-            const now = Date.now();
-            const held = inventory[selectedSlot];
-            if (!held || !ITEMS[held.id].ranged) return;
-            const weapon = ITEMS[held.id];
-            if (now - lastShotTime < weapon.fireRate) return;
-            lastShotTime = now;
-
-            if (held.id === 'ak47') {
-                sfx.gunshot();
-            } else if (held.id === 'rpg') {
-                sfx.explosion();
+        function updateMobs(isNight) {
+            if (isNight && mobs.filter(m => m.hostile).length < 3 && Math.random() < 0.008) {
+                const angle = Math.random() * Math.PI * 2;
+                createMob('zombie', position.x + Math.cos(angle) * 12, position.z + Math.sin(angle) * 12);
             }
+            mobs.forEach(m => {
+                const dist = Math.hypot(position.x - m.group.position.x, position.z - m.group.position.z);
+                if (m.hostile && !isDead && dist < 16) {
+                    m.yaw = Math.atan2(position.x - m.group.position.x, position.z - m.group.position.z);
+                    if (dist < 1.35) hurtPlayer(2, m.yaw);
+                }
+                const nx = m.group.position.x + Math.sin(m.yaw) * 0.03;
+                const nz = m.group.position.z + Math.cos(m.yaw) * 0.03;
+                m.group.position.x = nx; m.group.position.z = nz;
+                m.group.rotation.y = m.yaw;
+            });
+        }
 
-            // Raycast shot
-            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-            const mobHits = raycaster.intersectObjects(mobHitboxes);
-            if (mobHits.length > 0) {
-                const mob = mobHits[0].object.userData.mob;
-                mob.hp -= weapon.damage;
-                sfx.mobHit();
-                if (mob.hp <= 0) {
-                    scene.remove(mob.group);
-                    mobs = mobs.filter(x => x !== mob);
-                    mobHitboxes = mobHitboxes.filter(h => h !== mob.hitbox);
-                    showToast('Enemy Eliminated!');
-                }
-            } else if (weapon.explosive) {
-                // Rocket Explosion (Destroys nearby blocks)
-                const blockHits = raycaster.intersectObjects(blockMeshes);
-                if (blockHits.length > 0) {
-                    const hitPos = blockHits[0].object.position;
-                    for (let x = -1; x <= 1; x++) {
-                        for (let y = -1; y <= 1; y++) {
-                            for (let z = -1; z <= 1; z++) {
-                                removeBlock(Math.round(hitPos.x + x), Math.round(hitPos.y + y), Math.round(hitPos.z + z));
-                            }
-                        }
-                    }
-                }
+        function damageMob(mob) {
+            sfx.mobHit();
+            mob.hp--;
+            if (mob.hp <= 0) {
+                scene.remove(mob.group);
+                mobs = mobs.filter(x => x !== mob);
+                mobHitboxes = mobHitboxes.filter(h => h !== mob.hitbox);
+                giveItem('pork', 1); renderInventory();
             }
         }
 
@@ -499,16 +565,74 @@
             document.getElementById('hunger-bar').textContent = '🍗'.repeat(playerHunger) + '🦴'.repeat(10-playerHunger);
         }
 
+        function hurtPlayer(amount, knockbackYaw = null) {
+            if (isDead || hurtCooldown > 0) return;
+            hurtCooldown = 45; playerHealth = Math.max(0, playerHealth - amount);
+            sfx.playerHurt();
+            document.getElementById('damage-flash').style.opacity = '1';
+            setTimeout(() => { document.getElementById('damage-flash').style.opacity = '0'; }, 180);
+            updateSurvivalBars();
+            if (playerHealth <= 0) { isDead = true; document.getElementById('death-modal').style.display = 'flex'; }
+        }
+
+        function eatHeldFood() {
+            const held = inventory[selectedSlot];
+            if (!held || !ITEMS[held.id].foodValue || playerHunger >= 10) return;
+            sfx.eat();
+            playerHunger = Math.min(10, playerHunger + ITEMS[held.id].foodValue);
+            held.count--; if (held.count <= 0) inventory[selectedSlot] = null;
+            updateSurvivalBars(); renderInventory();
+        }
+
+        function updateSurvivalTick(isMoving) {
+            if (isDead) return;
+            if (hurtCooldown > 0) hurtCooldown--;
+            hungerTick += isMoving ? 2 : 0.5;
+            if (hungerTick >= 950) {
+                hungerTick = 0;
+                if (playerHunger > 0) { playerHunger--; updateSurvivalBars(); }
+                else { hurtPlayer(1); }
+            }
+        }
+
+        function getTargetObject() {
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
+            const mobHits = raycaster.intersectObjects(mobHitboxes);
+            if (mobHits.length > 0) return { type: 'mob', hit: mobHits[0] };
+            const hits = raycaster.intersectObjects(blockMeshes);
+            return hits.length > 0 ? { type: 'block', hit: hits[0] } : null;
+        }
+
+        function saveWorld() {
+            const blocksData = [];
+            blockMap.forEach(m => blocksData.push([m.userData.x, m.userData.y, m.userData.z, m.userData.type]));
+            localStorage.setItem(SAVE_KEY, JSON.stringify({ blocks: blocksData, inventory }));
+            showToast('World Saved!');
+        }
+
+        function loadSavedWorld() {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY);
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                data.blocks.forEach(([x,y,z,t]) => addBlock(x,y,z,t));
+                if (data.inventory) inventory = data.inventory;
+                showToast('Loaded Save!'); return true;
+            } catch(e) { return false; }
+        }
+
         function setupUI() {
             for(let i=0; i<5; i++) {
                 document.getElementById(`hotbar-${i}`).addEventListener('click', () => { selectedSlot = i; renderInventory(); });
             }
-            document.getElementById('btn-shoot').addEventListener('click', fireWeapon);
-            document.getElementById('btn-save').addEventListener('click', () => showToast('World Saved!'));
-            document.getElementById('btn-reset').addEventListener('click', () => location.reload());
+            document.getElementById('btn-eat').addEventListener('click', eatHeldFood);
+            document.getElementById('btn-save').addEventListener('click', saveWorld);
+            document.getElementById('btn-reset').addEventListener('click', () => { localStorage.clear(); location.reload(); });
             document.getElementById('respawn-btn').addEventListener('click', () => {
-                playerHealth = 10; isDead = false; position.set(0, 7, 10);
-                document.getElementById('death-modal').style.display = 'none'; updateSurvivalBars();
+                playerHealth = 10; playerHunger = 10; isDead = false;
+                position.set(0, getRawGroundY(0, 14) + 2.5, 14);
+                document.getElementById('death-modal').style.display = 'none';
+                updateSurvivalBars();
             });
             document.getElementById('btn-open-craft').addEventListener('click', () => {
                 document.getElementById('crafting-modal').style.display = 'flex';
@@ -517,6 +641,27 @@
             document.getElementById('close-craft').addEventListener('click', () => {
                 document.getElementById('crafting-modal').style.display = 'none';
             });
+            for(let i=0; i<4; i++) {
+                document.getElementById(`craft-${i}`).addEventListener('click', () => {
+                    if(craftGrid[i]) { giveItem(craftGrid[i], 1); craftGrid[i] = null; renderCraftingModal(); renderInventory(); }
+                });
+            }
+            document.getElementById('craft-output').addEventListener('click', () => {
+                if(!craftResult) return;
+                if(giveItem(craftResult.id, craftResult.count)) {
+                    sfx.craft(); craftGrid = [null,null,null,null]; craftResult = null;
+                    renderCraftingModal(); renderInventory();
+                }
+            });
+        }
+
+        function evaluateRecipes() {
+            const g = craftGrid; craftResult = null;
+            if (g[0] === 'wood' && g[1] === 'wood' && g[2] === 'wood' && g[3] === 'wood') {
+                craftResult = { id: 'table', count: 1 };
+            } else if ((g[0] === 'wood' && g[2] === 'wood') || (g[1] === 'wood' && g[3] === 'wood')) {
+                craftResult = { id: 'stick', count: 4 };
+            }
         }
 
         function renderSlotContent(el, item) {
@@ -533,16 +678,37 @@
                 renderSlotContent(el, inventory[i]);
             }
             const held = inventory[selectedSlot];
-            document.getElementById('btn-shoot').style.display = (held && ITEMS[held.id].ranged) ? 'flex' : 'none';
+            document.getElementById('btn-eat').style.display = (held && ITEMS[held.id].foodValue) ? 'flex' : 'none';
         }
 
         function renderCraftingModal() {
+            for(let i=0; i<4; i++) renderSlotContent(document.getElementById(`craft-${i}`), craftGrid[i] ? {id: craftGrid[i], count:1}:null);
+            renderSlotContent(document.getElementById('craft-output'), craftResult);
             const inv = document.getElementById('modal-inventory'); inv.innerHTML = '';
             for(let i=0; i<5; i++) {
                 const slot = document.createElement('div'); slot.className = 'slot';
                 renderSlotContent(slot, inventory[i]);
+                slot.addEventListener('click', () => {
+                    if(!inventory[i]) return;
+                    const empty = craftGrid.findIndex(x => x === null);
+                    if(empty !== -1) {
+                        craftGrid[empty] = inventory[i].id;
+                        inventory[i].count--; if(inventory[i].count <= 0) inventory[i] = null;
+                        evaluateRecipes(); renderCraftingModal(); renderInventory();
+                    }
+                });
                 inv.appendChild(slot);
             }
+        }
+
+        function giveItem(id, amt) {
+            for(let i=0; i<5; i++) {
+                if(inventory[i] && inventory[i].id === id) { inventory[i].count += amt; return true; }
+            }
+            for(let i=0; i<5; i++) {
+                if(!inventory[i]) { inventory[i] = { id, count: amt }; return true; }
+            }
+            return false;
         }
 
         function setupControls() {
@@ -561,25 +727,28 @@
                 if(Math.abs(velocity.y) < 0.01) { velocity.y = 0.16; sfx.jump(); }
             });
             document.getElementById('btn-break').addEventListener('click', () => {
-                raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-                const hits = raycaster.intersectObjects(blockMeshes);
-                if(hits.length > 0) {
-                    const p = hits[0].object.userData;
-                    removeBlock(p.x, p.y, p.z); sfx.breakBlock();
+                const t = getTargetObject();
+                if(t) {
+                    if(t.type === 'mob') damageMob(t.hit.object.userData.mob);
+                    else {
+                        const broken = removeBlock(t.hit.object.userData.x, t.hit.object.userData.y, t.hit.object.userData.z);
+                        if(broken) { giveItem(broken, 1); sfx.breakBlock(); renderInventory(); }
+                    }
                 }
             });
             document.getElementById('btn-place').addEventListener('click', () => {
                 const item = inventory[selectedSlot];
                 if(!item || !ITEMS[item.id].placeable) return;
-                raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-                const hits = raycaster.intersectObjects(blockMeshes);
-                if(hits.length > 0) {
-                    const hit = hits[0]; const n = hit.face.normal;
-                    addBlock(hit.object.userData.x + Math.round(n.x), hit.object.userData.y + Math.round(n.y), hit.object.userData.z + Math.round(n.z), item.id);
-                    sfx.placeBlock();
-                    item.count--; if(item.count<=0) inventory[selectedSlot]=null;
-                    renderInventory();
-                }
+                const t = getTargetObject();
+                if(!t || t.type !== 'block') return;
+                const n = t.hit.face.normal;
+                const nx = t.hit.object.userData.x + Math.round(n.x);
+                const ny = t.hit.object.userData.y + Math.round(n.y);
+                const nz = t.hit.object.userData.z + Math.round(n.z);
+                addBlock(nx, ny, nz, item.id);
+                sfx.placeBlock();
+                item.count--; if(item.count<=0) inventory[selectedSlot]=null;
+                renderInventory();
             });
 
             let dragging = false, lx=0, ly=0;
@@ -605,10 +774,16 @@
         function animate() {
             requestAnimationFrame(animate);
 
+            gameTime = (gameTime + 1.5) % 24000;
+            const isNight = (gameTime >= 13000 && gameTime < 22000);
+            updateMobs(isNight);
+
+            let isMoving = false;
             const dir = new THREE.Vector3();
             if(moveForward) dir.z -= 1; if(moveBackward) dir.z += 1;
             if(moveLeft) dir.x -= 1; if(moveRight) dir.x += 1;
             if(dir.lengthSq() > 0) {
+                isMoving = true;
                 dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0), rotation.y);
                 position.x += dir.x * 0.11; position.z += dir.z * 0.11;
             }
@@ -617,13 +792,14 @@
             velocity.y -= 0.009; position.y += velocity.y;
             if(position.y <= floorY) { position.y = floorY; velocity.y = 0; }
 
+            updateSurvivalTick(isMoving);
+
             camera.position.copy(position);
             camera.quaternion.setFromEuler(new THREE.Euler(rotation.x, rotation.y, 0, 'YXZ'));
 
-            raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-            const hits = raycaster.intersectObjects(blockMeshes);
-            highlightBox.visible = hits.length > 0;
-            if(highlightBox.visible) highlightBox.position.copy(hits[0].object.position);
+            const t = getTargetObject();
+            highlightBox.visible = !!(t && t.type === 'block');
+            if(highlightBox.visible) highlightBox.position.copy(t.hit.object.position);
 
             renderer.render(scene, camera);
         }

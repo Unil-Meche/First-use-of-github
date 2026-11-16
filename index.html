@@ -19,13 +19,16 @@
     overflow: hidden;
     background: #87ceeb;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    touch-action: none;
   }
 
   #game-canvas {
     display: block;
     width: 100%;
     height: 100%;
-    touch-action: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
   }
 
   /* Crosshair */
@@ -47,26 +50,15 @@
     box-shadow: 0 0 2px rgba(0,0,0,0.8);
   }
 
-  #crosshair::before {
-    top: 9px;
-    left: 0;
-    width: 20px;
-    height: 2px;
-  }
-
-  #crosshair::after {
-    top: 0;
-    left: 9px;
-    width: 2px;
-    height: 20px;
-  }
+  #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
+  #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
 
   /* HUD & Debug Overlay */
   #hud-top {
     position: fixed;
     top: 14px;
     left: 14px;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(6px);
     color: #f8fafc;
     padding: 10px 14px;
@@ -78,31 +70,30 @@
     z-index: 10;
   }
 
-  #hud-top strong {
-    color: #38bdf8;
-  }
+  #hud-top strong { color: #38bdf8; }
 
   /* Hotbar */
   #hotbar {
     position: fixed;
-    bottom: 18px;
+    bottom: 22px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 6px;
-    background: rgba(15, 23, 42, 0.72);
+    background: rgba(15, 23, 42, 0.75);
     backdrop-filter: blur(8px);
     padding: 6px;
     border-radius: 12px;
     border: 2px solid rgba(255, 255, 255, 0.18);
-    z-index: 10;
+    z-index: 20;
     max-width: 95vw;
     overflow-x: auto;
+    pointer-events: auto;
   }
 
   .slot {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 8px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background: rgba(30, 41, 59, 0.7);
@@ -117,23 +108,23 @@
 
   .slot.active {
     border-color: #ffffff;
-    transform: translateY(-3px) scale(1.05);
+    transform: translateY(-2px) scale(1.05);
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
     background: rgba(51, 65, 85, 0.9);
   }
 
   .slot canvas {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     image-rendering: pixelated;
-    border-radius: 3px;
+    border-radius: 2px;
   }
 
   .slot-num {
     position: absolute;
     top: 2px;
-    left: 4px;
-    font-size: 9px;
+    left: 3px;
+    font-size: 8px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.75);
   }
@@ -151,39 +142,40 @@
     z-index: 10;
   }
 
-  /* Android On-Screen Touch Controller Styles */
+  /* Android On-Screen Touch Controls */
   #mobile-controls {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 50;
+    z-index: 30;
   }
 
   .touch-pad {
     position: absolute;
-    bottom: 20px;
+    bottom: 24px;
     left: 20px;
-    width: 130px;
-    height: 130px;
+    width: 140px;
+    height: 140px;
     pointer-events: auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 4px;
+    gap: 6px;
   }
 
   .t-btn {
-    background: rgba(255, 255, 255, 0.22);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 12px;
     color: white;
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: 800;
+    font-size: 18px;
     display: grid;
     place-items: center;
     backdrop-filter: blur(4px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
-  .t-btn:active { background: rgba(255, 255, 255, 0.5); }
+  .t-btn:active, .t-btn.touched { background: rgba(255, 255, 255, 0.65); transform: scale(0.95); }
   .t-up { grid-column: 2; grid-row: 1; }
   .t-left { grid-column: 1; grid-row: 2; }
   .t-right { grid-column: 3; grid-row: 2; }
@@ -191,35 +183,35 @@
 
   .action-pad {
     position: absolute;
-    bottom: 20px;
+    bottom: 24px;
     right: 20px;
     pointer-events: auto;
     display: flex;
-    gap: 8px;
+    gap: 10px;
   }
 
   .act-btn {
-    width: 58px;
-    height: 58px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
-    background: rgba(15, 23, 42, 0.65);
-    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 23, 42, 0.75);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     color: white;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 11px;
     display: grid;
     place-items: center;
     backdrop-filter: blur(6px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
   }
-  .act-btn:active { transform: scale(0.92); }
+  .act-btn:active { transform: scale(0.9); }
 
   /* Start Menu Overlay */
   #menu-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.78);
-    backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -228,49 +220,45 @@
     color: white;
     text-align: center;
     padding: 20px;
+    pointer-events: auto;
   }
 
   .menu-box {
-    background: rgba(30, 41, 59, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     padding: 28px 32px;
-    max-width: 440px;
+    max-width: 420px;
     width: 100%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
   }
 
   .menu-box h1 {
     font-size: 28px;
     font-weight: 800;
-    letter-spacing: -0.02em;
     margin-bottom: 6px;
     background: linear-gradient(135deg, #4ade80, #38bdf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  .menu-box p {
-    color: #cbd5e1;
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
+  .menu-box p { color: #cbd5e1; font-size: 13px; margin-bottom: 16px; }
 
   .controls-info {
     text-align: left;
-    background: rgba(15, 23, 42, 0.6);
-    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.7);
+    padding: 12px 14px;
     border-radius: 10px;
     margin-bottom: 20px;
     font-size: 12px;
     color: #cbd5e1;
-    line-height: 1.6;
+    line-height: 1.5;
   }
   .controls-info span { color: #38bdf8; font-weight: 700; }
 
   .btn-play {
     width: 100%;
-    padding: 13px 20px;
+    padding: 14px;
     font-size: 15px;
     font-weight: 700;
     color: #0f172a;
@@ -284,7 +272,7 @@
   .btn-secondary {
     margin-top: 10px;
     width: 100%;
-    padding: 10px 16px;
+    padding: 10px;
     font-size: 12px;
     font-weight: 600;
     color: #e2e8f0;
@@ -302,13 +290,12 @@
   <div id="hud-top">
     <div><strong>VoxelCraft</strong> · FPS: <span id="fps">60</span></div>
     <div>XYZ: <span id="coords">0, 0, 0</span></div>
-    <div>Mode: <span id="mode-label">Survival</span></div>
   </div>
 
   <div id="block-label">Grass Block</div>
   <div id="hotbar"></div>
 
-  <!-- Android On-Screen D-Pad & Actions -->
+  <!-- Android On-Screen D-Pad & Action Buttons -->
   <div id="mobile-controls">
     <div class="touch-pad">
       <div class="t-btn t-up" id="btn-w">▲</div>
@@ -318,8 +305,8 @@
     </div>
     <div class="action-pad">
       <div class="act-btn" id="btn-jump">JUMP</div>
-      <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.7);">BREAK</div>
-      <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.7);">PLACE</div>
+      <div class="act-btn" id="btn-break" style="background:rgba(225,29,72,0.8);">BREAK</div>
+      <div class="act-btn" id="btn-place" style="background:rgba(5,150,105,0.8);">PLACE</div>
     </div>
   </div>
 
@@ -328,8 +315,7 @@
       <h1>VoxelCraft 3D</h1>
       <p>Android & Browser Sandbox Engine</p>
       <div class="controls-info">
-        <div>📱 <span>Android:</span> Use left D-pad to walk, drag screen to look, tap Break/Place buttons.</div>
-        <div>💻 <span>Desktop:</span> W A S D to move, Mouse drag to look, Left/Right click to build.</div>
+        <div>📱 <span>Android:</span> Use left D-pad to walk, drag anywhere on the screen to look around, tap Jump/Break/Place.</div>
       </div>
       <button id="start-btn" class="btn-play">Start Game</button>
       <button id="regen-btn" class="btn-secondary">Generate New World</button>
@@ -446,7 +432,7 @@
     highlightBox.visible = false;
     scene.add(highlightBox);
 
-    const WORLD_RADIUS = 20;
+    const WORLD_RADIUS = 18;
     const blockGeo = new THREE.BoxGeometry(1, 1, 1);
     const worldMap = new Map();
     const meshesArray = [];
@@ -477,11 +463,6 @@
       worldMap.delete(key);
     }
 
-    function getTerrainHeight(x, z, seed) {
-      const h1 = Math.sin((x + seed) * 0.12) * Math.cos((z + seed) * 0.12) * 4.5;
-      return Math.floor(h1 + 4);
-    }
-
     function generateWorld() {
       for (const m of meshesArray) scene.remove(m);
       worldMap.clear();
@@ -490,10 +471,9 @@
 
       for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
         for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
-          const surfaceY = getTerrainHeight(x, z, seed);
+          const surfaceY = Math.floor(Math.sin((x + seed) * 0.12) * Math.cos((z + seed) * 0.12) * 4.5 + 4);
           for (let y = 0; y <= surfaceY; y++) {
-            let blockId = y === surfaceY ? 1 : 2;
-            addBlock(x, y, z, blockId);
+            addBlock(x, y, z, y === surfaceY ? 1 : 2);
           }
         }
       }
@@ -517,7 +497,12 @@
         iconCopy.height = 16;
         iconCopy.getContext('2d').drawImage(b.icon, 0, 0);
         slot.appendChild(iconCopy);
-        slot.onclick = () => selectSlot(index);
+        
+        // Use pointerdown/click to ensure mobile hotbar selection works smoothly
+        slot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectSlot(index);
+        });
         hotbarEl.appendChild(slot);
       });
     }
@@ -531,7 +516,7 @@
     }
 
     // ==========================================
-    // 4. PLAYER & ANDROID TOUCH CONTROLS
+    // 4. PLAYER & TOUCH CONTROLS BINDING
     // ==========================================
     const player = {
       pos: new THREE.Vector3(0, 10, 0),
@@ -546,22 +531,35 @@
     const keys = {};
     let isGameStarted = false;
 
-    // Touch D-Pad Binding for Android
-    function bindTouchButton(id, keyName) {
-      const el = document.getElementById(id);
+    // Helper to bind touch buttons reliably
+    function bindTouchButton(elementId, keyName) {
+      const el = document.getElementById(elementId);
       if (!el) return;
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys[keyName] = true;
+        el.classList.add('touched');
+      }, { passive: false });
+
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+        el.classList.remove('touched');
+      }, { passive: false });
+
+      el.addEventListener('touchcancel', (e) => {
+        keys[keyName] = false;
+        el.classList.remove('touched');
+      });
     }
+
     bindTouchButton('btn-w', 'KeyW');
     bindTouchButton('btn-a', 'KeyA');
     bindTouchButton('btn-s', 'KeyS');
     bindTouchButton('btn-d', 'KeyD');
+    bindTouchButton('btn-jump', 'Space');
 
-    document.getElementById('btn-jump').addEventListener('touchstart', (e) => { e.preventDefault(); keys['Space'] = true; });
-    document.getElementById('btn-jump').addEventListener('touchend', (e) => { e.preventDefault(); keys['Space'] = false; });
-
-    // Menu Controls
+    // Menu Triggers
     const menuOverlay = document.getElementById('menu-overlay');
     document.getElementById('start-btn').addEventListener('click', () => {
       menuOverlay.style.display = 'none';
@@ -573,30 +571,60 @@
       isGameStarted = true;
     });
 
-    // Android Touch Look Handling (Swipe anywhere on canvas)
+    // Android Touch Look Handling (Swipe anywhere on screen)
+    let activeTouchId = null;
     let lastTouchX = 0, lastTouchY = 0;
-    document.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1 && e.target === renderer.domElement) {
-        lastTouchX = e.touches[0].clientX;
-        lastTouchY = e.touches[0].clientY;
+
+    window.addEventListener('touchstart', (e) => {
+      if (!isGameStarted) return;
+      // Pick the first touch that is not on a control button or hotbar
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        const target = document.elementFromPoint(t.clientX, t.clientY);
+        if (target && (target.closest('#mobile-controls') || target.closest('#hotbar') || target.closest('#menu-overlay'))) {
+          continue;
+        }
+        if (activeTouchId === null) {
+          activeTouchId = t.identifier;
+          lastTouchX = t.clientX;
+          lastTouchY = t.clientY;
+          break;
+        }
       }
     }, { passive: true });
 
-    document.addEventListener('touchmove', (e) => {
-      if (!isGameStarted || e.touches.length !== 1 || e.target !== renderer.domElement) return;
-      const t = e.touches[0];
-      const dx = t.clientX - lastTouchX;
-      const dy = t.clientY - lastTouchY;
-      lastTouchX = t.clientX;
-      lastTouchY = t.clientY;
+    window.addEventListener('touchmove', (e) => {
+      if (!isGameStarted || activeTouchId === null) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === activeTouchId) {
+          const dx = t.clientX - lastTouchX;
+          const dy = t.clientY - lastTouchY;
+          lastTouchX = t.clientX;
+          lastTouchY = t.clientY;
 
-      const sensitivity = 0.0035;
-      player.yaw -= dx * sensitivity;
-      player.pitch -= dy * sensitivity;
-      player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
+          const sensitivity = 0.0035;
+          player.yaw -= dx * sensitivity;
+          player.pitch -= dy * sensitivity;
+          player.pitch = Math.max(-Math.PI / 2 + 0.02, Math.min(Math.PI / 2 - 0.02, player.pitch));
+          break;
+        }
+      }
     }, { passive: true });
 
-    // Desktop Mouse Look
+    window.addEventListener('touchend', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === activeTouchId) {
+          activeTouchId = null;
+          break;
+        }
+      }
+    }, { passive: true });
+
+    // Desktop Keyboard & Mouse Fallbacks
+    window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
     document.addEventListener('mousemove', (e) => {
       if (!isGameStarted || document.pointerLockElement !== renderer.domElement) return;
       player.yaw -= e.movementX * 0.0022;
@@ -609,9 +637,6 @@
         renderer.domElement.requestPointerLock();
       }
     });
-
-    document.addEventListener('keydown', (e) => { keys[e.code] = true; });
-    document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
     // Raycaster for Breaking / Placing Blocks
     const raycaster = new THREE.Raycaster();
@@ -639,8 +664,15 @@
       }
     }
 
-    document.getElementById('btn-break').addEventListener('touchend', (e) => { e.preventDefault(); performAction('break'); });
-    document.getElementById('btn-place').addEventListener('touchend', (e) => { e.preventDefault(); performAction('place'); });
+    document.getElementById('btn-break').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      performAction('break');
+    }, { passive: false });
+
+    document.getElementById('btn-place').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      performAction('place');
+    }, { passive: false });
 
     document.addEventListener('mousedown', (e) => {
       if (!isGameStarted) return;
@@ -649,7 +681,7 @@
     });
     document.addEventListener('contextmenu', e => e.preventDefault());
 
-    // Collision & Physics
+    // Collision & Physics Loop
     function collidesAt(px, py, pz) {
       const minX = Math.floor(px - player.radius + 0.5);
       const maxX = Math.floor(px + player.radius + 0.5);
@@ -723,7 +755,7 @@
     }
 
     // ==========================================
-    // 5. BOOT & MAIN LOOP
+    // 5. BOOT & ANIMATION LOOP
     // ==========================================
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;

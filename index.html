@@ -1,828 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AETHERCRAFT 3D — Procedural Voxel Survival RPG</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body { overflow: hidden; background: #090d16; font-family: 'Segoe UI', system-ui, sans-serif; color: #f8fafc; }
-    canvas { display: block; width: 100vw; height: 100vh; }
-
-    /* Crosshair */
-    #crosshair {
-      position: fixed; top: 50%; left: 50%; width: 18px; height: 18px;
-      transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
-    }
-    #crosshair::before, #crosshair::after {
-      content: ''; position: absolute; background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 0 4px rgba(0,0,0,0.8);
-    }
-    #crosshair::before { top: 8px; left: 0; width: 18px; height: 2px; }
-    #crosshair::after { left: 8px; top: 0; width: 2px; height: 18px; }
-
-    /* Top-Left HUD */
-    #hud-top {
-      position: fixed; top: 16px; left: 16px; z-index: 10;
-      background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(8px);
-      border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px;
-      padding: 12px 16px; min-width: 240px;
-    }
-    .stat-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; font-weight: 600; }
-    .bar-bg { width: 100%; height: 10px; background: #1e293b; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
-    .bar-fill { height: 100%; transition: width 0.15s ease; }
-    #hp-fill { background: linear-gradient(90deg, #ef4444, #f87171); width: 100%; }
-    #stamina-fill { background: linear-gradient(90deg, #0ea5e9, #38bdf8); width: 100%; }
-    .meta-tags { display: flex; gap: 10px; font-size: 12px; color: #cbd5e1; }
-    .tag { background: rgba(30, 41, 59, 0.9); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(148,163,184,0.2); }
-
-    /* Bottom Hotbar */
-    #hotbar {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 8px; z-index: 10;
-      background: rgba(15, 23, 42, 0.85); padding: 8px; border-radius: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.3); backdrop-filter: blur(8px);
-    }
-    .slot {
-      width: 64px; height: 64px; border-radius: 10px; background: #1e293b;
-      border: 2px solid transparent; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; position: relative; transition: 0.12s;
-    }
-    .slot.active { border-color: #38bdf8; background: #0f172a; transform: translateY(-4px); box-shadow: 0 6px 16px rgba(56,189,248,0.3); }
-    .slot-key { position: absolute; top: 4px; left: 6px; font-size: 10px; color: #94a3b8; font-weight: 700; }
-    .slot-count { position: absolute; bottom: 4px; right: 6px; font-size: 12px; font-weight: 700; color: #f8fafc; }
-    .slot-icon { width: 26px; height: 26px; border-radius: 4px; margin-bottom: 4px; box-shadow: inset 0 0 6px rgba(0,0,0,0.5); }
-    .slot-name { font-size: 10px; color: #cbd5e1; }
-
-    /* Crafting Modal */
-    #craft-menu {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8;
-      border-radius: 16px; padding: 22px; width: 380px; z-index: 30;
-      display: none; box-shadow: 0 20px 50px rgba(0,0,0,0.75);
-    }
-    #craft-menu h2 { font-size: 18px; margin-bottom: 12px; color: #38bdf8; }
-    .recipe {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #1e293b; padding: 10px 12px; border-radius: 10px; margin-bottom: 10px;
-    }
-    .recipe-info div:first-child { font-weight: 700; font-size: 14px; }
-    .recipe-info div:last-child { font-size: 12px; color: #94a3b8; }
-    .craft-btn {
-      background: #0284c7; color: white; border: none; padding: 7px 14px;
-      border-radius: 8px; font-weight: 700; cursor: pointer;
-    }
-    .craft-btn:hover { background: #0369a1; }
-
-    /* Start / Lock Overlay */
-    #overlay {
-      position: fixed; inset: 0; background: rgba(9, 13, 22, 0.88);
-      backdrop-filter: blur(10px); display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 50; text-align: center; padding: 20px;
-    }
-    #overlay h1 { font-size: 42px; letter-spacing: 2px; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-    #overlay p { max-width: 540px; color: #cbd5e1; line-height: 1.6; margin-bottom: 24px; font-size: 15px; }
-    #start-btn {
-      background: linear-gradient(135deg, #0284c7, #4f46e5); color: white;
-      border: none; padding: 14px 36px; font-size: 16px; font-weight: 700;
-      border-radius: 12px; cursor: pointer; box-shadow: 0 10px 25px rgba(56,189,248,0.35);
-    }
-    .controls-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px;
-      margin-top: 24px; font-size: 13px; color: #94a3b8; text-align: left;
-      background: rgba(30, 41, 59, 0.6); padding: 16px 24px; border-radius: 12px;
-    }
-    .controls-grid b { color: #f8fafc; }
-    #toast {
-      position: fixed; top: 20px; right: 20px; background: rgba(15, 23, 42, 0.9);
-      border-left: 4px solid #38bdf8; padding: 10px 16px; border-radius: 8px;
-      font-size: 13px; opacity: 0; transition: opacity 0.25s; z-index: 20; pointer-events: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess</title>
+<style>
+  :root {
+    --light-sq: #f0d9b5;
+    --dark-sq: #b58863;
+    --selected: rgba(20, 85, 30, 0.5);
+    --last-move: rgba(155, 199, 0, 0.41);
+    --check: rgba(235, 30, 30, 0.65);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1e1e1e;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .controls {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  button, select {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: #444; }
+  #status {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    min-height: 24px;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 65px);
+    grid-template-rows: repeat(8, 65px);
+    border: 4px solid #333;
+    user-select: none;
+    position: relative;
+  }
+  .square {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 46px;
+    cursor: pointer;
+    position: relative;
+  }
+  .light { background-color: var(--light-sq); }
+  .dark { background-color: var(--dark-sq); }
+  .square.selected::after,
+  .square.last-move::after,
+  .square.in-check::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .square.selected::after { background: var(--selected); }
+  .square.last-move::after { background: var(--last-move); }
+  .square.in-check::after { background: var(--check); }
+  .hint-dot {
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hint-capture {
+    position: absolute;
+    inset: 4px;
+    border: 5px solid rgba(0, 0, 0, 0.25);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .piece {
+    z-index: 1;
+    line-height: 1;
+  }
+  .white-piece {
+    color: #fff;
+    text-shadow: 0 1px 2px #000, 0 0 2px #000;
+  }
+  .black-piece {
+    color: #111;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+  }
+  #promo-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .promo-box {
+    background: #2b2b2b;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    gap: 15px;
+    font-size: 48px;
+  }
+  .promo-choice {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    background: #3d3d3d;
+  }
+  .promo-choice:hover { background: #555; }
+</style>
 </head>
 <body>
 
-<div id="crosshair"></div>
-<div id="toast"></div>
-
-<div id="hud-top">
-  <div class="stat-row"><span>HEALTH</span><span id="hp-text">100 / 100</span></div>
-  <div class="bar-bg"><div class="bar-fill" id="hp-fill"></div></div>
-  <div class="stat-row"><span>STAMINA</span><span id="stamina-text">100%</span></div>
-  <div class="bar-bg"><div class="bar-fill" id="stamina-fill"></div></div>
-  <div class="meta-tags">
-    <div class="tag" id="time-tag">Day 1 • Noon</div>
-    <div class="tag" id="score-tag">Kills: 0</div>
-    <div class="tag" id="enemy-tag">Hostiles: 0</div>
-  </div>
+<div class="controls">
+  <select id="mode">
+    <option value="ai">1 Player (vs AI)</option>
+    <option value="pvp">2 Players (Local)</option>
+  </select>
+  <button onclick="initGame()">New Game</button>
 </div>
 
-<div id="hotbar">
-  <div class="slot active" data-slot="0"><span class="slot-key">1</span><div class="slot-icon" style="background:#38bdf8"></div><span class="slot-name">Staff</span><span class="slot-count">∞</span></div>
-  <div class="slot" data-slot="1"><span class="slot-key">2</span><div class="slot-icon" style="background:#65a30d"></div><span class="slot-name">Dirt</span><span class="slot-count" id="cnt-dirt">12</span></div>
-  <div class="slot" data-slot="2"><span class="slot-key">3</span><div class="slot-icon" style="background:#64748b"></div><span class="slot-name">Stone</span><span class="slot-count" id="cnt-stone">8</span></div>
-  <div class="slot" data-slot="3"><span class="slot-key">4</span><div class="slot-icon" style="background:#92400e"></div><span class="slot-name">Wood</span><span class="slot-count" id="cnt-wood">6</span></div>
-  <div class="slot" data-slot="4"><span class="slot-key">5</span><div class="slot-icon" style="background:#a855f7"></div><span class="slot-name">Turret</span><span class="slot-count" id="cnt-turret">1</span></div>
+<div id="status">White's Turn</div>
+<div id="board"></div>
+
+<div id="promo-modal">
+  <div class="promo-box" id="promo-choices"></div>
 </div>
 
-<div id="craft-menu">
-  <h2>Field Crafting [Press C to Close]</h2>
-  <div class="recipe">
-    <div class="recipe-info">
-      <div>Auto Plasma Turret</div>
-      <div>Cost: 4 Stone + 2 Wood</div>
-    </div>
-    <button class="craft-btn" id="craft-turret">Craft</button>
-  </div>
-  <div class="recipe">
-    <div class="recipe-info">
-      <div>Aether Elixir (+40 HP)</div>
-      <div>Cost: 3 Wood + 2 Dirt</div>
-    </div>
-    <button class="craft-btn" id="craft-heal">Drink</button>
-  </div>
-</div>
-
-<div id="overlay">
-  <h1>AETHERCRAFT 3D</h1>
-  <p>A procedural 3D voxel survival RPG built entirely in pure code. Mine terrain, build fortresses, craft automated plasma turrets, and survive the night cycle against Shadow Stalkers.</p>
-  <button id="start-btn">CLICK TO ENTER WORLD</button>
-  <div class="controls-grid">
-    <div><b>W A S D</b> — Move</div>
-    <div><b>SPACE / SHIFT</b> — Jump / Sprint</div>
-    <div><b>LEFT CLICK</b> — Mine Block / Fire Staff</div>
-    <div><b>RIGHT CLICK / E</b> — Place Block or Turret</div>
-    <div><b>1 – 5</b> — Select Hotbar Slot</div>
-    <div><b>C</b> — Open Crafting Menu</div>
-  </div>
-</div>
-
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"
-  }
-}
-</script>
-
-<script type="module">
-import * as THREE from 'three';
-
-// ==========================================
-// 1. PROCEDURAL WEB AUDIO SYNTHESIZER
-// ==========================================
-class SoundEngine {
-  constructor() { this.ctx = null; }
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-  play(type) {
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    if (type === 'shoot') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(110, now + 0.16);
-      gain.gain.setValueAtTime(0.14, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-      osc.start(now); osc.stop(now + 0.16);
-    } else if (type === 'break') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      osc.start(now); osc.stop(now + 0.12);
-    } else if (type === 'place') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(340, now + 0.08);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.start(now); osc.stop(now + 0.08);
-    } else if (type === 'hit') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(95, now);
-      osc.frequency.linearRampToValueAtTime(40, now + 0.22);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.start(now); osc.stop(now + 0.22);
-    } else if (type === 'craft') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.setValueAtTime(660, now + 0.08);
-      gain.gain.setValueAtTime(0.16, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.start(now); osc.stop(now + 0.22);
-    }
-  }
-}
-const sfx = new SoundEngine();
-
-// ==========================================
-// 2. PROCEDURAL CANVAS TEXTURE GENERATOR
-// ==========================================
-function makeBlockTexture(baseHex, noiseHex, speckDensity = 120) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 64; canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = baseHex;
-  ctx.fillRect(0, 0, 64, 64);
-
-  for (let i = 0; i < speckDensity; i++) {
-    ctx.fillStyle = noiseHex;
-    ctx.globalAlpha = 0.15 + Math.random() * 0.25;
-    const x = Math.floor(Math.random() * 16) * 4;
-    const y = Math.floor(Math.random() * 16) * 4;
-    ctx.fillRect(x, y, 4, 4);
-  }
-  ctx.globalAlpha = 0.2;
-  ctx.strokeStyle = '#000000';
-  ctx.strokeRect(0, 0, 64, 64);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.magFilter = THREE.NearestFilter;
-  tex.minFilter = THREE.NearestFilter;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-const MATERIALS = {
-  grass: new THREE.MeshStandardMaterial({ map: makeBlockTexture('#4d7c0f', '#84cc16', 160), roughness: 0.85 }),
-  dirt:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#713f12', '#451a03', 150), roughness: 0.9 }),
-  stone: new THREE.MeshStandardMaterial({ map: makeBlockTexture('#64748b', '#334155', 180), roughness: 0.75 }),
-  wood:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#92400e', '#451a03', 140), roughness: 0.8 }),
-  leaf:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#15803d', '#22c55e', 140), roughness: 0.85 }),
-  sand:  new THREE.MeshStandardMaterial({ map: makeBlockTexture('#eab308', '#ca8a04', 120), roughness: 0.9 }),
-  turret: new THREE.MeshStandardMaterial({ color: 0xa855f7, emissive: 0x581c87, emissiveIntensity: 0.6, metalness: 0.7, roughness: 0.2 })
+<script>
+const PIECES = {
+  w: { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙' },
+  b: { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' }
 };
 
-// ==========================================
-// 3. THREE.JS SCENE & LIGHTING SETUP
-// ==========================================
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x7dd3fc);
-scene.fog = new THREE.FogExp2(0x7dd3fc, 0.018);
+const PIECE_VALUES = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 20000 };
 
-const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 140);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
+let board = [];
+let turn = 'w';
+let selected = null;
+let legalMoves = [];
+let castling = { wK: true, wQ: true, bK: true, bQ: true };
+let epTarget = null;
+let lastMove = null;
+let gameOver = false;
 
-const ambientLight = new THREE.HemisphereLight(0xdbeafe, 0x3f6212, 0.75);
-scene.add(ambientLight);
-
-const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.5);
-sunLight.position.set(25, 45, 20);
-sunLight.castShadow = true;
-sunLight.shadow.mapSize.set(2048, 2048);
-sunLight.shadow.camera.near = 5;
-sunLight.shadow.camera.far = 110;
-const d = 32;
-sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
-sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
-scene.add(sunLight);
-
-// ==========================================
-// 4. VOXEL WORLD & PROCEDURAL GENERATION
-// ==========================================
-const WORLD_RADIUS = 18;
-const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-const blocks = new Map(); // key: "x,y,z" -> { mesh, type }
-const blockMeshes = [];
-const turrets = [];
-
-function keyOf(x, y, z) { return `${x},${y},${z}`; }
-
-function addBlock(x, y, z, type) {
-  const k = keyOf(x, y, z);
-  if (blocks.has(k)) return;
-  const mesh = new THREE.Mesh(blockGeo, MATERIALS[type]);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  mesh.userData = { gx: x, gy: y, gz: z, type };
-  scene.add(mesh);
-  blocks.set(k, { mesh, type });
-  blockMeshes.push(mesh);
-
-  if (type === 'turret') {
-    const core = new THREE.Mesh(
-      new THREE.OctahedronGeometry(0.35, 0),
-      new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.2 })
-    );
-    core.position.set(x, y + 0.85, z);
-    scene.add(core);
-    turrets.push({ x, y, z, core, cooldown: 0 });
-  }
+function initGame() {
+  const setup = [
+    ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    ['bP','bP','bP','bP','bP','bP','bP','bP'],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ['wP','wP','wP','wP','wP','wP','wP','wP'],
+    ['wR','wN','wB','wQ','wK','wB','wN','wR']
+  ];
+  board = setup.map(r => [...r]);
+  turn = 'w';
+  selected = null;
+  legalMoves = [];
+  castling = { wK: true, wQ: true, bK: true, bQ: true };
+  epTarget = null;
+  lastMove = null;
+  gameOver = false;
+  updateStatus();
+  render();
 }
 
-function removeBlock(x, y, z) {
-  const k = keyOf(x, y, z);
-  const entry = blocks.get(k);
-  if (!entry) return null;
-  scene.remove(entry.mesh);
-  const idx = blockMeshes.indexOf(entry.mesh);
-  if (idx !== -1) blockMeshes.splice(idx, 1);
-  blocks.delete(k);
-
-  if (entry.type === 'turret') {
-    const tIdx = turrets.findIndex(t => t.x === x && t.y === y && t.z === z);
-    if (tIdx !== -1) { scene.remove(turrets[tIdx].core); turrets.splice(tIdx, 1); }
-  }
-  return entry.type;
+function inBounds(r, c) {
+  return r >= 0 && r < 8 && c >= 0 && c < 8;
 }
 
-// Deterministic terrain height function
-function terrainHeight(x, z) {
-  const h1 = Math.sin(x * 0.16) * Math.cos(z * 0.16) * 3.2;
-  const h2 = Math.sin((x + z) * 0.09) * 2.0;
-  return Math.floor(h1 + h2);
-}
+function getPseudoMoves(b, r, c, castlingRights, ep) {
+  const piece = b[r][c];
+  if (!piece) return [];
+  const color = piece[0];
+  const type = piece[1];
+  const enemy = color === 'w' ? 'b' : 'w';
+  const moves = [];
 
-// Build initial world
-for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
-  for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
-    const topY = terrainHeight(x, z);
-    addBlock(x, topY - 2, z, 'stone');
-    addBlock(x, topY - 1, z, 'dirt');
-    addBlock(x, topY, z, topY <= -2 ? 'sand' : 'grass');
+  const addMove = (tr, tc, extra = {}) => {
+    moves.push({ fr: r, fc: c, tr, tc, ...extra });
+  };
 
-    // Procedural trees
-    if (topY > 0 && Math.abs(x) > 3 && Math.abs(z) > 3 && Math.random() < 0.025) {
-      for (let ty = 1; ty <= 3; ty++) addBlock(x, topY + ty, z, 'wood');
-      for (let lx = -1; lx <= 1; lx++) {
-        for (let lz = -1; lz <= 1; lz++) {
-          for (let ly = 3; ly <= 4; ly++) {
-            if (lx === 0 && lz === 0 && ly === 3) continue;
-            addBlock(x + lx, topY + ly, z + lz, 'leaf');
-          }
+  if (type === 'P') {
+    const dir = color === 'w' ? -1 : 1;
+    const startRow = color === 'w' ? 6 : 1;
+    const promoRow = color === 'w' ? 0 : 7;
+
+    if (inBounds(r + dir, c) && !b[r + dir][c]) {
+      addMove(r + dir, c, { promo: r + dir === promoRow });
+      if (r === startRow && !b[r + 2 * dir][c]) {
+        addMove(r + 2 * dir, c, { doublePawn: true });
+      }
+    }
+    for (const dc of [-1, 1]) {
+      const nr = r + dir, nc = c + dc;
+      if (!inBounds(nr, nc)) continue;
+      if (b[nr][nc] && b[nr][nc][0] === enemy) {
+        addMove(nr, nc, { promo: nr === promoRow });
+      } else if (ep && ep.r === nr && ep.c === nc) {
+        addMove(nr, nc, { enPassant: true });
+      }
+    }
+  } else if (type === 'N') {
+    const jumps = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+    for (const [dr, dc] of jumps) {
+      const nr = r + dr, nc = c + dc;
+      if (inBounds(nr, nc) && (!b[nr][nc] || b[nr][nc][0] === enemy)) {
+        addMove(nr, nc);
+      }
+    }
+  } else if (type === 'B' || type === 'R' || type === 'Q') {
+    const dirs = [];
+    if (type === 'B' || type === 'Q') dirs.push([-1,-1],[-1,1],[1,-1],[1,1]);
+    if (type === 'R' || type === 'Q') dirs.push([-1,0],[1,0],[0,-1],[0,1]);
+    for (const [dr, dc] of dirs) {
+      let nr = r + dr, nc = c + dc;
+      while (inBounds(nr, nc)) {
+        if (!b[nr][nc]) {
+          addMove(nr, nc);
+        } else {
+          if (b[nr][nc][0] === enemy) addMove(nr, nc);
+          break;
+        }
+        nr += dr;
+        nc += dc;
+      }
+    }
+  } else if (type === 'K') {
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (inBounds(nr, nc) && (!b[nr][nc] || b[nr][nc][0] === enemy)) {
+          addMove(nr, nc);
         }
       }
     }
+    // Castling
+    const row = color === 'w' ? 7 : 0;
+    if (r === row && c === 4) {
+      if (castlingRights[color + 'K'] && !b[row][5] && !b[row][6] && b[row][7] === color + 'R') {
+        addMove(row, 6, { castle: 'K' });
+      }
+      if (castlingRights[color + 'Q'] && !b[row][3] && !b[row][2] && !b[row][1] && b[row][0] === color + 'R') {
+        addMove(row, 2, { castle: 'Q' });
+      }
+    }
   }
+  return moves;
 }
 
-// Wireframe block selector highlight
-const highlightBox = new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.03, 1.03, 1.03)),
-  new THREE.LineBasicMaterial({ color: 0xffffff })
-);
-highlightBox.visible = false;
-scene.add(highlightBox);
-
-// ==========================================
-// 5. PLAYER STATE, INVENTORY & PHYSICS
-// ==========================================
-const player = {
-  pos: new THREE.Vector3(0, terrainHeight(0, 0) + 3, 0),
-  vel: new THREE.Vector3(),
-  yaw: 0,
-  pitch: 0,
-  hp: 100,
-  maxHp: 100,
-  stamina: 100,
-  onGround: false,
-  selectedSlot: 0,
-  kills: 0,
-  inv: { dirt: 12, stone: 8, wood: 6, turret: 1 }
-};
-
-const SLOT_TYPES = ['staff', 'dirt', 'stone', 'wood', 'turret'];
-const keys = {};
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.opacity = '1';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.style.opacity = '0'; }, 2200);
-}
-
-function updateHUD() {
-  document.getElementById('hp-fill').style.width = `${Math.max(0, player.hp)}%`;
-  document.getElementById('hp-text').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
-  document.getElementById('stamina-fill').style.width = `${Math.floor(player.stamina)}%`;
-  document.getElementById('stamina-text').textContent = `${Math.floor(player.stamina)}%`;
-  document.getElementById('score-tag').textContent = `Kills: ${player.kills}`;
-  document.getElementById('enemy-tag').textContent = `Hostiles: ${enemies.length}`;
-  document.getElementById('cnt-dirt').textContent = player.inv.dirt;
-  document.getElementById('cnt-stone').textContent = player.inv.stone;
-  document.getElementById('cnt-wood').textContent = player.inv.wood;
-  document.getElementById('cnt-turret').textContent = player.inv.turret;
-
-  document.querySelectorAll('.slot').forEach((el, i) => {
-    el.classList.toggle('active', i === player.selectedSlot);
-  });
-}
-
-function collidesAt(pos) {
-  const r = 0.32;
-  const h = 1.65;
-  const minX = Math.floor(pos.x - r), maxX = Math.floor(pos.x + r);
-  const minY = Math.floor(pos.y),     maxY = Math.floor(pos.y + h);
-  const minZ = Math.floor(pos.z - r), maxZ = Math.floor(pos.z + r);
-
-  for (let x = minX; x <= maxX; x++) {
-    for (let y = minY; y <= maxY; y++) {
-      for (let z = minZ; z <= maxZ; z++) {
-        if (blocks.has(keyOf(x, y, z))) return true;
+function isSquareAttacked(b, targetR, targetC, attackerColor) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (b[r][c] && b[r][c][0] === attackerColor) {
+        const moves = getPseudoMoves(b, r, c, { wK:false, wQ:false, bK:false, bQ:false }, null);
+        if (moves.some(m => m.tr === targetR && m.tc === targetC)) return true;
       }
     }
   }
   return false;
 }
 
-// ==========================================
-// 6. PROJECTILES, PARTICLES & HOSTILE AI
-// ==========================================
-const projectiles = [];
-const particles = [];
-const enemies = [];
-
-function spawnParticles(pos, colorHex, count = 12) {
-  const geo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
-  const mat = new THREE.MeshBasicMaterial({ color: colorHex });
-  for (let i = 0; i < count; i++) {
-    const m = new THREE.Mesh(geo, mat);
-    m.position.copy(pos);
-    scene.add(m);
-    particles.push({
-      mesh: m,
-      vel: new THREE.Vector3((Math.random() - 0.5) * 6, Math.random() * 5 + 1, (Math.random() - 0.5) * 6),
-      life: 0.45 + Math.random() * 0.3
-    });
+function isInCheck(b, color) {
+  const enemy = color === 'w' ? 'b' : 'w';
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (b[r][c] === color + 'K') {
+        return isSquareAttacked(b, r, c, enemy);
+      }
+    }
   }
+  return false;
 }
 
-function firePlasma(origin, dir, fromTurret = false) {
-  sfx.play('shoot');
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.16, 8, 8),
-    new THREE.MeshBasicMaterial({ color: fromTurret ? 0xc084fc : 0x38bdf8 })
-  );
-  mesh.position.copy(origin);
-  scene.add(mesh);
-  projectiles.push({
-    mesh,
-    vel: dir.clone().normalize().multiplyScalar(28),
-    life: 1.6,
-    damage: fromTurret ? 35 : 50
+function applyMoveToState(b, move, castlingRights, promoPiece = 'Q') {
+  const nextB = b.map(r => [...r]);
+  const nextCastling = { ...castlingRights };
+  const piece = nextB[move.fr][move.fc];
+  const color = piece[0];
+  const enemy = color === 'w' ? 'b' : 'w';
+
+  nextB[move.tr][move.tc] = move.promo ? color + promoPiece : piece;
+  nextB[move.fr][move.fc] = null;
+
+  if (move.enPassant) {
+    nextB[move.fr][move.tc] = null;
+  }
+  if (move.castle === 'K') {
+    nextB[move.tr][5] = nextB[move.tr][7];
+    nextB[move.tr][7] = null;
+  } else if (move.castle === 'Q') {
+    nextB[move.tr][3] = nextB[move.tr][0];
+    nextB[move.tr][0] = null;
+  }
+
+  // Update castling rights
+  if (piece === 'wK') { nextCastling.wK = false; nextCastling.wQ = false; }
+  if (piece === 'bK') { nextCastling.bK = false; nextCastling.bQ = false; }
+  if (move.fr === 7 && move.fc === 0 || move.tr === 7 && move.tc === 0) nextCastling.wQ = false;
+  if (move.fr === 7 && move.fc === 7 || move.tr === 7 && move.tc === 7) nextCastling.wK = false;
+  if (move.fr === 0 && move.fc === 0 || move.tr === 0 && move.tc === 0) nextCastling.bQ = false;
+  if (move.fr === 0 && move.fc === 7 || move.tr === 0 && move.tc === 7) nextCastling.bK = false;
+
+  const nextEp = move.doublePawn ? { r: (move.fr + move.tr) / 2, c: move.fc } : null;
+  return { board: nextB, castling: nextCastling, ep: nextEp };
+}
+
+function getLegalMoves(b, color, castlingRights, ep) {
+  const legal = [];
+  const enemy = color === 'w' ? 'b' : 'w';
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (b[r][c] && b[r][c][0] === color) {
+        const pseudo = getPseudoMoves(b, r, c, castlingRights, ep);
+        for (const m of pseudo) {
+          if (m.castle) {
+            if (isInCheck(b, color)) continue;
+            const stepCol = m.castle === 'K' ? 5 : 3;
+            if (isSquareAttacked(b, r, stepCol, enemy)) continue;
+          }
+          const { board: nextB } = applyMoveToState(b, m, castlingRights);
+          if (!isInCheck(nextB, color)) {
+            legal.push(m);
+          }
+        }
+      }
+    }
+  }
+  return legal;
+}
+
+function handleSquareClick(r, c) {
+  if (gameOver) return;
+  const isAI = document.getElementById('mode').value === 'ai';
+  if (isAI && turn === 'b') return;
+
+  const move = legalMoves.find(m => m.tr === r && m.tc === c);
+  if (move) {
+    if (move.promo) {
+      promptPromotion(move);
+    } else {
+      executeMove(move);
+    }
+    return;
+  }
+
+  if (board[r][c] && board[r][c][0] === turn) {
+    selected = { r, c };
+    legalMoves = getLegalMoves(board, turn, castling, epTarget).filter(m => m.fr === r && m.fc === c);
+  } else {
+    selected = null;
+    legalMoves = [];
+  }
+  render();
+}
+
+function promptPromotion(move) {
+  const modal = document.getElementById('promo-modal');
+  const choices = document.getElementById('promo-choices');
+  choices.innerHTML = '';
+  ['Q', 'R', 'B', 'N'].forEach(type => {
+    const div = document.createElement('div');
+    div.className = 'promo-choice ' + (turn === 'w' ? 'white-piece' : 'black-piece');
+    div.textContent = PIECES[turn][type];
+    div.onclick = () => {
+      modal.style.display = 'none';
+      executeMove(move, type);
+    };
+    choices.appendChild(div);
   });
+  modal.style.display = 'flex';
 }
 
-function spawnEnemy() {
-  if (enemies.length >= 10) return;
-  const angle = Math.random() * Math.PI * 2;
-  const dist = 12 + Math.random() * 5;
-  const ex = Math.max(-WORLD_RADIUS + 2, Math.min(WORLD_RADIUS - 2, Math.round(Math.cos(angle) * dist)));
-  const ez = Math.max(-WORLD_RADIUS + 2, Math.min(WORLD_RADIUS - 2, Math.round(Math.sin(angle) * dist)));
-  const ey = terrainHeight(ex, ez) + 2;
+function executeMove(move, promoPiece = 'Q') {
+  const res = applyMoveToState(board, move, castling, promoPiece);
+  board = res.board;
+  castling = res.castling;
+  epTarget = res.ep;
+  lastMove = move;
+  selected = null;
+  legalMoves = [];
+  turn = turn === 'w' ? 'b' : 'w';
 
-  const group = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.75, 1.5, 0.75),
-    new THREE.MeshStandardMaterial({ color: 0x1e1b4b, emissive: 0x4c1d95, emissiveIntensity: 0.5 })
-  );
-  body.position.y = 0.75;
-  const eye = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.16, 0.1),
-    new THREE.MeshBasicMaterial({ color: 0xf43f5e })
-  );
-  eye.position.set(0, 1.25, 0.36);
-  group.add(body, eye);
-  group.position.set(ex, ey, ez);
-  scene.add(group);
+  updateStatus();
+  render();
 
-  enemies.push({ mesh: group, hp: 100, speed: 3.1 + Math.random() * 1.1, attackCd: 0 });
+  const isAI = document.getElementById('mode').value === 'ai';
+  if (!gameOver && isAI && turn === 'b') {
+    setTimeout(makeAIMove, 250);
+  }
 }
 
-// ==========================================
-// 7. INPUT HANDLING & RAYCAST INTERACTION
-// ==========================================
-const raycaster = new THREE.Raycaster();
-raycaster.far = 6.5;
-
-function getTargetBlock() {
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-  const hits = raycaster.intersectObjects(blockMeshes, false);
-  return hits.length > 0 ? hits[0] : null;
+function evaluateBoard(b) {
+  let score = 0;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = b[r][c];
+      if (!p) continue;
+      const val = PIECE_VALUES[p[1]];
+      // Slight positional bonus for controlling center
+      const centerBonus = (3.5 - Math.abs(3.5 - r)) + (3.5 - Math.abs(3.5 - c));
+      score += p[0] === 'b' ? (val + centerBonus * 3) : -(val + centerBonus * 3);
+    }
+  }
+  return score;
 }
 
-window.addEventListener('mousedown', (e) => {
-  if (document.pointerLockElement !== renderer.domElement) return;
-  const hit = getTargetBlock();
+function minimax(b, depth, alpha, beta, maximizing, castlingRights, ep) {
+  const color = maximizing ? 'b' : 'w';
+  const moves = getLegalMoves(b, color, castlingRights, ep);
 
-  if (e.button === 0) {
-    // Left Click: Fire Plasma Staff if slot 0, or Mine Block if close
-    if (player.selectedSlot === 0) {
-      const dir = new THREE.Vector3();
-      camera.getWorldDirection(dir);
-      const start = camera.position.clone().addScaledVector(dir, 0.6);
-      firePlasma(start, dir, false);
-    } else if (hit) {
-      const { gx, gy, gz, type } = hit.object.userData;
-      const removed = removeBlock(gx, gy, gz);
-      if (removed) {
-        sfx.play('break');
-        spawnParticles(hit.object.position, 0x94a3b8, 10);
-        if (removed === 'grass' || removed === 'dirt') player.inv.dirt++;
-        else if (removed === 'stone') player.inv.stone++;
-        else if (removed === 'wood' || removed === 'leaf') player.inv.wood++;
-        else if (removed === 'turret') player.inv.turret++;
-        updateHUD();
-      }
+  if (depth === 0 || moves.length === 0) {
+    if (moves.length === 0) {
+      if (isInCheck(b, color)) return maximizing ? -99999 : 99999;
+      return 0;
     }
-  } else if (e.button === 2 && hit) {
-    // Right Click: Place selected block
-    const slotType = SLOT_TYPES[player.selectedSlot];
-    if (slotType === 'staff') {
-      showToast('Select a block slot (2-5) to build!');
-      return;
-    }
-    if ((player.inv[slotType] || 0) <= 0) {
-      showToast(`Out of ${slotType}! Mine blocks or press C to craft.`);
-      return;
-    }
-    const nx = hit.object.userData.gx + Math.round(hit.face.normal.x);
-    const ny = hit.object.userData.gy + Math.round(hit.face.normal.y);
-    const nz = hit.object.userData.gz + Math.round(hit.face.normal.z);
-
-    // Prevent placing block inside player
-    const blockCenter = new THREE.Vector3(nx, ny, nz);
-    if (blockCenter.distanceTo(player.pos) < 1.2) return;
-
-    addBlock(nx, ny, nz, slotType);
-    player.inv[slotType]--;
-    sfx.play('place');
-    updateHUD();
+    return evaluateBoard(b);
   }
-});
 
-window.addEventListener('contextmenu', e => e.preventDefault());
-
-window.addEventListener('keydown', (e) => {
-  keys[e.code] = true;
-  if (e.code.startsWith('Digit')) {
-    const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
-    if (idx >= 0 && idx < SLOT_TYPES.length) {
-      player.selectedSlot = idx;
-      updateHUD();
+  if (maximizing) {
+    let maxEval = -Infinity;
+    for (const m of moves) {
+      const next = applyMoveToState(b, m, castlingRights, 'Q');
+      const ev = minimax(next.board, depth - 1, alpha, beta, false, next.castling, next.ep);
+      maxEval = Math.max(maxEval, ev);
+      alpha = Math.max(alpha, ev);
+      if (beta <= alpha) break;
     }
-  }
-  if (e.code === 'KeyC') {
-    const menu = document.getElementById('craft-menu');
-    const isOpen = menu.style.display === 'block';
-    menu.style.display = isOpen ? 'none' : 'block';
-    if (!isOpen) document.exitPointerLock();
-    else renderer.domElement.requestPointerLock();
-  }
-});
-window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-
-window.addEventListener('mousemove', (e) => {
-  if (document.pointerLockElement !== renderer.domElement) return;
-  player.yaw   -= e.movementX * 0.0022;
-  player.pitch -= e.movementY * 0.0022;
-  player.pitch = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, player.pitch));
-});
-
-// Crafting buttons
-document.getElementById('craft-turret').addEventListener('click', () => {
-  if (player.inv.stone >= 4 && player.inv.wood >= 2) {
-    player.inv.stone -= 4; player.inv.wood -= 2; player.inv.turret += 1;
-    sfx.play('craft'); showToast('Crafted Auto Plasma Turret!'); updateHUD();
+    return maxEval;
   } else {
-    showToast('Need 4 Stone + 2 Wood');
-  }
-});
-
-document.getElementById('craft-heal').addEventListener('click', () => {
-  if (player.inv.wood >= 3 && player.inv.dirt >= 2) {
-    player.inv.wood -= 3; player.inv.dirt -= 2;
-    player.hp = Math.min(player.maxHp, player.hp + 40);
-    sfx.play('craft'); showToast('Restored +40 Health!'); updateHUD();
-  } else {
-    showToast('Need 3 Wood + 2 Dirt');
-  }
-});
-
-document.getElementById('start-btn').addEventListener('click', () => {
-  sfx.init();
-  renderer.domElement.requestPointerLock();
-});
-
-document.addEventListener('pointerlockchange', () => {
-  const locked = document.pointerLockElement === renderer.domElement;
-  const craftOpen = document.getElementById('craft-menu').style.display === 'block';
-  document.getElementById('overlay').style.display = (locked || craftOpen) ? 'none' : 'flex';
-});
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// ==========================================
-// 8. MAIN 60FPS SIMULATION & RENDER LOOP
-// ==========================================
-let worldTime = 0.25; // 0..1 cycle (0.25 = Noon, 0.75 = Midnight)
-let spawnTimer = 0;
-let lastTime = performance.now();
-
-function animate(now) {
-  requestAnimationFrame(animate);
-  const dt = Math.min(0.05, (now - lastTime) / 1000);
-  lastTime = now;
-
-  // Day/Night Cycle
-  worldTime = (worldTime + dt * 0.012) % 1;
-  const sunAngle = worldTime * Math.PI * 2;
-  const sunY = Math.sin(sunAngle);
-  sunLight.position.set(Math.cos(sunAngle) * 40, sunY * 45, 18);
-
-  const isNight = sunY < 0.05;
-  const dayFactor = THREE.MathUtils.clamp((sunY + 0.2) / 0.6, 0, 1);
-  const skyColor = new THREE.Color(0x090d16).lerp(new THREE.Color(0x7dd3fc), dayFactor);
-  scene.background.copy(skyColor);
-  scene.fog.color.copy(skyColor);
-  sunLight.intensity = 0.15 + dayFactor * 1.45;
-  ambientLight.intensity = 0.25 + dayFactor * 0.55;
-
-  const dayNum = Math.floor(now / 83000) + 1;
-  document.getElementById('time-tag').textContent = `Day ${dayNum} • ${isNight ? 'Night (Danger)' : 'Daylight'}`;
-
-  // Spawn Shadow Stalkers at night (or occasionally during day)
-  spawnTimer += dt;
-  if (spawnTimer > (isNight ? 3.5 : 11.0)) {
-    spawnTimer = 0;
-    spawnEnemy();
-  }
-
-  // Player Movement & AABB Collision
-  if (document.pointerLockElement === renderer.domElement) {
-    const forward = new THREE.Vector3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-    const right = new THREE.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
-    const moveDir = new THREE.Vector3();
-
-    if (keys['KeyW']) moveDir.add(forward);
-    if (keys['KeyS']) moveDir.sub(forward);
-    if (keys['KeyD']) moveDir.add(right);
-    if (keys['KeyA']) moveDir.sub(right);
-    if (moveDir.lengthSq() > 0) moveDir.normalize();
-
-    const sprinting = (keys['ShiftLeft'] || keys['ShiftRight']) && player.stamina > 5 && moveDir.lengthSq() > 0;
-    const speed = sprinting ? 8.2 : 5.0;
-    if (sprinting) player.stamina = Math.max(0, player.stamina - dt * 28);
-    else player.stamina = Math.min(100, player.stamina + dt * 18);
-
-    player.vel.x = moveDir.x * speed;
-    player.vel.z = moveDir.z * speed;
-    player.vel.y -= 22.0 * dt; // Gravity
-
-    if (keys['Space'] && player.onGround) {
-      player.vel.y = 8.2;
-      player.onGround = false;
+    let minEval = Infinity;
+    for (const m of moves) {
+      const next = applyMoveToState(b, m, castlingRights, 'Q');
+      const ev = minimax(next.board, depth - 1, alpha, beta, true, next.castling, next.ep);
+      minEval = Math.min(minEval, ev);
+      beta = Math.min(beta, ev);
+      if (beta <= alpha) break;
     }
+    return minEval;
+  }
+}
 
-    // Axis-separated collision resolution
-    const nextX = player.pos.clone(); nextX.x += player.vel.x * dt;
-    if (!collidesAt(nextX) && Math.abs(nextX.x) < WORLD_RADIUS) player.pos.x = nextX.x;
+function makeAIMove() {
+  const moves = getLegalMoves(board, 'b', castling, epTarget);
+  if (moves.length === 0) return;
 
-    const nextZ = player.pos.clone(); nextZ.z += player.vel.z * dt;
-    if (!collidesAt(nextZ) && Math.abs(nextZ.z) < WORLD_RADIUS) player.pos.z = nextZ.z;
+  let bestMove = moves[0];
+  let bestVal = -Infinity;
 
-    const nextY = player.pos.clone(); nextY.y += player.vel.y * dt;
-    if (!collidesAt(nextY)) {
-      player.pos.y = nextY.y;
-      player.onGround = false;
+  // Shuffle moves for variety when scores tie
+  moves.sort(() => Math.random() - 0.5);
+
+  for (const m of moves) {
+    const next = applyMoveToState(board, m, castling, 'Q');
+    const val = minimax(next.board, 2, -Infinity, Infinity, false, next.castling, next.ep);
+    if (val > bestVal) {
+      bestVal = val;
+      bestMove = m;
+    }
+  }
+  executeMove(bestMove, 'Q');
+}
+
+function updateStatus() {
+  const statusEl = document.getElementById('status');
+  const allMoves = getLegalMoves(board, turn, castling, epTarget);
+  const check = isInCheck(board, turn);
+  const playerName = turn === 'w' ? 'White' : 'Black';
+
+  if (allMoves.length === 0) {
+    gameOver = true;
+    if (check) {
+      statusEl.textContent = `Checkmate! ${turn === 'w' ? 'Black' : 'White'} wins!`;
     } else {
-      if (player.vel.y < 0) player.onGround = true;
-      player.vel.y = 0;
+      statusEl.textContent = 'Stalemate! Draw.';
     }
-
-    // Respawn safety if fallen off edge
-    if (player.pos.y < -15) {
-      player.pos.set(0, terrainHeight(0, 0) + 4, 0);
-      player.vel.set(0, 0, 0);
-    }
-  }
-
-  camera.position.set(player.pos.x, player.pos.y + 1.5, player.pos.z);
-  camera.rotation.order = 'YXZ';
-  camera.rotation.y = player.yaw;
-  camera.rotation.x = player.pitch;
-
-  // Highlight targeted block
-  const hit = getTargetBlock();
-  if (hit && player.selectedSlot !== 0) {
-    highlightBox.visible = true;
-    highlightBox.position.copy(hit.object.position);
   } else {
-    highlightBox.visible = false;
+    statusEl.textContent = `${playerName}'s Turn` + (check ? ' (Check!)' : '');
   }
-
-  // Automated Turret AI
-  for (const t of turrets) {
-    t.core.rotation.y += dt * 2.5;
-    t.cooldown -= dt;
-    if (t.cooldown <= 0 && enemies.length > 0) {
-      let nearest = null, minDist = 14;
-      const tPos = new THREE.Vector3(t.x, t.y + 0.9, t.z);
-      for (const e of enemies) {
-        const d = tPos.distanceTo(e.mesh.position);
-        if (d < minDist) { minDist = d; nearest = e; }
-      }
-      if (nearest) {
-        t.cooldown = 1.1;
-        const aimDir = nearest.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0)).sub(tPos);
-        firePlasma(tPos, aimDir, true);
-      }
-    }
-  }
-
-  // Update Projectiles
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-    const p = projectiles[i];
-    p.life -= dt;
-    p.mesh.position.addScaledVector(p.vel, dt);
-
-    let hitSomething = false;
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const e = enemies[j];
-      if (p.mesh.position.distanceTo(e.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0))) < 0.85) {
-        e.hp -= p.damage;
-        hitSomething = true;
-        spawnParticles(p.mesh.position, 0xf43f5e, 8);
-        if (e.hp <= 0) {
-          scene.remove(e.mesh);
-          enemies.splice(j, 1);
-          player.kills++;
-          player.inv.stone += 2;
-          showToast('Shadow Stalker defeated! (+2 Stone)');
-        }
-        break;
-      }
-    }
-
-    if (hitSomething || p.life <= 0) {
-      scene.remove(p.mesh);
-      projectiles.splice(i, 1);
-    }
-  }
-
-  // Update Enemy AI
-  for (const e of enemies) {
-    const toPlayer = player.pos.clone().sub(e.mesh.position);
-    const flatDist = Math.hypot(toPlayer.x, toPlayer.z);
-    e.mesh.rotation.y = Math.atan2(toPlayer.x, toPlayer.z);
-
-    if (flatDist > 1.2) {
-      const stepX = (toPlayer.x / flatDist) * e.speed * dt;
-      const stepZ = (toPlayer.z / flatDist) * e.speed * dt;
-      e.mesh.position.x += stepX;
-      e.mesh.position.z += stepZ;
-      const groundY = terrainHeight(Math.round(e.mesh.position.x), Math.round(e.mesh.position.z)) + 0.5;
-      e.mesh.position.y = THREE.MathUtils.lerp(e.mesh.position.y, groundY, 0.18);
-    } else {
-      e.attackCd -= dt;
-      if (e.attackCd <= 0) {
-        e.attackCd = 1.0;
-        player.hp -= 12;
-        sfx.play('hit');
-        if (player.hp <= 0) {
-          player.hp = 100;
-          player.pos.set(0, terrainHeight(0, 0) + 4, 0);
-          showToast('You fell in battle! Respawned at center.');
-        }
-      }
-    }
-  }
-
-  // Update Particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const pt = particles[i];
-    pt.life -= dt;
-    pt.vel.y -= 14 * dt;
-    pt.mesh.position.addScaledVector(pt.vel, dt);
-    if (pt.life <= 0) {
-      scene.remove(pt.mesh);
-      particles.splice(i, 1);
-    }
-  }
-
-  updateHUD();
-  renderer.render(scene, camera);
 }
 
-updateHUD();
-animate(performance.now());
+function render() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  const checkColor = isInCheck(board, turn) ? turn : null;
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = document.createElement('div');
+      sq.className = 'square ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+
+      if (selected && selected.r === r && selected.c === c) {
+        sq.classList.add('selected');
+      }
+      if (lastMove && ((lastMove.fr === r && lastMove.fc === c) || (lastMove.tr === r && lastMove.tc === c))) {
+        sq.classList.add('last-move');
+      }
+      if (checkColor && board[r][c] === checkColor + 'K') {
+        sq.classList.add('in-check');
+      }
+
+      const piece = board[r][c];
+      if (piece) {
+        const span = document.createElement('span');
+        span.className = 'piece ' + (piece[0] === 'w' ? 'white-piece' : 'black-piece');
+        span.textContent = PIECES[piece[0]][piece[1]];
+        sq.appendChild(span);
+      }
+
+      if (legalMoves.some(m => m.tr === r && m.tc === c)) {
+        const hint = document.createElement('div');
+        hint.className = piece ? 'hint-capture' : 'hint-dot';
+        sq.appendChild(hint);
+      }
+
+      sq.onclick = () => handleSquareClick(r, c);
+      boardEl.appendChild(sq);
+    }
+  }
+}
+
+initGame();
 </script>
 </body>
 </html>
